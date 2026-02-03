@@ -108,8 +108,33 @@ When asked to review a Pull Request: use gh cli to read code review comments on 
 - install the gh cli if it is not installed
 - when reviewer(s) has left comments, summarize them; state whether you believe each one requires addressing now, should be delayed (create a new gh issue) or ignored/not a problem/false positve. present summary and recommend what you think should be done next. wait for user direction to continue fixing (unless otherwise directed to immediately start fixes)
 
+# Agent Tools
+
+## Notifications (ntfy_send)
+
+**Location:** `.agents/bin/ntfy_send`
+
+Use this tool to notify the developer after completing tasks, creating PRs, updating issues, or encountering blockers.
+
+**Required format:**
+```bash
+.agents/bin/ntfy_send \
+  --title "Action Title" \
+  --tags "emoji_tag" \
+  --click "https://github.com/Gater-Robot/gater-robot/..." \
+  "Message body with details"
+```
+
+**Always include:**
+- `--title` - Brief action summary
+- `--click` - Direct link to GitHub resource (PR, issue, comment)
+- Message body - What was done
+
+See `docs/notes.md` for full documentation and examples.
+
 # Important
-- never use npm. only use pnpm.
-- always use gh cli to check for issues matching the work we are doing. use gh cli to manage PRs, linked to uses, and post comment on issues updating work statuses, and close issues when PRs get merged. use gh cli to follow software development lifecycle and project management best practices
-- whenever done a task, try notifying the user using ntfy.sh/$NTFY_CHANNEL. be sure to include link(s) to any issues, comments, or PRs that your updating using gh, and briefly describe the completed work.
-- when creating GitHub issues, always assign a priority label (`P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`). If priority is unclear, ask the user for clarification via ntfy.sh before creating the issue.
+
+- Never use npm. Only use pnpm.
+- Always use gh cli to check for issues matching the work we are doing. Use gh cli to manage PRs, link to issues, and post comments on issues updating work statuses. Close issues when PRs get merged. Follow software development lifecycle and project management best practices.
+- After completing a task, notify the user using `.agents/bin/ntfy_send` with a clickable link to the relevant GitHub resource.
+- When creating GitHub issues, always assign a priority label (`P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`). If priority is unclear, ask the user for clarification via ntfy_send before creating the issue.
