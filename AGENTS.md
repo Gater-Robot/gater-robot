@@ -1,1 +1,2 @@
 - ignore .claude/ directory unless otherwise directed
+- gh remote: Gater-Robot/gater-robot
