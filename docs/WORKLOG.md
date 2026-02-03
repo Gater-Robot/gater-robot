@@ -2,15 +2,15 @@
 
 ## Current Status
 
-**Phase:** Project Setup & Planning
-**Sprint:** Pre-Sprint (Infrastructure Setup)
+**Phase:** Sprint 1: Foundation
+**Sprint:** Sprint 1: Foundation
 **Branch:** `claude/gh-project-manager-setup`
 
 ## Sprint Progress
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
-| Sprint 1: Foundation | Not Started | 10 issues created |
+| Sprint 1: Foundation | In Progress | Issue #3 monorepo scaffolding in progress |
 | Sprint 2: User Identity | Not Started | 9 issues created |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
 | Sprint 4: Eligibility + LiFi | Not Started | 8 issues created |
@@ -22,8 +22,8 @@
 
 **Next Steps:**
 1. Merge `claude/gh-project-manager-setup` branch to develop
-2. Set up GitHub Projects v2 kanban board (in progress)
-3. Start Sprint 1: Foundation tasks
+2. Start Sprint 1: Foundation tasks (bot /start, admin toggle)
+3. Set up GitHub Projects v2 kanban board (in progress)
 
 **Blocked On:** Nothing
 
@@ -72,3 +72,14 @@
 - docs(claude): update CLAUDE.md with new project structure
 - docs(erd): update ERD to match Convex schema
 - feat(agents): add ntfy_send notification tool for agents
+
+### 2026-02-04 - Monorepo Scaffold
+
+**Completed:**
+1. **Initialized pnpm + turborepo layout**
+   - Added root pnpm workspace + turbo config
+   - Added scaffolded package.json files for bot, web, and convex
+   - Updated .env.example with baseline environment variables
+
+**Next Up:**
+- Implement Sprint 1 bot + mini-app features

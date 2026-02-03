@@ -1,0 +1,11 @@
+{
+  "name": "@gater/bot",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Add bot dev script'",
+    "build": "echo 'Add bot build script'",
+    "lint": "echo 'Add bot lint script'",
+    "test": "echo 'Add bot test script'"
+  }
+}
