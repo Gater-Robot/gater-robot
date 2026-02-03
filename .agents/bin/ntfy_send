@@ -22,10 +22,9 @@
 set -euo pipefail
 
 # Model icon URLs (raw GitHub content)
-# TODO: Update to main branch after merge
-CLAUDE_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/claude/gh-project-manager-setup/.agents/assets/claude-256.png"
-CODEX_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/claude/gh-project-manager-setup/.agents/assets/codex-256.png"
-GEMINI_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/claude/gh-project-manager-setup/.agents/assets/gemini-256.png"
+CLAUDE_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/claude-256.png"
+CODEX_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/codex-256.png"
+GEMINI_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/gemini-256.png"
 
 # Default values
 NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
@@ -39,6 +38,7 @@ EMAIL=""
 DELAY=""
 MESSAGE=""
 ICON=""
+VERBOSE=0
 
 # Color output helpers
 RED='\033[0;31m'
@@ -147,8 +147,6 @@ EOF
 
 # Parse command line arguments
 parse_args() {
-    local VERBOSE=0
-
     while [[ $# -gt 0 ]]; do
         case "$1" in
             -t|--title)
@@ -219,8 +217,6 @@ parse_args() {
                 ;;
         esac
     done
-
-    export VERBOSE
 }
 
 # Validate inputs
