@@ -5,10 +5,10 @@ set -e
 LOG_PREFIX="[gh-setup]"
 log() { echo "$LOG_PREFIX $1" >&2; }
 
-if [ "$CLAUDE_CODE_REMOTE" != "true" ]; then
-    log "Not a remote session, skipping gh setup"
-    exit 0
-fi
+# if [ "$CLAUDE_CODE_REMOTE" != "true" ]; then
+#     log "Not a remote session, skipping gh setup"
+#     exit 0
+# fi
 
 log "Remote session detected, checking gh CLI..."
 
@@ -70,29 +70,8 @@ log "gh CLI installed successfully: $($LOCAL_BIN/gh --version | head -1)"
 
 
 
-
 log "===================================================="
 log "Run pnpm install to ensure all dependencies are set up."
 log "===================================================="
 pnpm install
-
-# check for CODEX_AUTH_JSON env var
-if [ -z "$CODEX_AUTH_JSON" ]; then
-    log "CODEX_AUTH_JSON not set. Please set it to use Codex CLI."
-    exit 0
-fi
-
-log "===================================================="
-log "Install Codex CLI."
-log "===================================================="
-npm i -g @openai/codex
-
 log "Setup complete."
-
-# save this (multi-line) env var to a file ~/.codex/auth.json
-CODEX_AUTH_FILE="$HOME/.codex/auth.json"
-mkdir -p "$(dirname "$CODEX_AUTH_FILE")"
-echo "$CODEX_AUTH_JSON" > "$CODEX_AUTH_FILE"
-log "Saved CODEX_AUTH_JSON to $CODEX_AUTH_FILE"
-# Clear the env var for security
-unset CODEX_AUTH_JSON
