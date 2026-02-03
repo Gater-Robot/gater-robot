@@ -1,0 +1,1 @@
+- ignore .claude/ directory unless otherwise directed
