@@ -66,6 +66,43 @@ export function ENSIdentityCard({
     return <ENSIdentityCardSkeleton compact={compact} />
   }
 
+  // Show error state if ENS lookup failed
+  if (profile.error) {
+    if (compact) {
+      return (
+        <div className="flex items-center gap-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="text-xs bg-yellow-100 text-yellow-700">
+              !
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="text-sm text-muted-foreground">
+              {truncateAddress(address)}
+            </span>
+            <span className="text-xs text-yellow-600">ENS lookup failed</span>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <Card className="border-yellow-200 bg-yellow-50/50 dark:bg-yellow-950/20">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-yellow-100 text-yellow-700">!</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-mono text-sm">{truncateAddress(address)}</p>
+              <p className="text-xs text-yellow-600">ENS lookup failed</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const displayName = profile.name ?? truncateAddress(address)
 
   // Compact variant for table rows

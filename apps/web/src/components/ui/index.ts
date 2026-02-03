@@ -10,3 +10,4 @@ export {
   CardContent,
 } from './card'
 export { Skeleton } from './skeleton'
+export { ErrorBoundary } from './error-boundary'

@@ -11,7 +11,7 @@
  * "3 addresses table: 2 verified, 1 pending"
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ENSIdentityCard } from './ENSIdentityCard'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge } from '@/components/ui'
 import { Check, Clock, Star } from 'lucide-react'
@@ -48,6 +48,12 @@ export function AddressTableWithENS({
   const [selectedDefault, setSelectedDefault] = useState<string | undefined>(
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id
   )
+
+  // Sync selectedDefault when addresses prop changes
+  useEffect(() => {
+    const newDefault = addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id
+    setSelectedDefault(newDefault)
+  }, [addresses])
 
   const handleSetDefault = (addressId: string) => {
     const address = addresses.find((a) => a.id === addressId)

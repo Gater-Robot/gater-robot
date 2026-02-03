@@ -205,7 +205,7 @@ export const setDefaultAddress = mutation({
 
     await ctx.db.patch(user._id, {
       defaultAddressId: args.addressId,
-      primaryEnsName: address.ensName ?? null,
+      ...(address.ensName ? { primaryEnsName: address.ensName } : {}),
       lastSeenAt: Date.now(),
     })
 

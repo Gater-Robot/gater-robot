@@ -21,7 +21,7 @@ import {
   TelegramLinkVerify,
   DEMO_ADDRESSES,
 } from '@/components/ens'
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge } from '@/components/ui'
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, ErrorBoundary } from '@/components/ui'
 import { Wallet, ChevronRight, Sparkles, Globe, Shield, Layers } from 'lucide-react'
 import { mainnet, base, arbitrum, sepolia } from 'wagmi/chains'
 
@@ -38,10 +38,13 @@ export function ENSDemoPage() {
   const { switchChain } = useSwitchChain()
 
   const [isDarkMode, setIsDarkMode] = useState(() =>
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+    typeof window !== 'undefined'
+      ? window.matchMedia('(prefers-color-scheme: dark)').matches
+      : false
   )
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches)
     mq.addEventListener('change', handler)
@@ -77,7 +80,13 @@ export function ENSDemoPage() {
                       key={chain.id}
                       variant={chainId === chain.id ? 'default' : 'ghost'}
                       size="sm"
-                      onClick={() => switchChain({ chainId: chain.id })}
+                      onClick={() => {
+                        try {
+                          switchChain({ chainId: chain.id })
+                        } catch (error) {
+                          console.error('Failed to switch chain:', error)
+                        }
+                      }}
                       className="text-xs"
                     >
                       {chain.name.split(' ')[0]}
@@ -88,7 +97,16 @@ export function ENSDemoPage() {
 
               {/* Wallet connection */}
               {isConnected ? (
-                <Button variant="outline" onClick={() => disconnect()}>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    try {
+                      disconnect()
+                    } catch (error) {
+                      console.error('Failed to disconnect:', error)
+                    }
+                  }}
+                >
                   Disconnect
                 </Button>
               ) : (
@@ -96,7 +114,13 @@ export function ENSDemoPage() {
                   {connectors.slice(0, 2).map((connector) => (
                     <Button
                       key={connector.uid}
-                      onClick={() => connect({ connector })}
+                      onClick={() => {
+                        try {
+                          connect({ connector })
+                        } catch (error) {
+                          console.error('Failed to connect:', error)
+                        }
+                      }}
                       disabled={isPending}
                     >
                       <Wallet className="h-4 w-4 mr-2" />
@@ -279,8 +303,28 @@ export function ENSDemoPage() {
                 Full-featured profile component from Ethereum Identity Kit
               </p>
               <div className="space-y-4">
-                <ProfileCard addressOrName="vitalik.eth" darkMode={isDarkMode} />
-                <ProfileCard addressOrName="nick.eth" darkMode={isDarkMode} showFollowButton={false} />
+                <ErrorBoundary
+                  fallback={
+                    <div className="p-4 border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                      <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                        Failed to load ProfileCard for vitalik.eth
+                      </p>
+                    </div>
+                  }
+                >
+                  <ProfileCard addressOrName="vitalik.eth" darkMode={isDarkMode} />
+                </ErrorBoundary>
+                <ErrorBoundary
+                  fallback={
+                    <div className="p-4 border border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20 rounded-lg">
+                      <p className="text-sm text-yellow-600 dark:text-yellow-400">
+                        Failed to load ProfileCard for nick.eth
+                      </p>
+                    </div>
+                  }
+                >
+                  <ProfileCard addressOrName="nick.eth" darkMode={isDarkMode} showFollowButton={false} />
+                </ErrorBoundary>
               </div>
             </section>
           </div>
