@@ -375,6 +375,7 @@ gater-robot/
 | `area:convex` | `#5319e7` (purple) | Convex backend/DB |
 | `area:contracts` | `#fbca04` (yellow) | Smart contracts ($BEST token) |
 | `area:lifi` | `#1d76db` (light blue) | LiFi widget integration |
+| `area:hackathon` | `#7057ff` (purple) | Demo recording, scripting, submission |
 
 ### Type Labels
 | Label | Color | Description |
@@ -383,6 +384,7 @@ gater-robot/
 | `type:bug` | `#b60205` (red) | Something broken |
 | `type:chore` | `#d4c5f9` (lavender) | Maintenance, setup, config |
 | `type:docs` | `#c2e0c6` (light green) | Documentation |
+| `type:milestone` | `#006b75` (teal) | Central tracking issue for a sprint |
 
 ### Status Labels
 | Label | Color | Description |
@@ -429,3 +431,4 @@ gater-robot/
 - Move issues through: Open → In Progress → Needs Review → Closed
 - Use `blocked` label when waiting on dependencies
 - Use `partner-bounty` to ensure prize requirements are met
+- Use `type:milestone` for central tracking issues per sprint (links to all sub-issues)
