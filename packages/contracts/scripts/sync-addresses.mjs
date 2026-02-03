@@ -23,13 +23,23 @@ const readDeploymentAddress = (chainId) => {
   if (!fs.existsSync(filePath)) {
     return undefined;
   }
-  const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-  return data["BestTokenModule#BestToken"] ?? undefined;
+  try {
+    const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    return data["BestTokenModule#BestToken"] ?? undefined;
+  } catch (error) {
+    console.error(`Error parsing deployment file for chain ${chainId}: ${error.message}`);
+    return undefined;
+  }
 };
 
-const existing = fs.existsSync(outputPath)
-  ? JSON.parse(fs.readFileSync(outputPath, "utf8"))
-  : {};
+let existing = {};
+if (fs.existsSync(outputPath)) {
+  try {
+    existing = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+  } catch (error) {
+    console.error(`Error parsing existing addresses.json: ${error.message}. Starting fresh.`);
+  }
+}
 
 const now = new Date().toISOString();
 

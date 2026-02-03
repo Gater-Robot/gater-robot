@@ -68,6 +68,11 @@ const main = async () => {
     };
     await writeDeployments(deployments);
     console.log(`Updated deployments/addresses.json`);
+  } else {
+    console.warn(
+      `Warning: Network "${networkName}" is not recognized (expected: base, baseSepolia, arc, arcTestnet). ` +
+      `Deployment succeeded but address was NOT saved to addresses.json.`
+    );
   }
 
   console.log(`BestToken deployed on ${networkName}: ${deployedAddress}`);
