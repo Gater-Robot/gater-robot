@@ -6,10 +6,10 @@ export const getUserByTelegramId = query({
   handler: async (ctx, args) => {
     return ctx.db
       .query("users")
-      .withIndex("by_telegramUserId", (q) =>
+      .withIndex("by_telegram_user_id", (q) =>
         q.eq("telegramUserId", args.telegramUserId),
       )
-      .first();
+      .unique();
   },
 });
 
@@ -23,10 +23,10 @@ export const upsertUserFromTelegram = mutation({
   handler: async (ctx, args) => {
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_telegramUserId", (q) =>
+      .withIndex("by_telegram_user_id", (q) =>
         q.eq("telegramUserId", args.telegramUserId),
       )
-      .first();
+      .unique();
 
     const now = Date.now();
 
@@ -47,6 +47,38 @@ export const upsertUserFromTelegram = mutation({
       lastName: args.lastName,
       createdAt: now,
       lastSeenAt: now,
+    });
+  },
+});
+
+export const setDefaultAddress = mutation({
+  args: {
+    telegramUserId: v.string(),
+    defaultAddressId: v.optional(v.id("addresses")),
+  },
+  handler: async (ctx, args) => {
+    // Authorization: caller must own the user record
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_telegram_user_id", (q) =>
+        q.eq("telegramUserId", args.telegramUserId),
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // If setting an address, verify it belongs to this user
+    if (args.defaultAddressId) {
+      const address = await ctx.db.get(args.defaultAddressId);
+      if (!address || address.userId !== user._id) {
+        throw new Error("Address not found or does not belong to user");
+      }
+    }
+
+    await ctx.db.patch(user._id, {
+      defaultAddressId: args.defaultAddressId,
     });
   },
 });

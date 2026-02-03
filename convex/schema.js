@@ -12,7 +12,7 @@ export default defineSchema({
     defaultAddressId: v.optional(v.id("addresses")),
     createdAt: v.number(),
     lastSeenAt: v.optional(v.number()),
-  }).index("by_telegramUserId", ["telegramUserId"]),
+  }).index("by_telegram_user_id", ["telegramUserId"]),
 
   addresses: defineTable({
     userId: v.id("users"),
@@ -24,14 +24,14 @@ export default defineSchema({
     ensNameAtVerification: v.optional(v.string()),
     createdAt: v.number(),
   })
-    .index("by_user", ["userId"])
+    .index("by_user_id", ["userId"])
     .index("by_address", ["address"]),
 
   orgs: defineTable({
     ownerTelegramUserId: v.string(),
     name: v.string(),
     createdAt: v.number(),
-  }).index("by_ownerTelegramUserId", ["ownerTelegramUserId"]),
+  }).index("by_owner_telegram_user_id", ["ownerTelegramUserId"]),
 
   channels: defineTable({
     orgId: v.id("orgs"),
@@ -42,8 +42,8 @@ export default defineSchema({
     verifiedAt: v.optional(v.number()),
     createdAt: v.number(),
   })
-    .index("by_org", ["orgId"])
-    .index("by_telegramChatId", ["telegramChatId"]),
+    .index("by_org_id", ["orgId"])
+    .index("by_telegram_chat_id", ["telegramChatId"]),
 
   gates: defineTable({
     orgId: v.id("orgs"),
@@ -57,8 +57,8 @@ export default defineSchema({
     active: v.boolean(),
     createdAt: v.number(),
   })
-    .index("by_org", ["orgId"])
-    .index("by_channel", ["channelId"]),
+    .index("by_org_id", ["orgId"])
+    .index("by_channel_id", ["channelId"]),
 
   memberships: defineTable({
     orgId: v.id("orgs"),
@@ -75,9 +75,9 @@ export default defineSchema({
     lastKnownBalance: v.optional(v.string()),
     createdAt: v.number(),
   })
-    .index("by_user", ["userId"])
-    .index("by_channel", ["channelId"])
-    .index("by_org", ["orgId"]),
+    .index("by_user_id", ["userId"])
+    .index("by_channel_id", ["channelId"])
+    .index("by_org_id", ["orgId"]),
 
   events: defineTable({
     type: v.string(),
