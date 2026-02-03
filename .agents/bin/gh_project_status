@@ -1,0 +1,272 @@
+#!/usr/bin/env bash
+#
+# gh_project_status - Update GitHub Project item status
+#
+# A helper tool for agents to easily update issue/PR status in GitHub Projects.
+#
+# Usage:
+#   gh_project_status --issue <number> --status <status>
+#   gh_project_status --pr <number> --status <status>
+#   gh_project_status --list-statuses
+#   gh_project_status --refresh-cache
+#
+# Statuses: "Todo", "In Progress", "Waiting for Merge", "Done"
+#
+# Examples:
+#   gh_project_status --issue 3 --status "In Progress"
+#   gh_project_status --issue 3 --status "Done"
+#   gh_project_status --pr 5 --status "Waiting for Merge"
+#
+
+set -euo pipefail
+
+# Configuration
+PROJECT_NUMBER=1
+PROJECT_OWNER="Gater-Robot"
+PROJECT_ID="PVT_kwDOD29KIs4BOKlh"
+REPO="Gater-Robot/gater-robot"
+
+# Status Field ID and Option IDs (cached values)
+STATUS_FIELD_ID="PVTSSF_lADOD29KIs4BOKlhzg88nVM"
+declare -A STATUS_OPTIONS=(
+    ["Todo"]="f75ad846"
+    ["In Progress"]="47fc9ee4"
+    ["Waiting for Merge"]="a375cf6a"
+    ["Done"]="98236657"
+)
+
+# Color output helpers
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+error() {
+    echo -e "${RED}Error:${NC} $1" >&2
+    exit 1
+}
+
+success() {
+    echo -e "${GREEN}Success:${NC} $1"
+}
+
+info() {
+    echo -e "${CYAN}Info:${NC} $1"
+}
+
+usage() {
+    cat << 'EOF'
+gh_project_status - Update GitHub Project item status
+
+USAGE:
+    gh_project_status --issue <number> --status <status>
+    gh_project_status --pr <number> --status <status>
+    gh_project_status --list-statuses
+    gh_project_status --refresh-cache
+
+OPTIONS:
+    -i, --issue <number>     Issue number to update
+    -p, --pr <number>        PR number to update
+    -s, --status <status>    New status value
+    -l, --list-statuses      List available status options
+    -r, --refresh-cache      Refresh cached field IDs from API
+    -h, --help               Show this help message
+
+AVAILABLE STATUSES:
+    Todo                Work is planned but not started
+    In Progress         Currently being worked on
+    Waiting for Merge   PR created, awaiting review/merge
+    Done                Completed and closed
+
+EXAMPLES:
+    # Start working on an issue
+    gh_project_status --issue 3 --status "In Progress"
+
+    # Mark issue as waiting for PR review
+    gh_project_status --issue 3 --status "Waiting for Merge"
+
+    # Mark a PR as done
+    gh_project_status --pr 5 --status "Done"
+
+    # List all available statuses
+    gh_project_status --list-statuses
+
+WORKFLOW:
+    No Status (Backlog) -> Todo -> In Progress -> Waiting for Merge -> Done
+
+NOTE:
+    - "Done" status is usually set automatically when issues are closed
+    - Use "No Status" (by clearing) for backlog/ideas
+EOF
+    exit 0
+}
+
+list_statuses() {
+    echo "Available statuses for project #${PROJECT_NUMBER}:"
+    echo ""
+    for status in "${!STATUS_OPTIONS[@]}"; do
+        echo "  - $status"
+    done
+    echo ""
+    echo "To clear status (move to backlog), use: --status clear"
+}
+
+# Get item ID for an issue or PR
+get_item_id() {
+    local type="$1"  # "issue" or "pr"
+    local number="$2"
+
+    local url
+    if [[ "$type" == "issue" ]]; then
+        url="https://github.com/${REPO}/issues/${number}"
+    else
+        url="https://github.com/${REPO}/pull/${number}"
+    fi
+
+    # Search for the item in the project
+    local items
+    items=$(gh project item-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json) || {
+        error "Failed to list project items. Check your authentication."
+    }
+
+    # Find the item with matching URL
+    local item_id
+    item_id=$(echo "$items" | jq -r --arg url "$url" '.items[] | select(.content.url == $url) | .id' | head -1)
+
+    if [[ -z "$item_id" || "$item_id" == "null" ]]; then
+        # Try finding by issue/PR number instead of URL
+        item_id=$(echo "$items" | jq -r --arg num "$number" '.items[] | select(.content.number == ($num | tonumber)) | .id' | head -1)
+    fi
+
+    if [[ -z "$item_id" || "$item_id" == "null" ]]; then
+        error "${type^} #${number} not found in project. Add it first with:\n  gh project item-add $PROJECT_NUMBER --owner $PROJECT_OWNER --url $url"
+    fi
+
+    echo "$item_id"
+}
+
+# Update item status
+update_status() {
+    local item_id="$1"
+    local status="$2"
+
+    if [[ "$status" == "clear" ]]; then
+        # Clear the status field
+        gh project item-edit \
+            --id "$item_id" \
+            --project-id "$PROJECT_ID" \
+            --field-id "$STATUS_FIELD_ID" \
+            --clear || {
+            error "Failed to clear status"
+        }
+        success "Cleared status (moved to backlog)"
+        return
+    fi
+
+    # Get the option ID for the status
+    local option_id="${STATUS_OPTIONS[$status]:-}"
+
+    if [[ -z "$option_id" ]]; then
+        error "Unknown status: '$status'\nAvailable: ${!STATUS_OPTIONS[*]}"
+    fi
+
+    # Update the status
+    gh project item-edit \
+        --id "$item_id" \
+        --project-id "$PROJECT_ID" \
+        --field-id "$STATUS_FIELD_ID" \
+        --single-select-option-id "$option_id" || {
+        error "Failed to update status. Check your authentication and permissions."
+    }
+
+    success "Updated status to '$status'"
+}
+
+# Refresh cache from API
+refresh_cache() {
+    info "Fetching field IDs from GitHub API..."
+
+    local fields
+    fields=$(gh project field-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json) || {
+        error "Failed to fetch fields. Check your authentication."
+    }
+
+    local status_field
+    status_field=$(echo "$fields" | jq '.fields[] | select(.name == "Status")')
+
+    echo ""
+    echo "Status Field ID: $(echo "$status_field" | jq -r '.id')"
+    echo ""
+    echo "Status Options:"
+    echo "$status_field" | jq -r '.options[] | "  [\"\(.name)\"]=\"\(.id)\""'
+    echo ""
+    info "Update the STATUS_OPTIONS in this script if needed."
+}
+
+# Parse arguments
+main() {
+    local type=""
+    local number=""
+    local status=""
+
+    if [[ $# -eq 0 ]]; then
+        usage
+    fi
+
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -i|--issue)
+                type="issue"
+                number="$2"
+                shift 2
+                ;;
+            -p|--pr)
+                type="pr"
+                number="$2"
+                shift 2
+                ;;
+            -s|--status)
+                status="$2"
+                shift 2
+                ;;
+            -l|--list-statuses)
+                list_statuses
+                exit 0
+                ;;
+            -r|--refresh-cache)
+                refresh_cache
+                exit 0
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                error "Unknown option: $1\nUse --help for usage."
+                ;;
+        esac
+    done
+
+    # Validate inputs
+    if [[ -z "$type" ]]; then
+        error "Must specify --issue or --pr"
+    fi
+
+    if [[ -z "$number" ]]; then
+        error "Must specify issue/PR number"
+    fi
+
+    if [[ -z "$status" ]]; then
+        error "Must specify --status"
+    fi
+
+    # Get item ID and update status
+    info "Looking up ${type} #${number} in project..."
+    local item_id
+    item_id=$(get_item_id "$type" "$number")
+
+    info "Updating status..."
+    update_status "$item_id" "$status"
+}
+
+main "$@"

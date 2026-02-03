@@ -110,6 +110,46 @@ When asked to review a Pull Request: use gh cli to read code review comments on 
 
 # Agent Tools
 
+## GitHub Project Status (gh_project_status)
+
+**Location:** `.agents/bin/gh_project_status`
+
+Use this tool to update issue/PR status in the GitHub Project board.
+
+**Workflow:**
+```
+No Status (Backlog) → Todo → In Progress → Waiting for Merge → Done
+```
+
+**Commands:**
+```bash
+# Start working on an issue
+.agents/bin/gh_project_status --issue 3 --status "In Progress"
+
+# PR created, waiting for review
+.agents/bin/gh_project_status --issue 3 --status "Waiting for Merge"
+
+# List available statuses
+.agents/bin/gh_project_status --list-statuses
+```
+
+**Agent Checklist:**
+
+Before starting work:
+- [ ] Update issue status to "In Progress"
+- [ ] Comment on issue with approach/plan
+
+After creating PR:
+- [ ] Link PR to issue with "Closes #X" or "Part of #X"
+- [ ] Update issue status to "Waiting for Merge"
+- [ ] ntfy_send notification with PR link
+
+After PR merged:
+- [ ] Status auto-updates to "Done" (built-in workflow)
+- [ ] Verify issue was closed
+
+**View Project Board:** https://github.com/orgs/Gater-Robot/projects/1
+
 ## Notifications (ntfy_send)
 
 **Location:** `.agents/bin/ntfy_send`

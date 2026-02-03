@@ -299,9 +299,9 @@ send_notification() {
     # Add URL
     CURL_ARGS+=("$URL")
 
-    # Show command if verbose
+    # Show command if verbose (using printf %q for safe quoting)
     if [[ "${VERBOSE:-0}" == "1" ]]; then
-        echo "curl ${CURL_ARGS[*]}" >&2
+        (printf "curl "; printf "%q " "${CURL_ARGS[@]}"; echo) >&2
     fi
 
     # Execute curl
