@@ -211,7 +211,13 @@ export function ENSIdentityCard({
               >
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline truncate max-w-[150px]">
-                  {new URL(profile.url).hostname}
+                  {(() => {
+                    try {
+                      return new URL(profile.url).hostname
+                    } catch {
+                      return profile.url
+                    }
+                  })()}
                 </span>
               </a>
             )}

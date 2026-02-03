@@ -57,7 +57,7 @@ export default defineSchema({
     // ENS data (cached from mainnet)
     ensName: v.optional(v.string()),
     ensAvatar: v.optional(v.string()),
-    ensTelegramUsername: v.optional(v.string()),
+    ensTelegram: v.optional(v.string()),
     ensTwitter: v.optional(v.string()),
     ensGithub: v.optional(v.string()),
     ensUrl: v.optional(v.string()),

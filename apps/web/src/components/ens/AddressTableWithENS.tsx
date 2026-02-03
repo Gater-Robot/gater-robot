@@ -45,7 +45,7 @@ export function AddressTableWithENS({
 }: AddressTableWithENSProps) {
   // Note: telegramUsername reserved for future ENS telegram matching in table
   void _telegramUsername
-  const [selectedDefault, setSelectedDefault] = useState<string>(
+  const [selectedDefault, setSelectedDefault] = useState<string | undefined>(
     addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id
   )
 

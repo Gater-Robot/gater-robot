@@ -60,7 +60,7 @@ export const autoVerifyTelegramLink = mutation({
         verifiedAt: now,
         verificationMethod: 'ens_telegram_match',
         ensName: args.ensName,
-        ensTelegramUsername: args.ensTelegram,
+        ensTelegram: args.ensTelegram,
         ensUpdatedAt: now,
         updatedAt: now,
       })
@@ -73,7 +73,7 @@ export const autoVerifyTelegramLink = mutation({
         verifiedAt: now,
         verificationMethod: 'ens_telegram_match',
         ensName: args.ensName,
-        ensTelegramUsername: args.ensTelegram,
+        ensTelegram: args.ensTelegram,
         ensUpdatedAt: now,
         createdAt: now,
         updatedAt: now,
@@ -126,7 +126,7 @@ export const updateAddressEns = mutation({
 
     await ctx.db.patch(addressId, {
       ...ensData,
-      ensTelegramUsername: ensData.ensTelegram,
+      ensTelegram: ensData.ensTelegram,
       ensUpdatedAt: Date.now(),
       updatedAt: Date.now(),
     })

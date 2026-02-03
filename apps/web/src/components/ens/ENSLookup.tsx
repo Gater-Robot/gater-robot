@@ -12,6 +12,7 @@ import { useState } from 'react'
 import { useEnsName, useEnsAddress } from 'wagmi'
 import { mainnet } from 'wagmi/chains'
 import { normalize } from 'viem/ens'
+import { isAddress } from 'viem'
 import { ENSIdentityCard } from './ENSIdentityCard'
 import {
   Card,
@@ -28,8 +29,8 @@ export function ENSLookup() {
   const [searchTerm, setSearchTerm] = useState<string | null>(null)
   const [searchType, setSearchType] = useState<'name' | 'address' | null>(null)
 
-  // Determine if input is an address or ENS name
-  const isAddress = input.startsWith('0x') && input.length === 42
+  // Determine if input is an address or ENS name (use viem's isAddress for robust validation)
+  const isInputAnAddress = isAddress(input)
 
   // ENS name resolution (when searching by name)
   const {
@@ -56,7 +57,7 @@ export function ENSLookup() {
   const handleSearch = () => {
     if (!input.trim()) return
 
-    if (isAddress) {
+    if (isInputAnAddress) {
       setSearchType('address')
       setSearchTerm(input.trim())
     } else {

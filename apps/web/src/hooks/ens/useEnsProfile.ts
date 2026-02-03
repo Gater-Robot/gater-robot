@@ -80,54 +80,64 @@ export function useEnsProfile(address: `0x${string}` | undefined): EnsProfile {
   // Text records - only fetch if we have a name
   const enabled = !!name
 
-  const { data: telegram } = useEnsText({
+  const { data: telegram, isLoading: telegramLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.telegram,
     chainId,
     query: { enabled },
   })
 
-  const { data: twitter } = useEnsText({
+  const { data: twitter, isLoading: twitterLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.twitter,
     chainId,
     query: { enabled },
   })
 
-  const { data: github } = useEnsText({
+  const { data: github, isLoading: githubLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.github,
     chainId,
     query: { enabled },
   })
 
-  const { data: discord } = useEnsText({
+  const { data: discord, isLoading: discordLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.discord,
     chainId,
     query: { enabled },
   })
 
-  const { data: url } = useEnsText({
+  const { data: url, isLoading: urlLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.url,
     chainId,
     query: { enabled },
   })
 
-  const { data: description } = useEnsText({
+  const { data: description, isLoading: descriptionLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.description,
     chainId,
     query: { enabled },
   })
 
-  const { data: email } = useEnsText({
+  const { data: email, isLoading: emailLoading } = useEnsText({
     name: name ?? undefined,
     key: ENS_TEXT_RECORD_KEYS.email,
     chainId,
     query: { enabled },
   })
+
+  // Combine all loading states
+  const textRecordsLoading =
+    telegramLoading ||
+    twitterLoading ||
+    githubLoading ||
+    discordLoading ||
+    urlLoading ||
+    descriptionLoading ||
+    emailLoading
 
   return {
     name: name ?? null,
@@ -139,7 +149,7 @@ export function useEnsProfile(address: `0x${string}` | undefined): EnsProfile {
     url: url ?? null,
     description: description ?? null,
     email: email ?? null,
-    isLoading: nameLoading || avatarLoading,
+    isLoading: nameLoading || avatarLoading || textRecordsLoading,
     error: nameError ?? null,
   }
 }
