@@ -126,7 +126,6 @@ export const updateAddressEns = mutation({
 
     await ctx.db.patch(addressId, {
       ...ensData,
-      ensTelegram: ensData.ensTelegram,
       ensUpdatedAt: Date.now(),
       updatedAt: Date.now(),
     })

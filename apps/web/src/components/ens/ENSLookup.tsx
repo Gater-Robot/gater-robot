@@ -24,6 +24,23 @@ import {
 } from '@/components/ui'
 import { Search, Loader2, AlertCircle } from 'lucide-react'
 
+/**
+ * Helper to compute displayAddress from search state
+ */
+function getDisplayAddress(
+  searchType: 'name' | 'address' | null,
+  resolvedAddress: `0x${string}` | null | undefined,
+  searchTerm: string | null
+): `0x${string}` | null {
+  if (searchType === 'name') {
+    return resolvedAddress ?? null
+  }
+  if (searchType === 'address') {
+    return searchTerm as `0x${string}`
+  }
+  return null
+}
+
 export function ENSLookup() {
   const [input, setInput] = useState('')
   const [searchTerm, setSearchTerm] = useState<string | null>(null)
@@ -81,12 +98,7 @@ export function ENSLookup() {
   const hasResult =
     (searchType === 'name' && resolvedAddress) ||
     (searchType === 'address' && searchTerm)
-  const displayAddress =
-    searchType === 'name'
-      ? resolvedAddress
-      : searchType === 'address'
-      ? (searchTerm as `0x${string}`)
-      : null
+  const displayAddress = getDisplayAddress(searchType, resolvedAddress, searchTerm)
 
   return (
     <Card>
@@ -102,7 +114,11 @@ export function ENSLookup() {
       <CardContent className="space-y-4">
         {/* Search input */}
         <div className="flex gap-2">
+          <label htmlFor="ens-search-input" className="sr-only">
+            Search for ENS name or address
+          </label>
           <input
+            id="ens-search-input"
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -110,7 +126,7 @@ export function ENSLookup() {
             placeholder="vitalik.eth or 0xd8dA..."
             className="flex-1 px-3 py-2 border rounded-md bg-background text-sm focus:outline-none focus:ring-2 focus:ring-ring"
           />
-          <Button onClick={handleSearch} disabled={!input.trim() || isLoading}>
+          <Button onClick={handleSearch} disabled={!input.trim() || isLoading} aria-label="Search">
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -130,7 +146,7 @@ export function ENSLookup() {
                 setSearchType('name')
                 setSearchTerm(name)
               }}
-              className="text-xs text-primary hover:underline"
+              className="text-xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
               {name}
             </button>
@@ -175,6 +191,7 @@ export function ENSLookup() {
         {isLoading && (
           <div className="flex items-center justify-center py-8">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <span className="sr-only">Loading ENS profile...</span>
           </div>
         )}
       </CardContent>

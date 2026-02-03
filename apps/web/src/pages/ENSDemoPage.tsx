@@ -22,7 +22,7 @@ import {
   DEMO_ADDRESSES,
 } from '@/components/ens'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge, ErrorBoundary } from '@/components/ui'
-import { Wallet, ChevronRight, Sparkles, Globe, Shield, Layers } from 'lucide-react'
+import { Wallet, ChevronRight, Sparkles, Globe, Shield, Layers, Loader2 } from 'lucide-react'
 import { mainnet, base, arbitrum, sepolia } from 'wagmi/chains'
 
 // Simulated Telegram user (in real app, comes from Telegram WebApp)
@@ -52,6 +52,7 @@ export function ENSDemoPage() {
   }, [])
 
   const chains = [mainnet, base, arbitrum, sepolia]
+  const currentChainName = chains.find((c) => c.id === chainId)?.name
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -74,7 +75,7 @@ export function ENSDemoPage() {
             <div className="flex items-center gap-3">
               {/* Chain switcher */}
               {isConnected && (
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1" role="group" aria-label="Select network">
                   {chains.map((chain) => (
                     <Button
                       key={chain.id}
@@ -88,6 +89,8 @@ export function ENSDemoPage() {
                         }
                       }}
                       className="text-xs"
+                      aria-label={`Switch to ${chain.name}`}
+                      aria-pressed={chainId === chain.id}
                     >
                       {chain.name.split(' ')[0]}
                     </Button>
@@ -123,7 +126,11 @@ export function ENSDemoPage() {
                       }}
                       disabled={isPending}
                     >
-                      <Wallet className="h-4 w-4 mr-2" />
+                      {isPending ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Wallet className="h-4 w-4 mr-2" />
+                      )}
                       {connector.name}
                     </Button>
                   ))}
@@ -153,7 +160,7 @@ export function ENSDemoPage() {
               href="https://ethid.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
               EthID
             </a>,{' '}
@@ -161,7 +168,7 @@ export function ENSDemoPage() {
               href="https://ethidentitykit.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
               EthIdentityKit
             </a>, and{' '}
@@ -169,7 +176,7 @@ export function ENSDemoPage() {
               href="https://ens.domains"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-primary hover:underline"
+              className="text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
             >
               ENS
             </a>.
@@ -180,7 +187,7 @@ export function ENSDemoPage() {
         <section className="grid md:grid-cols-3 gap-4 mb-12">
           <Card className="border-blue-200 bg-blue-50/50 dark:bg-blue-950/20">
             <CardContent className="pt-6">
-              <Globe className="h-8 w-8 text-blue-600 mb-3" />
+              <Globe className="h-8 w-8 text-blue-600 mb-3" aria-hidden="true" />
               <h3 className="font-semibold mb-1">Real ENS Resolution</h3>
               <p className="text-sm text-muted-foreground">
                 No hard-coded values. Live resolution of names, avatars, and text
@@ -191,7 +198,7 @@ export function ENSDemoPage() {
 
           <Card className="border-green-200 bg-green-50/50 dark:bg-green-950/20">
             <CardContent className="pt-6">
-              <Shield className="h-8 w-8 text-green-600 mb-3" />
+              <Shield className="h-8 w-8 text-green-600 mb-3" aria-hidden="true" />
               <h3 className="font-semibold mb-1">Telegram Auto-Verify</h3>
               <p className="text-sm text-muted-foreground">
                 Creative use of org.telegram text record for signature-free
@@ -202,7 +209,7 @@ export function ENSDemoPage() {
 
           <Card className="border-purple-200 bg-purple-50/50 dark:bg-purple-950/20">
             <CardContent className="pt-6">
-              <Layers className="h-8 w-8 text-purple-600 mb-3" />
+              <Layers className="h-8 w-8 text-purple-600 mb-3" aria-hidden="true" />
               <h3 className="font-semibold mb-1">Cross-Chain Support</h3>
               <p className="text-sm text-muted-foreground">
                 Resolve ENS while connected to Base, Arbitrum, or any L2. Works
@@ -222,13 +229,13 @@ export function ENSDemoPage() {
                   <Wallet className="h-5 w-5" />
                   Your ENS Identity
                   <Badge variant="outline" className="ml-auto">
-                    {chains.find((c) => c.id === chainId)?.name}
+                    {currentChainName}
                   </Badge>
                 </h3>
                 <ENSIdentityCard address={address} isVerified />
                 <p className="text-xs text-muted-foreground mt-2">
                   * ENS resolved from mainnet while connected to{' '}
-                  {chains.find((c) => c.id === chainId)?.name}
+                  {currentChainName}
                 </p>
               </section>
             )}
@@ -353,7 +360,11 @@ export function ENSDemoPage() {
                   'Version control - incremental commits',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
-                    <span className="h-5 w-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs">
+                    <span
+                      className="h-5 w-5 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-xs"
+                      role="img"
+                      aria-label="Completed"
+                    >
                       ✓
                     </span>
                     {item}

@@ -119,7 +119,7 @@ export function TelegramLinkVerify({
               <CheckCircle className="h-5 w-5" />
               ENS Telegram Match Found!
             </CardTitle>
-            <Badge variant="success" className="animate-pulse">
+            <Badge variant="success" className="motion-safe:animate-pulse">
               <Sparkles className="h-3 w-3 mr-1" />
               Auto-Verify Available
             </Badge>

@@ -13,3 +13,15 @@ export function truncateAddress(address: string): string {
 export function formatAddress(address: string): string {
   return address.toLowerCase()
 }
+
+/**
+ * Safely extract hostname from a URL string
+ * Returns the original string if URL parsing fails
+ */
+export function getHostname(url: string): string {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return url
+  }
+}

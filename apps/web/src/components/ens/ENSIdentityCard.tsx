@@ -12,7 +12,7 @@
  */
 
 import { useEnsProfile } from '@/hooks/ens'
-import { truncateAddress } from '@/lib/utils'
+import { truncateAddress, getHostname } from '@/lib/utils'
 import {
   Avatar,
   AvatarFallback,
@@ -45,8 +45,6 @@ export interface ENSIdentityCardProps {
   isVerified?: boolean
   /** Whether this is the user's default/primary address */
   isDefault?: boolean
-  /** Callback when user wants to set as default */
-  onSelectDefault?: () => void
   /** Whether ENS telegram matches their Telegram (for auto-verify) */
   telegramMatched?: boolean
   /** Use compact display (for tables) */
@@ -164,8 +162,9 @@ export function ENSIdentityCard({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex ml-1 text-muted-foreground hover:text-foreground"
+                aria-label="View on Etherscan"
               >
-                <ExternalLink className="h-3 w-3" />
+                <ExternalLink className="h-3 w-3" aria-hidden="true" />
               </a>
             </p>
 
@@ -210,7 +209,7 @@ export function ENSIdentityCard({
                 href={`https://t.me/${profile.telegram}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
                 title={`@${profile.telegram} on Telegram`}
               >
                 <TelegramIcon className="h-4 w-4" />
@@ -222,7 +221,7 @@ export function ENSIdentityCard({
                 href={`https://twitter.com/${profile.twitter}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
               >
                 <Twitter className="h-4 w-4" />
                 <span className="hidden sm:inline">@{profile.twitter}</span>
@@ -233,7 +232,7 @@ export function ENSIdentityCard({
                 href={`https://github.com/${profile.github}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
               >
                 <Github className="h-4 w-4" />
                 <span className="hidden sm:inline">{profile.github}</span>
@@ -244,17 +243,11 @@ export function ENSIdentityCard({
                 href={profile.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
               >
                 <Globe className="h-4 w-4" />
                 <span className="hidden sm:inline truncate max-w-[150px]">
-                  {(() => {
-                    try {
-                      return new URL(profile.url).hostname
-                    } catch {
-                      return profile.url
-                    }
-                  })()}
+                  {getHostname(profile.url)}
                 </span>
               </a>
             )}

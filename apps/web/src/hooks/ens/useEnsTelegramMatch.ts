@@ -91,6 +91,9 @@ function normalizeUsername(username: string | null | undefined): string | null {
 /**
  * Hook for checking multiple addresses for Telegram match
  * Useful for finding which of a user's wallets has matching ENS.
+ *
+ * @deprecated This is an incomplete stub. Use useEnsTelegramMatch for single address matching.
+ * TODO: Implement proper multi-address matching if needed.
  */
 export function useEnsTelegramMatchForAddresses(
   addresses: Array<{ address: `0x${string}`; ensName: string | null }>,

@@ -16,6 +16,19 @@ import { ENSIdentityCard } from './ENSIdentityCard'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge } from '@/components/ui'
 import { Check, Clock, Star } from 'lucide-react'
 
+/**
+ * Helper to compute radio button styles based on selection and verification status
+ */
+function getRadioButtonStyles(isSelected: boolean, isVerified: boolean): string {
+  if (isSelected) {
+    return 'border-primary bg-primary'
+  }
+  if (isVerified) {
+    return 'border-muted-foreground/40 hover:border-primary/60'
+  }
+  return 'border-muted-foreground/20 cursor-not-allowed'
+}
+
 export interface AddressData {
   id: string
   address: `0x${string}`
@@ -87,13 +100,9 @@ export function AddressTableWithENS({
               <button
                 onClick={() => handleSetDefault(addr.id)}
                 disabled={addr.status !== 'verified'}
-                className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                  selectedDefault === addr.id
-                    ? 'border-primary bg-primary'
-                    : addr.status === 'verified'
-                    ? 'border-muted-foreground/40 hover:border-primary/60'
-                    : 'border-muted-foreground/20 cursor-not-allowed'
-                }`}
+                role="radio"
+                aria-checked={selectedDefault === addr.id}
+                className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${getRadioButtonStyles(selectedDefault === addr.id, addr.status === 'verified')}`}
                 title={
                   addr.status !== 'verified'
                     ? 'Verify this address to set as default'
