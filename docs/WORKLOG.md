@@ -4,13 +4,13 @@
 
 **Phase:** Sprint 1: Foundation
 **Sprint:** Sprint 1: Foundation
-**Branch:** `claude/gh-project-manager-setup`
+**Branch:** `work`
 
 ## Sprint Progress
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
-| Sprint 1: Foundation | In Progress | Issue #3 monorepo scaffolding in progress |
+| Sprint 1: Foundation | In Progress | Issue #4 and #5 bot commands implemented |
 | Sprint 2: User Identity | Not Started | 9 issues created |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
 | Sprint 4: Eligibility + LiFi | Not Started | 8 issues created |
@@ -21,9 +21,9 @@
 ## Current Task Context
 
 **Next Steps:**
-1. Merge `claude/gh-project-manager-setup` branch to develop
-2. Start Sprint 1: Foundation tasks (bot /start, admin toggle)
-3. Set up GitHub Projects v2 kanban board (in progress)
+1. Implement Mini App shell (routes + SDK)
+2. Set up GitHub Projects v2 kanban board (in progress)
+3. Start Convex schema and auth scaffolding
 
 **Blocked On:** Nothing
 
@@ -83,3 +83,15 @@
 
 **Next Up:**
 - Implement Sprint 1 bot + mini-app features
+
+### 2026-02-05 - Bot Command Foundation
+
+**Completed:**
+1. **Bot polling scaffold**
+   - Added Node Telegram bot entrypoint
+   - Implemented /start greeting with Mini App button
+   - Implemented /admin in-memory toggle
+
+**Next Up:**
+- Wire Mini App shell routes
+- Add Convex schema and auth scaffolding
