@@ -32,15 +32,34 @@ After completing major work, checking in code, or making significant discoveries
 | File | Purpose |
 |------|---------|
 | `docs/WORKLOG.md` | Current status, sprint progress, session history |
-| `docs/ISSUES-v1.0.0.md` | Sprint definitions with acceptance criteria |
+| `docs/FINAL_PLAN.md` | Consolidated hackathon plan with day-by-day tasks |
+| `docs/CONTEXT.md` | TL;DR for new chats, demo script reference |
 | `docs/findings-gotchas.md` | Technical solutions, code snippets to reuse |
 | `docs/notes.md` | Setup instructions, troubleshooting |
+| `issues/issues.json` | Issue definitions (run `scripts/create_github_issues.py`) |
 
 ## Project Context
 
 - **App:** Telegram token-gated private groups bot and mini-app
-- **Stack:** Next.js+ React + TypeScript + shadcn + Tailwind +...
+- **Stack:** Vite + React Router + Convex + wagmi/viem + TypeScript + shadcn + Tailwind
 - **Target:** EthGlobal 2026 HackMoney - Async Hack-a-thon First Place Winner!
+
+## GitHub Project Structure
+
+**Milestones (Sprints):**
+- Sprint 1: Foundation (Day 1-2)
+- Sprint 2: User Identity (Day 3)
+- Sprint 3: Admin + Gates (Day 3-4)
+- Sprint 4: Eligibility + LiFi (Day 4)
+- Sprint 5: Demo Polish (Day 5)
+- Sprint 6: Subscriptions (Stretch)
+- Sprint 7: Misc Stretch (Stretch)
+
+**Label Schema:**
+- Priority: `P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`
+- Area: `area:bot`, `area:mini-app`, `area:convex`, `area:lifi`, `area:contracts`, `area:hackathon`
+- Type: `type:feature`, `type:bug`, `type:chore`, `type:docs`, `type:milestone`
+- Status: `blocked`, `needs-review`, `partner-bounty`
 
 ## Git Branching Strategy
 
@@ -93,4 +112,4 @@ When asked to review a Pull Request: use gh cli to read code review comments on 
 - never use npm. only use pnpm.
 - always use gh cli to check for issues matching the work we are doing. use gh cli to manage PRs, linked to uses, and post comment on issues updating work statuses, and close issues when PRs get merged. use gh cli to follow software development lifecycle and project management best practices
 - whenever done a task, try notifying the user using ntfy.sh/$NTFY_CHANNEL. be sure to include link(s) to any issues, comments, or PRs that your updating using gh, and briefly describe the completed work.
-- when creating GitHub issues, always assign a priority label (priority:critical/high/medium/low). If priority is unclear, ask the user for clarification via ntfy.sh before creating the issue.
+- when creating GitHub issues, always assign a priority label (`P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`). If priority is unclear, ask the user for clarification via ntfy.sh before creating the issue.
