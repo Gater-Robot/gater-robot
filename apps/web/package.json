@@ -7,5 +7,10 @@
     "build": "echo 'Add web build script'",
     "lint": "echo 'Add web lint script'",
     "test": "echo 'Add web test script'"
+  },
+  "dependencies": {
+    "@rainbow-me/rainbowkit": "^2.2.10",
+    "react-hot-toast": "^2.6.0",
+    "zustand": "^5.0.11"
   }
 }
