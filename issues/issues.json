@@ -1,0 +1,493 @@
+{
+  "labels": {
+    "P0: Critical": {
+      "color": "e11d21",
+      "description": "Must ship for hackathon demo"
+    },
+    "P1: High": {
+      "color": "eb6420",
+      "description": "Important for complete experience"
+    },
+    "P2: Medium": {
+      "color": "fbca04",
+      "description": "Nice to have, time permitting"
+    },
+    "P3: Low": {
+      "color": "c5def5",
+      "description": "Stretch goals, post-hackathon"
+    },
+    "area:bot": {
+      "color": "0052cc",
+      "description": "Telegram bot logic"
+    },
+    "area:mini-app": {
+      "color": "0e8a16",
+      "description": "Mini App frontend"
+    },
+    "area:convex": {
+      "color": "5319e7",
+      "description": "Convex backend/DB"
+    },
+    "area:contracts": {
+      "color": "fbca04",
+      "description": "Smart contracts ($BEST token)"
+    },
+    "area:lifi": {
+      "color": "1d76db",
+      "description": "LiFi widget integration"
+    },
+    "area:hackathon": {
+      "color": "7057ff",
+      "description": "Demo recording, scripting, submission"
+    },
+    "type:feature": {
+      "color": "84b6eb",
+      "description": "New functionality"
+    },
+    "type:bug": {
+      "color": "b60205",
+      "description": "Something broken"
+    },
+    "type:chore": {
+      "color": "d4c5f9",
+      "description": "Maintenance, setup, config"
+    },
+    "type:docs": {
+      "color": "c2e0c6",
+      "description": "Documentation"
+    },
+    "type:milestone": {
+      "color": "006b75",
+      "description": "Central tracking issue for a sprint"
+    },
+    "blocked": {
+      "color": "000000",
+      "description": "Waiting on something external"
+    },
+    "needs-review": {
+      "color": "fbca04",
+      "description": "Ready for code review"
+    },
+    "partner-bounty": {
+      "color": "ff69b4",
+      "description": "Relevant to prize submission"
+    }
+  },
+  "milestones": [
+    "Sprint 1: Foundation",
+    "Sprint 2: User Identity",
+    "Sprint 3: Admin + Gates",
+    "Sprint 4: Eligibility + LiFi",
+    "Sprint 5: Demo Polish",
+    "Sprint 6: Subscriptions",
+    "Sprint 7: Misc Stretch"
+  ],
+  "epics": [
+    {
+      "key": "sprint-1",
+      "title": "Sprint 1: Foundation",
+      "body": "**Goal**: Establish monorepo, bot basics, Convex schema, and dev tunnel.\n\n**Target**: Day 1-2\n\n**Acceptance**: Bot /start works, Mini App opens in Telegram, user persisted in Convex.",
+      "labels": ["type:milestone"],
+      "milestone": "Sprint 1: Foundation",
+      "tasks": [
+        {
+          "key": "s1-monorepo-setup",
+          "title": "Initialize pnpm + turborepo monorepo",
+          "body": "**Goal**: Set up the project structure.\n\n**Acceptance Criteria**\n- pnpm workspace configured\n- turborepo for build orchestration\n- `apps/bot`, `apps/web`, `convex/` directories created\n- `.env.example` with required variables",
+          "labels": ["area:bot", "area:mini-app", "type:chore", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-bot-start",
+          "title": "Implement /start handler with Mini App button",
+          "body": "**Goal**: Users can start the bot and open the Mini App.\n\n**Acceptance Criteria**\n- `/start` sends greeting message\n- Inline button opens Mini App URL\n- Bot runs in polling mode locally",
+          "labels": ["area:bot", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-bot-admin-toggle",
+          "title": "Implement /admin slash command",
+          "body": "**Goal**: Admins can toggle admin mode.\n\n**Acceptance Criteria**\n- `/admin` command toggles admin state for user\n- State persisted (can be in-memory for PoC)\n- Response confirms mode change",
+          "labels": ["area:bot", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-vite-app-shell",
+          "title": "Create Vite + React Router Mini App shell",
+          "body": "**Goal**: Mini App foundation with routing.\n\n**Acceptance Criteria**\n- Vite + React + TypeScript setup\n- React Router with routes: `/`, `/user`, `/admin`, `/orgs`, `/get-eligible`\n- Telegram WebApp SDK integrated\n- Basic diagnostics drawer component",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-cloudflare-tunnel",
+          "title": "Set up Cloudflare quick tunnel for dev",
+          "body": "**Goal**: Mini App accessible from Telegram during dev.\n\n**Acceptance Criteria**\n- `cloudflared tunnel` runs locally\n- Mini App URL works in Telegram\n- Documented in README",
+          "labels": ["area:mini-app", "type:chore", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-convex-schema",
+          "title": "Define Convex schema with orgs layer",
+          "body": "**Goal**: Data model ready for all features.\n\n**Acceptance Criteria**\n- Tables: `users`, `addresses`, `orgs`, `channels`, `gates`, `memberships`, `events`\n- Schema deployed to Convex\n- Basic queries/mutations scaffolded",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-initdata-validation",
+          "title": "Implement initData HMAC validation",
+          "body": "**Goal**: Security-critical - only trust Telegram-signed identity.\n\n**Acceptance Criteria**\n- Convex action validates initData HMAC\n- Rejects invalid/expired data\n- Returns user info on success\n- Unit tests for happy/unhappy paths",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-user-upsert",
+          "title": "Create validateAndUpsertUser mutation",
+          "body": "**Goal**: Users persisted on Mini App open.\n\n**Acceptance Criteria**\n- Mutation upserts user from validated initData\n- Stores telegramUserId, username, names\n- Returns user record",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 1: Foundation"
+        },
+        {
+          "key": "s1-eth-identity-kit-spike",
+          "title": "Evaluate ETH Identity Kit for ENS/SIWE",
+          "body": "**Goal**: Decide if ETH Identity Kit simplifies our flow.\n\n**Acceptance Criteria**\n- Install `ethereum-identity-kit` in apps/web\n- Test ENS resolution components\n- Test SIWE integration\n- Document decision: adopt or use RainbowKit/wagmi",
+          "labels": ["area:mini-app", "type:chore", "P1: High", "partner-bounty"],
+          "milestone": "Sprint 1: Foundation"
+        }
+      ]
+    },
+    {
+      "key": "sprint-2",
+      "title": "Sprint 2: User Identity",
+      "body": "**Goal**: Wallet connection, SIWE verification, ENS identity, multi-address table.\n\n**Target**: Day 3\n\n**Acceptance**: User can connect wallet, verify ownership via SIWE, see ENS identity, manage multiple addresses.",
+      "labels": ["type:milestone"],
+      "milestone": "Sprint 2: User Identity",
+      "tasks": [
+        {
+          "key": "s2-wallet-connect",
+          "title": "Set up wagmi + viem with MetaMask connector",
+          "body": "**Goal**: Users can connect wallet in Mini App.\n\n**Acceptance Criteria**\n- wagmi + viem configured\n- MetaMask connector working\n- Connection state persisted\n- Works in Telegram webview",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-best-token-deploy",
+          "title": "Deploy $BEST token on Base + Arc mainnets",
+          "body": "**Goal**: Demo token available for testing.\n\n**Acceptance Criteria**\n- ERC-20 token deployed on Base mainnet\n- ERC-20 token deployed on Arc mainnet\n- Token addresses documented\n- Faucet function for claiming",
+          "labels": ["area:contracts", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-faucet-ui",
+          "title": "Create faucet UI for claiming tokens",
+          "body": "**Goal**: Users can claim 2026 $BEST tokens.\n\n**Acceptance Criteria**\n- Faucet page in Mini App\n- Claim 2026 tokens (once per wallet)\n- User pays gas\n- \"Add to wallet\" button (EIP-747)\n- Gold medal SVG icon for token",
+          "labels": ["area:mini-app", "area:contracts", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-siwe-nonce",
+          "title": "Generate SIWE nonce in Convex",
+          "body": "**Goal**: Secure nonce for SIWE signing.\n\n**Acceptance Criteria**\n- Convex action generates one-time nonce\n- Nonce stored with TTL\n- Replay protection enforced",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-siwe-verify",
+          "title": "Verify SIWE signature and bind wallet",
+          "body": "**Goal**: Prove wallet ownership.\n\n**Acceptance Criteria**\n- Convex action verifies SIWE message + signature\n- Recovers address, validates nonce/domain\n- Creates `addresses` record with `verified` status\n- Stores `verifiedAt` timestamp",
+          "labels": ["area:convex", "type:feature", "P0: Critical", "partner-bounty"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-ens-resolution",
+          "title": "Resolve ENS name + avatar for addresses",
+          "body": "**Goal**: Show ENS identity in UI.\n\n**Acceptance Criteria**\n- Resolve ENS name for verified addresses\n- Fetch ENS avatar\n- Display in user profile\n- Cache results appropriately",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical", "partner-bounty"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-address-table",
+          "title": "Create multi-address table UI",
+          "body": "**Goal**: Users manage multiple wallets.\n\n**Acceptance Criteria**\n- Table shows 3 addresses\n- Status: verified ✅ / pending ⏳\n- \"Default address\" radio button\n- Changing default updates displayed ENS\n- \"Verify ownership\" button for pending",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 2: User Identity"
+        },
+        {
+          "key": "s2-default-address",
+          "title": "Store default address preference",
+          "body": "**Goal**: User's favorite ENS identity.\n\n**Acceptance Criteria**\n- `users.defaultAddressId` field\n- Mutation to update default\n- UI reflects current default\n- ENS identity follows default",
+          "labels": ["area:convex", "type:feature", "P1: High"],
+          "milestone": "Sprint 2: User Identity"
+        }
+      ]
+    },
+    {
+      "key": "sprint-3",
+      "title": "Sprint 3: Admin + Gates",
+      "body": "**Goal**: Admin org onboarding, gate configuration, token metadata fetching.\n\n**Target**: Day 3-4\n\n**Acceptance**: Admin can create org, add channels, configure token gate with threshold.",
+      "labels": ["type:milestone"],
+      "milestone": "Sprint 3: Admin + Gates",
+      "tasks": [
+        {
+          "key": "s3-admin-ui-toggle",
+          "title": "Show admin UI when /admin toggled",
+          "body": "**Goal**: Admin mode in Mini App.\n\n**Acceptance Criteria**\n- Mini App detects admin mode\n- Shows admin-specific navigation\n- Redirects to /admin or /orgs",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        },
+        {
+          "key": "s3-org-list",
+          "title": "Create org list view with add button",
+          "body": "**Goal**: Admin sees their organizations.\n\n**Acceptance Criteria**\n- `/orgs` route shows org list\n- \"+ Add Organization\" button\n- Empty state for new admins",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        },
+        {
+          "key": "s3-org-create",
+          "title": "Org creation flow",
+          "body": "**Goal**: Admin onboards new org.\n\n**Acceptance Criteria**\n- Form: org name\n- Select channels from list\n- Instructions to add bot as admin\n- \"Check Done\" button verifies bot permissions",
+          "labels": ["area:mini-app", "area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        },
+        {
+          "key": "s3-bot-admin-check",
+          "title": "Verify bot admin rights in channel",
+          "body": "**Goal**: Confirm bot can manage members.\n\n**Acceptance Criteria**\n- Bot checks `can_restrict_members` permission\n- Stores `channels.botIsAdmin` flag\n- Returns verification status to Mini App",
+          "labels": ["area:bot", "area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        },
+        {
+          "key": "s3-gate-config-form",
+          "title": "Gate configuration form UI",
+          "body": "**Goal**: Admin sets token gate rules.\n\n**Acceptance Criteria**\n- Form fields: token address, chain dropdown, threshold\n- Chain dropdown shows 25+ chains\n- Loading state while fetching metadata\n- Error handling for invalid addresses",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        },
+        {
+          "key": "s3-token-metadata",
+          "title": "Fetch token metadata from chain",
+          "body": "**Goal**: Auto-populate token info.\n\n**Acceptance Criteria**\n- Fetch `symbol()`, `name()`, `decimals()` via viem\n- Display in form after paste\n- Handle errors gracefully\n- Store in gate config",
+          "labels": ["area:mini-app", "area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        },
+        {
+          "key": "s3-gate-save",
+          "title": "Save gate config to Convex",
+          "body": "**Goal**: Persist gate rules.\n\n**Acceptance Criteria**\n- Mutation saves to `gates` table\n- Links to org and channel\n- Stores chainId, tokenAddress, threshold, decimals\n- Success confirmation in UI",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 3: Admin + Gates"
+        }
+      ]
+    },
+    {
+      "key": "sprint-4",
+      "title": "Sprint 4: Eligibility + LiFi",
+      "body": "**Goal**: Check eligibility across wallets, LiFi widget for cross-chain recovery.\n\n**Target**: Day 4\n\n**Acceptance**: User can check eligibility, see deficit, use LiFi to swap/bridge to required token.",
+      "labels": ["type:milestone", "partner-bounty"],
+      "milestone": "Sprint 4: Eligibility + LiFi",
+      "tasks": [
+        {
+          "key": "s4-balance-check",
+          "title": "Fetch token balance for verified wallets",
+          "body": "**Goal**: Read on-chain balances.\n\n**Acceptance Criteria**\n- Convex action fetches balanceOf via RPC\n- Checks all verified addresses for user\n- Returns total balance across wallets",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        },
+        {
+          "key": "s4-eligibility-check",
+          "title": "Create eligibility check mutation",
+          "body": "**Goal**: Compare balance to threshold.\n\n**Acceptance Criteria**\n- Sum balances across verified wallets\n- Compare against gate threshold\n- Return eligible/ineligible status\n- Include current balance and deficit",
+          "labels": ["area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        },
+        {
+          "key": "s4-eligibility-ui",
+          "title": "Check Eligibility button and result UI",
+          "body": "**Goal**: User sees eligibility status.\n\n**Acceptance Criteria**\n- \"Check Eligibility\" button on user page\n- Shows: eligible ✅ or ineligible ❌\n- Displays current balance vs required\n- \"Get Eligible\" CTA if ineligible",
+          "labels": ["area:mini-app", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        },
+        {
+          "key": "s4-lifi-widget-setup",
+          "title": "Install and configure LiFi Widget SDK",
+          "body": "**Goal**: LiFi widget ready for integration.\n\n**Acceptance Criteria**\n- LiFi Widget SDK installed\n- Basic widget renders\n- Wallet connection works with existing wagmi setup",
+          "labels": ["area:lifi", "area:mini-app", "type:feature", "P0: Critical", "partner-bounty"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        },
+        {
+          "key": "s4-get-eligible-page",
+          "title": "Create /get-eligible page with LiFi widget",
+          "body": "**Goal**: User can swap to required token.\n\n**Acceptance Criteria**\n- `/get-eligible` route\n- LiFi widget pre-configured with:\n  - Destination chain = gate's chain\n  - Destination token = gate token ($BEST)\n  - Amount = threshold - currentBalance + buffer\n- Cross-chain: USDC on Arbitrum → BEST on Base",
+          "labels": ["area:lifi", "area:mini-app", "type:feature", "P0: Critical", "partner-bounty"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        },
+        {
+          "key": "s4-recheck-after-swap",
+          "title": "Re-check eligibility after swap",
+          "body": "**Goal**: Confirm user is now eligible.\n\n**Acceptance Criteria**\n- \"Re-check Eligibility\" button after swap\n- Fetches fresh balance\n- Shows updated status\n- Success message if now eligible",
+          "labels": ["area:mini-app", "area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        },
+        {
+          "key": "s4-deep-link-params",
+          "title": "Support deep link params for get-eligible",
+          "body": "**Goal**: Bot can link directly to recovery page.\n\n**Acceptance Criteria**\n- `/get-eligible?token=X&amount=Y&chain=Z`\n- Pre-populates widget from URL params\n- Works with Telegram startapp param",
+          "labels": ["area:mini-app", "type:feature", "P1: High"],
+          "milestone": "Sprint 4: Eligibility + LiFi"
+        }
+      ]
+    },
+    {
+      "key": "sprint-5",
+      "title": "Sprint 5: Demo Polish",
+      "body": "**Goal**: Bot enforcement flow, demo chat setup, video recording.\n\n**Target**: Day 5\n\n**Acceptance**: Full demo flow works end-to-end, 4-minute video recorded.",
+      "labels": ["type:milestone"],
+      "milestone": "Sprint 5: Demo Polish",
+      "tasks": [
+        {
+          "key": "s5-warning-dm",
+          "title": "Bot sends WARNING DM when ineligible",
+          "body": "**Goal**: Notify user of low balance.\n\n**Acceptance Criteria**\n- Bot sends DM with current balance, required amount\n- Includes \"Fix with LiFi\" button\n- Button deep-links to Mini App /get-eligible",
+          "labels": ["area:bot", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-kick-user",
+          "title": "Bot can kick users from groups",
+          "body": "**Goal**: Enforce token gate.\n\n**Acceptance Criteria**\n- Bot uses `banChatMember` API\n- Sends kick notification DM before removal\n- Optionally unbans after (allow rejoin when eligible)",
+          "labels": ["area:bot", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-welcome-back",
+          "title": "Bot confirms eligibility after LiFi swap",
+          "body": "**Goal**: Celebrate user recovery.\n\n**Acceptance Criteria**\n- After re-check shows eligible\n- Bot sends: \"Detected X tokens, welcome back!\"\n- Includes link to rejoin group",
+          "labels": ["area:bot", "type:feature", "P1: High"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-public-chat-setup",
+          "title": "Create public demo chat with pinned message",
+          "body": "**Goal**: Demo environment ready.\n\n**Acceptance Criteria**\n- Public chat: \"Best Crypto DAO\"\n- Pinned message with:\n  - Intro + signup instructions\n  - \"Join Private Club\" button\n  - \"Open Mini App\" button\n- Bot added as admin",
+          "labels": ["area:hackathon", "type:chore", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-private-chat-setup",
+          "title": "Create private demo chat",
+          "body": "**Goal**: Gated group for demo.\n\n**Acceptance Criteria**\n- Private chat: \"BCD Holders Club\"\n- Join request mode enabled\n- Bot as admin with kick permissions\n- Pinned countdown message",
+          "labels": ["area:hackathon", "type:chore", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-join-request-handler",
+          "title": "Handle chat_join_request with eligibility check",
+          "body": "**Goal**: Gate group access.\n\n**Acceptance Criteria**\n- On join request, check user eligibility\n- Approve if eligible\n- Reject with message if not\n- Message includes \"Get Eligible\" link",
+          "labels": ["area:bot", "area:convex", "type:feature", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-vercel-deploy",
+          "title": "Deploy Mini App to Vercel",
+          "body": "**Goal**: Production deployment.\n\n**Acceptance Criteria**\n- apps/web deployed to Vercel\n- Environment variables configured\n- Custom domain (optional)\n- Works in Telegram",
+          "labels": ["area:mini-app", "type:chore", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        },
+        {
+          "key": "s5-demo-video",
+          "title": "Record 4-minute demo video",
+          "body": "**Goal**: Hackathon submission video.\n\n**Acceptance Criteria**\n- Follow 12-scene script from FINAL_PLAN.md\n- Admin setup → User rejected → Onboard → Join\n- LiFi recovery flow\n- Side overlays: architecture, prize alignment\n- 1080p+, clear audio",
+          "labels": ["area:hackathon", "type:chore", "P0: Critical"],
+          "milestone": "Sprint 5: Demo Polish"
+        }
+      ]
+    },
+    {
+      "key": "sprint-6",
+      "title": "Sprint 6: Subscriptions",
+      "body": "**Goal**: USDC membership payments for Arc/Circle partner prize.\n\n**Target**: Stretch\n\n**Acceptance**: Admin can configure USDC subscription gate, users can pay to join.",
+      "labels": ["type:milestone", "partner-bounty"],
+      "milestone": "Sprint 6: Subscriptions",
+      "tasks": [
+        {
+          "key": "s6-usdc-gate-type",
+          "title": "Add USDC membership deposit gate type",
+          "body": "**Goal**: Alternative to token balance gate.\n\n**Acceptance Criteria**\n- New gate type: `subscription`\n- Config: USDC amount, payment period\n- Stored in gates table",
+          "labels": ["area:convex", "type:feature", "P3: Low", "partner-bounty"],
+          "milestone": "Sprint 6: Subscriptions"
+        },
+        {
+          "key": "s6-circle-integration",
+          "title": "Integrate Circle/Arc SDK for payments",
+          "body": "**Goal**: Process USDC payments.\n\n**Acceptance Criteria**\n- Circle SDK integrated\n- User can pay USDC to join\n- Payment verified on-chain\n- Receipt stored",
+          "labels": ["area:convex", "area:mini-app", "type:feature", "P3: Low", "partner-bounty"],
+          "milestone": "Sprint 6: Subscriptions"
+        },
+        {
+          "key": "s6-subscription-ui",
+          "title": "Subscription payment UI",
+          "body": "**Goal**: User-friendly payment flow.\n\n**Acceptance Criteria**\n- Shows subscription price\n- Connect wallet → Pay → Confirm\n- Success grants access",
+          "labels": ["area:mini-app", "type:feature", "P3: Low"],
+          "milestone": "Sprint 6: Subscriptions"
+        },
+        {
+          "key": "s6-treasury",
+          "title": "Admin treasury view",
+          "body": "**Goal**: Admin sees collected payments.\n\n**Acceptance Criteria**\n- Dashboard shows total collected\n- List of payments with dates\n- Withdrawal instructions",
+          "labels": ["area:mini-app", "type:feature", "P3: Low"],
+          "milestone": "Sprint 6: Subscriptions"
+        }
+      ]
+    },
+    {
+      "key": "sprint-7",
+      "title": "Sprint 7: Misc Stretch",
+      "body": "**Goal**: Additional features if time permits.\n\n**Target**: Stretch\n\n**Acceptance**: Enhanced functionality beyond core demo.",
+      "labels": ["type:milestone"],
+      "milestone": "Sprint 7: Misc Stretch",
+      "tasks": [
+        {
+          "key": "s7-cron-eligibility",
+          "title": "Automated cron for periodic eligibility checks",
+          "body": "**Goal**: Production-ready enforcement.\n\n**Acceptance Criteria**\n- Convex scheduled function runs daily\n- Checks all members of gated groups\n- Triggers warning/kick flow for violations",
+          "labels": ["area:convex", "type:feature", "P3: Low"],
+          "milestone": "Sprint 7: Misc Stretch"
+        },
+        {
+          "key": "s7-full-orgs-ui",
+          "title": "Full organizations management UI",
+          "body": "**Goal**: Complete admin experience.\n\n**Acceptance Criteria**\n- Edit org name\n- Add/remove channels\n- View all gates per org\n- Delete org",
+          "labels": ["area:mini-app", "type:feature", "P3: Low"],
+          "milestone": "Sprint 7: Misc Stretch"
+        },
+        {
+          "key": "s7-walletconnect",
+          "title": "Add WalletConnect for mobile Telegram",
+          "body": "**Goal**: Better mobile wallet support.\n\n**Acceptance Criteria**\n- WalletConnect v2 integrated\n- Works in mobile Telegram app\n- QR code flow for external wallets",
+          "labels": ["area:mini-app", "type:feature", "P3: Low"],
+          "milestone": "Sprint 7: Misc Stretch"
+        },
+        {
+          "key": "s7-efp-integration",
+          "title": "EFP integration from ETH Identity Kit",
+          "body": "**Goal**: Social features.\n\n**Acceptance Criteria**\n- Show follower/following counts\n- Display EFP profile if available\n- Optional: gate based on social graph",
+          "labels": ["area:mini-app", "type:feature", "P3: Low", "partner-bounty"],
+          "milestone": "Sprint 7: Misc Stretch"
+        },
+        {
+          "key": "s7-demo-control-panel",
+          "title": "Demo control panel for live demos",
+          "body": "**Goal**: Easy demo manipulation.\n\n**Acceptance Criteria**\n- Hidden `/demo` route\n- Buttons: force eligible/ineligible\n- Trigger warning, trigger kick\n- Reset demo state",
+          "labels": ["area:mini-app", "type:feature", "P3: Low"],
+          "milestone": "Sprint 7: Misc Stretch"
+        },
+        {
+          "key": "s7-analytics-dashboard",
+          "title": "Admin analytics dashboard",
+          "body": "**Goal**: Insights for admins.\n\n**Acceptance Criteria**\n- Member count over time\n- Eligible vs ineligible breakdown\n- Recent joins/kicks\n- Top token holders",
+          "labels": ["area:mini-app", "type:feature", "P3: Low"],
+          "milestone": "Sprint 7: Misc Stretch"
+        }
+      ]
+    }
+  ]
+}
