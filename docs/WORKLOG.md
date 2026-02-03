@@ -4,7 +4,7 @@
 
 **Phase:** Sprint 1: Foundation
 **Sprint:** Sprint 1: Foundation
-**Branch:** `claude/gh-project-manager-setup`
+**Branch:** `work`
 
 ## Sprint Progress
 
@@ -21,8 +21,8 @@
 ## Current Task Context
 
 **Next Steps:**
-1. Merge `claude/gh-project-manager-setup` branch to develop
-2. Start Sprint 1: Foundation tasks (bot /start, admin toggle)
+1. Land Sprint 1: Foundation issues #7 (Cloudflare tunnel), #8 (Convex schema), #9 (initData validation)
+2. Start bot /start handler and admin toggle
 3. Set up GitHub Projects v2 kanban board (in progress)
 
 **Blocked On:** Nothing
@@ -83,3 +83,14 @@
 
 **Next Up:**
 - Implement Sprint 1 bot + mini-app features
+
+### 2026-02-05 - Sprint 1 Backend Foundations
+
+**Completed:**
+1. Drafted Cloudflare Quick Tunnel instructions for dev Mini App access (issue #7)
+2. Implemented Convex schema and scaffolded core queries/mutations (issue #8)
+3. Added Telegram initData HMAC validation action with unit tests (issue #9)
+
+**Next Up:**
+- Wire Convex actions into Mini App onboarding flow
+- Implement bot /start and /admin commands
