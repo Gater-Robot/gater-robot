@@ -1,0 +1,11 @@
+{
+  "name": "@gater/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Add web dev script'",
+    "build": "echo 'Add web build script'",
+    "lint": "echo 'Add web lint script'",
+    "test": "echo 'Add web test script'"
+  }
+}

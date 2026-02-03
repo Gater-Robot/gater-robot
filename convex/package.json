@@ -1,0 +1,11 @@
+{
+  "name": "@gater/convex",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Add convex dev script'",
+    "build": "echo 'Add convex build script'",
+    "lint": "echo 'Add convex lint script'",
+    "test": "echo 'Add convex test script'"
+  }
+}
