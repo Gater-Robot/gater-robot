@@ -117,7 +117,7 @@ get_item_id() {
     local type="$1"  # "issue" or "pr"
     local number="$2"
 
-    local url="https://github.com/${REPO}/${type}s/${number}"
+    local url
     if [[ "$type" == "issue" ]]; then
         url="https://github.com/${REPO}/issues/${number}"
     else
@@ -126,20 +126,17 @@ get_item_id() {
 
     # Search for the item in the project
     local items
-    items=$(gh project item-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json 2>/dev/null) || {
+    items=$(gh project item-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json) || {
         error "Failed to list project items. Check your authentication."
     }
 
     # Find the item with matching URL
     local item_id
-    item_id=$(echo "$items" | jq -r --arg url "$url" '.items[] | select(.content.url == $url) | .id' 2>/dev/null | head -1)
+    item_id=$(echo "$items" | jq -r --arg url "$url" '.items[] | select(.content.url == $url) | .id' | head -1)
 
     if [[ -z "$item_id" || "$item_id" == "null" ]]; then
-        # Try alternate URL format
-        if [[ "$type" == "pr" ]]; then
-            url="https://github.com/${REPO}/pull/${number}"
-        fi
-        item_id=$(echo "$items" | jq -r --arg num "$number" '.items[] | select(.content.number == ($num | tonumber)) | .id' 2>/dev/null | head -1)
+        # Try finding by issue/PR number instead of URL
+        item_id=$(echo "$items" | jq -r --arg num "$number" '.items[] | select(.content.number == ($num | tonumber)) | .id' | head -1)
     fi
 
     if [[ -z "$item_id" || "$item_id" == "null" ]]; then
@@ -160,7 +157,7 @@ update_status() {
             --id "$item_id" \
             --project-id "$PROJECT_ID" \
             --field-id "$STATUS_FIELD_ID" \
-            --clear 2>/dev/null || {
+            --clear || {
             error "Failed to clear status"
         }
         success "Cleared status (moved to backlog)"
@@ -179,7 +176,7 @@ update_status() {
         --id "$item_id" \
         --project-id "$PROJECT_ID" \
         --field-id "$STATUS_FIELD_ID" \
-        --single-select-option-id "$option_id" 2>/dev/null || {
+        --single-select-option-id "$option_id" || {
         error "Failed to update status. Check your authentication and permissions."
     }
 
@@ -191,7 +188,7 @@ refresh_cache() {
     info "Fetching field IDs from GitHub API..."
 
     local fields
-    fields=$(gh project field-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json 2>/dev/null) || {
+    fields=$(gh project field-list "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --format json) || {
         error "Failed to fetch fields. Check your authentication."
     }
 

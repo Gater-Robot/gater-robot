@@ -1,8 +1,4 @@
 {
-  "env": {
-    "addintolocalGH_TOKEN": "ghp_xABCD",
-    "addintolocalNTFY_CHANNEL": "abc1234"
-  },
   "permissions": {
     "deny": [
       "Bash(git reset --hard:*)"

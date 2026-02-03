@@ -95,8 +95,10 @@ mkdir -p "$(dirname "$CODEX_AUTH_FILE")"
 # turn off logging to avoid leaking secrets
 set +x
 echo "$CODEX_AUTH_JSON" > "$CODEX_AUTH_FILE"
+# Set restrictive permissions for credential file
+chmod 600 "$CODEX_AUTH_FILE"
 # restore logging
 set -x
-log "Saved CODEX_AUTH_JSON to $CODEX_AUTH_FILE"
+log "Saved CODEX_AUTH_JSON to $CODEX_AUTH_FILE (permissions: 600)"
 # Clear the env var for security
 unset CODEX_AUTH_JSON
