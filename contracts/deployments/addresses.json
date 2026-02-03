@@ -1,0 +1,10 @@
+{
+  "base": {
+    "chainId": 8453,
+    "bestToken": ""
+  },
+  "arc": {
+    "chainId": null,
+    "bestToken": ""
+  }
+}
