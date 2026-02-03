@@ -22,9 +22,10 @@
 set -euo pipefail
 
 # Model icon URLs (raw GitHub content)
-CLAUDE_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/claude-256.png"
-CODEX_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/codex-256.png"
-GEMINI_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/gemini-256.png"
+# TODO: Update to main branch after merge
+CLAUDE_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/claude/gh-project-manager-setup/.agents/assets/claude-256.png"
+CODEX_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/claude/gh-project-manager-setup/.agents/assets/codex-256.png"
+GEMINI_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/claude/gh-project-manager-setup/.agents/assets/gemini-256.png"
 
 # Default values
 NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
