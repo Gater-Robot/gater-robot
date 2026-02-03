@@ -10,7 +10,7 @@
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
-| Sprint 1: Foundation | In Progress | Issue #3 monorepo scaffolding in progress |
+| Sprint 1: Foundation | In Progress | Issues #7-#9 in progress (tunnel + Convex schema + initData validation) |
 | Sprint 2: User Identity | Not Started | 9 issues created |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
 | Sprint 4: Eligibility + LiFi | Not Started | 8 issues created |
@@ -83,3 +83,15 @@
 
 **Next Up:**
 - Implement Sprint 1 bot + mini-app features
+
+### 2026-02-05 - Sprint 1 Convex + Tunnel
+
+**Completed:**
+1. **Cloudflare quick tunnel docs**
+   - Added README steps for cloudflared quick tunnel usage
+2. **Convex schema + scaffolding**
+   - Added Convex schema for users/addresses/orgs/channels/gates/memberships/events
+   - Added starter queries/mutations for users, orgs, channels, and gates
+3. **Telegram initData validation**
+   - Added initData HMAC validation helper and Convex action
+   - Added unit tests for valid/invalid/expired initData
