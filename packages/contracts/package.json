@@ -1,0 +1,30 @@
+{
+  "name": "@gater/contracts",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "hardhat compile",
+    "typechain": "hardhat typechain",
+    "test": "hardhat test",
+    "test:forge": "forge test",
+    "deploy:base": "hardhat ignition deploy ignition/modules/BestToken.ts --network base",
+    "deploy:arc": "hardhat ignition deploy ignition/modules/BestToken.ts --network arc",
+    "sync:addresses": "node scripts/sync-addresses.mjs"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-ignition": "3.0.7",
+    "@nomicfoundation/hardhat-ignition-viem": "3.0.7",
+    "@nomicfoundation/hardhat-viem": "3.0.2",
+    "@typechain/hardhat": "9.1.0",
+    "dotenv": "16.6.1",
+    "hardhat": "3.1.6",
+    "typechain": "8.3.2",
+    "typescript": "5.9.2",
+    "viem": "2.45.1",
+    "wagmi": "3.4.2"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "5.0.2"
+  }
+}
