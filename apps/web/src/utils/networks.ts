@@ -60,13 +60,6 @@ export function getBlockExplorerName(chainId: number): string {
 }
 
 /**
- * Get chain by ID from supported chains
- */
-export function getChainById(chainId: number): ChainWithIcon | undefined {
-  return supportedChains.find((c) => c.id === chainId)
-}
-
-/**
  * Check if a chain ID is supported
  */
 export function isChainSupported(chainId: number): boolean {

@@ -6,12 +6,10 @@
 
 import { useMemo } from 'react'
 import { useSelectedNetwork } from './useTargetNetwork'
-import { getNetworkColor, type ChainWithIcon } from '@/config/chains'
+import { getNetworkColor, DEFAULT_NETWORK_COLOR, type ChainWithIcon } from '@/config/chains'
 
-/**
- * Default network colors for light and dark themes
- */
-export const DEFAULT_NETWORK_COLOR: [string, string] = ['#666666', '#bbbbbb']
+// Re-export for backwards compatibility
+export { DEFAULT_NETWORK_COLOR }
 
 /**
  * Get network color utility function

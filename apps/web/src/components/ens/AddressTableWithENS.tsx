@@ -11,7 +11,6 @@
  * "3 addresses table: 2 verified, 1 pending"
  */
 
-import { useState } from 'react'
 import { ENSIdentityCard } from './ENSIdentityCard'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button, Badge } from '@/components/ui'
 import { Check, Clock, Star } from 'lucide-react'
@@ -45,14 +44,10 @@ export function AddressTableWithENS({
 }: AddressTableWithENSProps) {
   // Note: telegramUsername reserved for future ENS telegram matching in table
   void _telegramUsername
-  const [selectedDefault, setSelectedDefault] = useState<string | undefined>(
-    addresses.find((a) => a.isDefault)?.id ?? addresses[0]?.id
-  )
 
   const handleSetDefault = (addressId: string) => {
     const address = addresses.find((a) => a.id === addressId)
     if (address?.status !== 'verified') return
-    setSelectedDefault(addressId)
     onSetDefault?.(addressId)
   }
 
@@ -82,7 +77,7 @@ export function AddressTableWithENS({
                 onClick={() => handleSetDefault(addr.id)}
                 disabled={addr.status !== 'verified'}
                 className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                  selectedDefault === addr.id
+                  addr.isDefault
                     ? 'border-primary bg-primary'
                     : addr.status === 'verified'
                     ? 'border-muted-foreground/40 hover:border-primary/60'
@@ -94,7 +89,7 @@ export function AddressTableWithENS({
                     : 'Set as default identity'
                 }
               >
-                {selectedDefault === addr.id && (
+                {addr.isDefault && (
                   <div className="w-2 h-2 rounded-full bg-white" />
                 )}
               </button>
@@ -104,7 +99,7 @@ export function AddressTableWithENS({
                 <ENSIdentityCard
                   address={addr.address}
                   isVerified={addr.status === 'verified'}
-                  isDefault={selectedDefault === addr.id}
+                  isDefault={addr.isDefault}
                   telegramMatched={addr.verificationMethod === 'ens_telegram_match'}
                   compact
                 />

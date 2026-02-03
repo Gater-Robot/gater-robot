@@ -34,7 +34,7 @@ export function Balance({ address, className, usdMode = false }: BalanceProps) {
   const { data: balance, isError, isLoading } = useWatchBalance({ address })
 
   // Loading state
-  if (!address || isLoading || balance === null || (isFetching && nativeCurrencyPrice === 0)) {
+  if (!address || isLoading || !balance || (isFetching && nativeCurrencyPrice === 0)) {
     return (
       <div className={cn('animate-pulse flex items-center gap-2', className)}>
         <div className="h-4 w-4 rounded-full bg-muted" />

@@ -202,7 +202,7 @@ export function ENSIdentityCard({
                 <span className="hidden sm:inline">{profile.github}</span>
               </a>
             )}
-            {profile.url && (
+            {profile.url && (profile.url.startsWith('http://') || profile.url.startsWith('https://')) && (
               <a
                 href={profile.url}
                 target="_blank"
