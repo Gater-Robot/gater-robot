@@ -21,6 +21,11 @@
 
 set -euo pipefail
 
+# Model icon URLs (raw GitHub content)
+CLAUDE_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/claude-256.png"
+CODEX_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/codex-256.png"
+GEMINI_ICON_URL="https://raw.githubusercontent.com/Gater-Robot/gater-robot/main/.agents/assets/gemini-256.png"
+
 # Default values
 NTFY_SERVER="${NTFY_SERVER:-https://ntfy.sh}"
 TITLE=""
@@ -32,6 +37,7 @@ ATTACH=""
 EMAIL=""
 DELAY=""
 MESSAGE=""
+ICON=""
 
 # Color output helpers
 RED='\033[0;31m'
@@ -69,6 +75,10 @@ OPTIONS:
     -A, --attach URL        Attach file/image from URL
     -e, --email EMAIL       Also send to email address
     -d, --delay DELAY       Schedule message (e.g., "30min", "tomorrow 10am")
+    -i, --icon URL          Custom icon URL (must be public HTTP/HTTPS)
+    --claude                Use Claude model icon
+    --codex                 Use Codex/OpenAI model icon
+    --gemini                Use Gemini model icon
     -s, --server URL        Override server URL (default: https://ntfy.sh)
     -h, --help              Show this help message
     -v, --verbose           Show curl command being executed
@@ -122,6 +132,14 @@ EXAMPLES:
     # Pipe message from stdin
     echo "Long message here" | ntfy.sh -t "Build Log"
 
+    # With model icons (for AI agents to sign notifications)
+    ntfy.sh --claude -t "Task Complete" "Claude finished the build"
+    ntfy.sh --codex -t "Code Review" "Codex completed code review"
+    ntfy.sh --gemini -t "Analysis Done" "Gemini finished analysis"
+
+    # Custom icon URL
+    ntfy.sh -i "https://example.com/icon.png" -t "Custom" "With custom icon"
+
 EOF
     exit 0
 }
@@ -163,6 +181,22 @@ parse_args() {
             -d|--delay)
                 DELAY="$2"
                 shift 2
+                ;;
+            -i|--icon)
+                ICON="$2"
+                shift 2
+                ;;
+            --claude)
+                ICON="$CLAUDE_ICON_URL"
+                shift
+                ;;
+            --codex)
+                ICON="$CODEX_ICON_URL"
+                shift
+                ;;
+            --gemini)
+                ICON="$GEMINI_ICON_URL"
+                shift
                 ;;
             -s|--server)
                 NTFY_SERVER="$2"
@@ -256,6 +290,10 @@ send_notification() {
 
     if [[ -n "$DELAY" ]]; then
         CURL_ARGS+=(-H "Delay: $DELAY")
+    fi
+
+    if [[ -n "$ICON" ]]; then
+        CURL_ARGS+=(-H "Icon: $ICON")
     fi
 
     # Add message body

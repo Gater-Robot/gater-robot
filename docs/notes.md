@@ -121,6 +121,10 @@ See run #12345 for details"
 | `--attach` | `-A` | URL to attach as image/file |
 | `--email` | `-e` | Also send to email |
 | `--delay` | `-d` | Schedule message (e.g., "30min") |
+| `--icon` | `-i` | Custom icon URL (must be public HTTP/HTTPS) |
+| `--claude` | | Use Claude model icon |
+| `--codex` | | Use Codex/OpenAI model icon |
+| `--gemini` | | Use Gemini model icon |
 | `--help` | `-h` | Show help |
 | `--verbose` | `-v` | Show curl command |
 
@@ -150,6 +154,43 @@ See run #12345 for details"
 | `eyes` | 👀 | Review needed |
 
 Full list: https://docs.ntfy.sh/emojis/
+
+### Model Icons
+
+AI agents can sign their notifications with model-specific icons:
+
+| Flag | Model | Description |
+|------|-------|-------------|
+| `--claude` | Claude (Anthropic) | Orange/coral Claude logo |
+| `--codex` | Codex/OpenAI | Green OpenAI logo |
+| `--gemini` | Gemini (Google) | Multicolor Gemini logo |
+
+**Usage Examples:**
+
+```bash
+# Claude agent notification
+.agents/bin/ntfy_send --claude \
+  --title "PR Created" \
+  --click "https://github.com/Gater-Robot/gater-robot/pull/123" \
+  "Claude created PR #123: Add wallet connection"
+
+# Codex agent notification
+.agents/bin/ntfy_send --codex \
+  --title "Code Review Complete" \
+  "Codex completed review of auth module"
+
+# Gemini agent notification
+.agents/bin/ntfy_send --gemini \
+  --title "Analysis Done" \
+  "Gemini finished security analysis"
+
+# Custom icon (must be public URL)
+.agents/bin/ntfy_send -i "https://example.com/my-icon.png" \
+  --title "Custom Bot" \
+  "Notification with custom icon"
+```
+
+**Note:** Icons must be public HTTP/HTTPS URLs. The built-in model icons use raw GitHub content URLs from this repository.
 
 ### Action Buttons
 
