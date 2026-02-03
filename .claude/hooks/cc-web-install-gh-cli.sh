@@ -92,7 +92,11 @@ log "Setup complete."
 # save this (multi-line) env var to a file ~/.codex/auth.json
 CODEX_AUTH_FILE="$HOME/.codex/auth.json"
 mkdir -p "$(dirname "$CODEX_AUTH_FILE")"
+# turn off logging to avoid leaking secrets
+set +x
 echo "$CODEX_AUTH_JSON" > "$CODEX_AUTH_FILE"
+# restore logging
+set -x
 log "Saved CODEX_AUTH_JSON to $CODEX_AUTH_FILE"
 # Clear the env var for security
 unset CODEX_AUTH_JSON
