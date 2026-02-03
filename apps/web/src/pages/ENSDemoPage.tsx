@@ -11,7 +11,9 @@
  * Prize track emphasis: ENS bounty
  */
 
+import { useState, useEffect } from 'react'
 import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from 'wagmi'
+import { ProfileCard } from 'ethereum-identity-kit'
 import {
   ENSIdentityCard,
   ENSLookup,
@@ -34,6 +36,17 @@ export function ENSDemoPage() {
   const { disconnect } = useDisconnect()
   const chainId = useChainId()
   const { switchChain } = useSwitchChain()
+
+  const [isDarkMode, setIsDarkMode] = useState(() =>
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  )
+
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
 
   const chains = [mainnet, base, arbitrum, sepolia]
 
@@ -111,7 +124,31 @@ export function ENSDemoPage() {
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
             Demonstrating real ENS integration for token-gated Telegram groups.
             Features include profile resolution, org.telegram auto-verification,
-            and cross-chain ENS from L2.
+            and cross-chain ENS from L2. Powered by{' '}
+            <a
+              href="https://ethid.org"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              EthID
+            </a>,{' '}
+            <a
+              href="https://ethidentitykit.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              EthIdentityKit
+            </a>, and{' '}
+            <a
+              href="https://ens.domains"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary hover:underline"
+            >
+              ENS
+            </a>.
           </p>
         </section>
 
@@ -229,6 +266,21 @@ export function ENSDemoPage() {
                   isVerified
                   telegramMatched
                 />
+              </div>
+            </section>
+
+            {/* EthIdentityKit ProfileCard Demo */}
+            <section>
+              <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-purple-600" />
+                EthIdentityKit ProfileCard
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Full-featured profile component from Ethereum Identity Kit
+              </p>
+              <div className="space-y-4">
+                <ProfileCard addressOrName="vitalik.eth" darkMode={isDarkMode} />
+                <ProfileCard addressOrName="nick.eth" darkMode={isDarkMode} showFollowButton={false} />
               </div>
             </section>
           </div>

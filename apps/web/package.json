@@ -24,6 +24,7 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.0.2",
     "tailwind-merge": "^2.6.0",
+    "ethereum-identity-kit": "^0.2.66",
     "viem": "^2.21.54",
     "wagmi": "^2.14.6"
   },

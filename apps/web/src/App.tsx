@@ -2,11 +2,14 @@
  * App - Main Application Entry
  *
  * Sets up providers and routing for the Gater Robot web app.
- * Includes wagmi for wallet connection and TanStack Query for caching.
+ * Includes wagmi for wallet connection, TanStack Query for caching,
+ * TransactionProvider from ethereum-identity-kit, and React Router for navigation.
  */
 
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { TransactionProvider } from 'ethereum-identity-kit'
 import { wagmiConfig } from '@/lib/wagmi'
 import { ENSDemoPage } from '@/pages/ENSDemoPage'
 
@@ -21,11 +24,19 @@ const queryClient = new QueryClient({
   },
 })
 
+// Router configuration with ENS demo page route
+const router = createBrowserRouter([
+  { path: '/', element: <Navigate to="/ens-eth-id" replace /> },
+  { path: '/ens-eth-id', element: <ENSDemoPage /> },
+])
+
 export function App() {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <ENSDemoPage />
+        <TransactionProvider>
+          <RouterProvider router={router} />
+        </TransactionProvider>
       </QueryClientProvider>
     </WagmiProvider>
   )
