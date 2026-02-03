@@ -1,0 +1,75 @@
+erDiagram
+    %% Gater Robot - Convex Schema ERD
+    %% Based on FINAL_PLAN.md
+
+    users {
+        string _id PK
+        string telegramUserId UK "Telegram user ID"
+        string primaryEnsName "Display ENS name"
+        string defaultAddressId FK "Default wallet address"
+    }
+
+    addresses {
+        string _id PK
+        string userId FK "Owner user"
+        string address UK "Ethereum address"
+        string status "pending | verified"
+        datetime verifiedAt "SIWE verification time"
+        string ensName "Resolved ENS name"
+    }
+
+    orgs {
+        string _id PK
+        string ownerTelegramUserId FK "Admin user"
+        string name "Organization name"
+    }
+
+    channels {
+        string _id PK
+        string orgId FK "Parent org"
+        string telegramChatId UK "Telegram chat ID"
+        boolean botIsAdmin "Bot has admin rights"
+    }
+
+    gates {
+        string _id PK
+        string orgId FK "Parent org"
+        string channelId FK "Gated channel"
+        number chainId "EVM chain ID"
+        string tokenAddress "ERC-20 token address"
+        number threshold "Minimum balance required"
+    }
+
+    memberships {
+        string _id PK
+        string channelId FK "Channel"
+        string userId FK "Member user"
+        string status "eligible | warning | kicked"
+        datetime lastCheckedAt "Last eligibility check"
+    }
+
+    events {
+        string _id PK
+        string userId FK "Actor user"
+        string orgId FK "Related org"
+        string channelId FK "Related channel"
+        string action "Event type"
+        json metadata "Event details"
+        datetime createdAt "Timestamp"
+    }
+
+    %% Relationships
+    users ||--o{ addresses : "owns"
+    users ||--o{ orgs : "administers"
+    users ||--o{ memberships : "has"
+    users ||--o{ events : "triggers"
+
+    orgs ||--o{ channels : "contains"
+    orgs ||--o{ gates : "defines"
+    orgs ||--o{ events : "logs"
+
+    channels ||--o{ gates : "has"
+    channels ||--o{ memberships : "tracks"
+    channels ||--o{ events : "logs"
+
+    addresses }o--|| users : "defaultAddress"
