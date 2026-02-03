@@ -2,10 +2,14 @@
   "name": "@gater/convex",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "echo 'Add convex dev script'",
     "build": "echo 'Add convex build script'",
     "lint": "echo 'Add convex lint script'",
-    "test": "echo 'Add convex test script'"
+    "test": "node --test"
+  },
+  "dependencies": {
+    "convex": "^1.15.0"
   }
 }
