@@ -4,6 +4,9 @@
     "addintolocalNTFY_CHANNEL": "abc1234"
   },
   "permissions": {
+    "deny": [
+      "Bash(git reset --hard:*)"
+    ],
     "allow": [
       "Bash(find:*)",
       "Bash(gh issue list:*)",
@@ -23,7 +26,8 @@
       "Bash(mkdir:*)",
       "Bash(rg:*)",
       "Bash(node --version)",
-      "Bash(pnpm --version:*)"
+      "Bash(pnpm --version:*)",
+      "Bash(gh project field-list:*)"
 
     ]
   },
