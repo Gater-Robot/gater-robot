@@ -1,4 +1,4 @@
-# GH CLI Inspection Notes
+# GH CLI Inspection Notes (as of YYYY-MM-DD)
 
 ## Commands Run
 
