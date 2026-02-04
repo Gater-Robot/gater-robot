@@ -158,7 +158,56 @@ Now every push to `main` auto-deploys.
 
 ## 4. BotFather Configuration
 
-### Set Menu Button (Required)
+Open [@BotFather](https://t.me/BotFather) in Telegram and run these commands.
+
+### Create Bot (First Time Only)
+
+```
+/newbot
+→ Enter display name: "Gater Robot"
+→ Enter username: gater_robot_bot (must end in 'bot')
+→ Copy the token to BOT_TOKEN in .env
+```
+
+### Set Bot Commands
+
+```
+/mybots
+→ Select @YourBot
+→ Edit Bot
+→ Edit Commands
+→ Send this text:
+
+start - Start the bot and open the mini app
+admin - Toggle admin mode (admins only)
+help - Show help message
+```
+
+### Set Bot Description
+
+```
+/mybots
+→ Select @YourBot
+→ Edit Bot
+→ Edit Description
+→ Send:
+
+Token-gated Telegram communities. Connect your wallet, verify with ENS, and join exclusive groups based on token holdings.
+```
+
+### Set About Text
+
+```
+/mybots
+→ Select @YourBot
+→ Edit Bot
+→ Edit About
+→ Send:
+
+Gater Robot lets admins create token-gated private channels. Members verify wallet ownership with SIWE and link ENS identities.
+```
+
+### Set Menu Button (Required for Mini App)
 
 ```
 /mybots
@@ -166,11 +215,55 @@ Now every push to `main` auto-deploys.
 → Bot Settings
 → Menu Button
 → Configure menu button
-→ Enter your URL (tunnel or Vercel)
-→ Enter button text: "Open App"
+→ Enter URL: https://your-tunnel-or-vercel-url.com
+→ Enter button text: Open App
 ```
 
-### Set Web App URL (For Inline Buttons)
+### Set Bot Profile Picture (Optional)
+
+```
+/mybots
+→ Select @YourBot
+→ Edit Bot
+→ Edit Botpic
+→ Send an image (512x512 recommended)
+```
+
+### Enable Inline Mode (Optional)
+
+```
+/mybots
+→ Select @YourBot
+→ Bot Settings
+→ Inline Mode
+→ Turn on
+```
+
+### Group Privacy Settings
+
+For the bot to read messages in groups (needed for moderation):
+
+```
+/mybots
+→ Select @YourBot
+→ Bot Settings
+→ Group Privacy
+→ Turn off (allows bot to see all messages)
+```
+
+### Allow Groups
+
+```
+/mybots
+→ Select @YourBot
+→ Bot Settings
+→ Allow Groups
+→ Turn on
+```
+
+---
+
+### Environment Variable for Mini App
 
 The bot code uses `WEBAPP_URL` environment variable:
 
