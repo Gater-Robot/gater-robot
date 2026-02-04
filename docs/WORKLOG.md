@@ -2,15 +2,15 @@
 
 ## Current Status
 
-**Phase:** Sprint 1: Foundation
-**Sprint:** Sprint 1: Foundation
-**Branch:** `claude/gh-project-manager-setup`
+**Phase:** PR Triage & Consolidation
+**Sprint:** Sprint 1: Foundation (paused for triage)
+**Branch:** `claude/organize-prs-by-category-ajXTp`
 
 ## Sprint Progress
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
-| Sprint 1: Foundation | In Progress | Issue #3 monorepo scaffolding in progress |
+| Sprint 1: Foundation | Blocked | 16 open PRs need triage before continuing |
 | Sprint 2: User Identity | Not Started | 9 issues created |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
 | Sprint 4: Eligibility + LiFi | Not Started | 8 issues created |
@@ -20,12 +20,24 @@
 
 ## Current Task Context
 
-**Next Steps:**
-1. Merge `claude/gh-project-manager-setup` branch to develop
-2. Start Sprint 1: Foundation tasks (bot /start, admin toggle)
-3. Set up GitHub Projects v2 kanban board (in progress)
+**Current Work:** PR Triage - consolidating 16 open PRs into 4 feature branches for UAT
 
-**Blocked On:** Nothing
+**Next Steps:**
+1. Compare bot PRs #74 vs #75, pick best one
+2. Close orphaned PRs: #77, #78, #79, #80, #81, #89, #94
+3. Close duplicate PR #76 (consolidated in #84)
+4. Merge stacked PR #93 into #85 branch
+5. Rebase feature branches onto latest develop
+6. Rename branches for UAT:
+   - `feat/4-5-bot` ← bot PR
+   - `feat/8-9-10-convex` ← PR #84
+   - `feat/13-contracts` ← PR #82
+   - `feat/6-webapp` ← PR #85 (with #93 merged)
+7. UAT test each branch, then merge to develop
+
+**Blocked On:** Need to execute PR triage in permissive environment
+
+**See:** `docs/PR_TRIAGE_PLAN.md` for full triage details
 
 ---
 
@@ -83,3 +95,31 @@
 
 **Next Up:**
 - Implement Sprint 1 bot + mini-app features
+
+### 2026-02-04 - PR Triage Session
+
+**Problem Identified:**
+- 16 open PRs creating confusion and blocking progress
+- PR #73 (monorepo scaffold) was merged, but 6 PRs still target that merged branch as base
+- Multiple duplicate/competing PRs for same features
+- Stacked PRs need consolidation
+
+**PR Categories Identified:**
+| Category | Keep PRs | Close PRs |
+|----------|----------|-----------|
+| A: Bot (`apps/bot/`) | #74 or #75 (compare) | #77 |
+| B: Convex | #84 (consolidated) | #76, #78, #79 |
+| C: Contracts | #82 (consolidated) | #80, #81 |
+| D: Web (`apps/web/`) | #85, #88, #93→merge | #89, #94 |
+| E: Other | #95 | - |
+
+**Plan:**
+1. Close 8 orphaned/duplicate PRs
+2. Consolidate stacked PRs into base branches
+3. Rebase onto latest develop
+4. Rename to `feat/<issues>-<area>` for UAT
+5. Test each branch before merging to develop
+
+**Created:** `docs/PR_TRIAGE_PLAN.md` with full execution plan
+
+**Branch:** `claude/organize-prs-by-category-ajXTp`
