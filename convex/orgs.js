@@ -8,7 +8,7 @@ export const listOrgsForOwner = query({
     const user = await requireAuth(ctx, args.initDataRaw);
     return ctx.db
       .query("orgs")
-      .withIndex("by_owner_telegram_user_id", (q) =>
+      .withIndex("by_owner", (q) =>
         q.eq("ownerTelegramUserId", user.id),
       )
       .collect();
