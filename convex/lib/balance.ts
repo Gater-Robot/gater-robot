@@ -7,6 +7,7 @@
 
 import {
   SUPPORTED_CHAINS,
+  getAlchemyHttpUrl,
   getChainKey,
   getChainLabel,
   getDefaultRpcUrl,
@@ -21,6 +22,12 @@ function getRpcUrl(chainId: number): string | undefined {
     const envKey = `${chainKey.toUpperCase()}_RPC_URL`
     const configured = (process.env as Record<string, string | undefined>)[envKey]
     if (configured && configured.length > 0) return configured
+  }
+
+  const alchemyKey = process.env.ALCHEMY_API_KEY
+  if (alchemyKey) {
+    const url = getAlchemyHttpUrl(chainId, alchemyKey)
+    if (url) return url
   }
 
   return getDefaultRpcUrl(chainId)

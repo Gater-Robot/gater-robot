@@ -1,4 +1,9 @@
-import { getChainKey, getDefaultRpcUrl, getViemChain } from "@gater/chain-registry"
+import {
+  getAlchemyHttpUrl,
+  getChainKey,
+  getDefaultRpcUrl,
+  getViemChain,
+} from "@gater/chain-registry"
 import { createPublicClient, http, type PublicClient } from "viem"
 
 const clientCache = new Map<number, PublicClient>()
@@ -9,6 +14,12 @@ function getRpcUrl(chainId: number): string | undefined {
     const envKey = `VITE_${chainKey.toUpperCase()}_RPC_URL`
     const configured = (import.meta.env as Record<string, string | undefined>)[envKey]
     if (configured && configured.length > 0) return configured
+  }
+
+  const alchemyKey = import.meta.env.VITE_ALCHEMY_API_KEY as string | undefined
+  if (alchemyKey) {
+    const url = getAlchemyHttpUrl(chainId, alchemyKey)
+    if (url) return url
   }
 
   return getDefaultRpcUrl(chainId)

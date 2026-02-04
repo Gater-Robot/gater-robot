@@ -132,6 +132,43 @@ export function getDefaultRpcUrl(chainId) {
   return chain?.rpcUrls?.default?.http?.[0]
 }
 
+// Mapping of chainId to Alchemy RPC "chain name" (used in URLs).
+// Note: Not every chain is necessarily supported by Alchemy in every plan/region.
+export const ALCHEMY_RPC_CHAIN_NAMES = {
+  [CHAIN_BY_KEY.mainnet.id]: "eth-mainnet",
+  [CHAIN_BY_KEY.base.id]: "base-mainnet",
+  [CHAIN_BY_KEY.arbitrum.id]: "arb-mainnet",
+  [CHAIN_BY_KEY.polygon.id]: "polygon-mainnet",
+  [CHAIN_BY_KEY.bsc.id]: "bnb-mainnet",
+  [CHAIN_BY_KEY.optimism.id]: "opt-mainnet",
+  [CHAIN_BY_KEY.berachain.id]: "berachain-mainnet",
+  [CHAIN_BY_KEY.hyperEvm.id]: "hyperliquid-mainnet",
+  [CHAIN_BY_KEY.ink.id]: "ink-mainnet",
+  [CHAIN_BY_KEY.katana.id]: "katana-mainnet",
+  [CHAIN_BY_KEY.lens.id]: "lens-mainnet",
+  [CHAIN_BY_KEY.linea.id]: "linea-mainnet",
+  [CHAIN_BY_KEY.monad.id]: "monad-mainnet",
+  [CHAIN_BY_KEY.opBNB.id]: "opbnb-mainnet",
+  [CHAIN_BY_KEY.plasma.id]: "plasma-mainnet",
+  [CHAIN_BY_KEY.sonic.id]: "sonic-mainnet",
+  [CHAIN_BY_KEY.unichain.id]: "unichain-mainnet",
+  [CHAIN_BY_KEY.zksync.id]: "zksync-mainnet",
+  [CHAIN_BY_KEY.scroll.id]: "scroll-mainnet",
+  [CHAIN_BY_KEY.avalanche.id]: "avax-mainnet",
+  [CHAIN_BY_KEY.mantle.id]: "mantle-mainnet",
+  [CHAIN_BY_KEY.worldchain.id]: "worldchain-mainnet",
+  [CHAIN_BY_KEY.celo.id]: "celo-mainnet",
+  [CHAIN_BY_KEY.baseSepolia.id]: "base-sepolia",
+  [CHAIN_BY_KEY.sepolia.id]: "eth-sepolia",
+}
+
+export function getAlchemyHttpUrl(chainId, apiKey) {
+  if (!apiKey) return undefined
+  const chainName = ALCHEMY_RPC_CHAIN_NAMES[chainId]
+  if (!chainName) return undefined
+  return `https://${chainName}.g.alchemy.com/v2/${apiKey}`
+}
+
 export function getExplorerTxUrl(chainId, hash) {
   const chain = getViemChain(chainId)
   const baseUrl = chain?.blockExplorers?.default?.url
@@ -145,4 +182,3 @@ export function getExplorerAddressUrl(chainId, address) {
   if (!baseUrl) return `https://etherscan.io/address/${address.toString()}`
   return `${baseUrl}/address/${address.toString()}`
 }
-

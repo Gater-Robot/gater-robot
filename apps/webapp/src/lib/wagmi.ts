@@ -2,7 +2,12 @@
  * Wagmi Configuration
  */
 
-import { SUPPORTED_CHAINS, getChainKey, getViemChain } from "@gater/chain-registry"
+import {
+  SUPPORTED_CHAINS,
+  getAlchemyHttpUrl,
+  getChainKey,
+  getViemChain,
+} from "@gater/chain-registry"
 import { createConfig, http } from "wagmi"
 import { injected, walletConnect } from "wagmi/connectors"
 
@@ -24,7 +29,16 @@ function getRpcUrl(chainId: number): string | undefined {
   const chainKey = getChainKey(chainId)
   if (!chainKey) return undefined
   const envKey = `VITE_${chainKey.toUpperCase()}_RPC_URL`
-  return (import.meta.env as Record<string, string | undefined>)[envKey]
+  const configured = (import.meta.env as Record<string, string | undefined>)[envKey]
+  if (configured && configured.length > 0) return configured
+
+  const alchemyKey = import.meta.env.VITE_ALCHEMY_API_KEY as string | undefined
+  if (alchemyKey) {
+    const url = getAlchemyHttpUrl(chainId, alchemyKey)
+    if (url) return url
+  }
+
+  return undefined
 }
 
 export const wagmiConfig = createConfig({
@@ -54,4 +68,3 @@ declare module "wagmi" {
     config: typeof wagmiConfig
   }
 }
-

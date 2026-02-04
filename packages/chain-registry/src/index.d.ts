@@ -44,5 +44,7 @@ export function getChainLabel(chainId: number): string
 export function getChainIconPath(chainId: number): string
 export function getViemChain(chainId: number): any | undefined
 export function getDefaultRpcUrl(chainId: number): string | undefined
+export const ALCHEMY_RPC_CHAIN_NAMES: Record<number, string>
+export function getAlchemyHttpUrl(chainId: number, apiKey: string): string | undefined
 export function getExplorerTxUrl(chainId: number, hash: string): string
 export function getExplorerAddressUrl(chainId: number, address: string): string
