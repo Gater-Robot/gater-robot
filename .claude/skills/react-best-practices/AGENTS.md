@@ -14,7 +14,7 @@ January 2026
 
 ## Abstract
 
-Comprehensive performance optimization guide for React and Next.js applications, designed for AI agents and LLMs. Contains 40+ rules across 8 categories, prioritized by impact from critical (eliminating waterfalls, reducing bundle size) to incremental (advanced patterns). Each rule includes detailed explanations, real-world examples comparing incorrect vs. correct implementations, and specific impact metrics to guide automated refactoring and code generation.
+Comprehensive performance optimization guide for React and Next.js applications, designed for AI agents and LLMs. Contains 57 rules across 8 categories, prioritized by impact from critical (eliminating waterfalls, reducing bundle size) to incremental (advanced patterns). Each rule includes detailed explanations, real-world examples comparing incorrect vs. correct implementations, and specific impact metrics to guide automated refactoring and code generation.
 
 ---
 
@@ -461,7 +461,7 @@ function AnimationPlayer({ enabled, setEnabled }: { enabled: boolean; setEnabled
 }
 ```
 
-The `typeof window !== 'undefined'` check prevents bundling this module for SSR, optimizing server bundle size and build speed.
+The `typeof window !== 'undefined'` check ensures this code only runs in the browser and avoids executing during SSR, preventing server-side errors from accessing `window`.
 
 ### 2.3 Defer Non-Critical Third-Party Libraries
 
@@ -583,7 +583,7 @@ function FlagsProvider({ children, flags }: Props) {
 }
 ```
 
-The `typeof window !== 'undefined'` check prevents bundling preloaded modules for SSR, optimizing server bundle size and build speed.
+The `typeof window !== 'undefined'` check ensures this preload logic only executes in the browser at runtime and does not run during SSR.
 
 ---
 
@@ -1000,9 +1000,10 @@ export async function POST(request: Request) {
   // Log after response is sent
   after(async () => {
     const userAgent = (await headers()).get('user-agent') || 'unknown'
-    const sessionCookie = (await cookies()).get('session-id')?.value || 'anonymous'
-    
-    logUserAction({ sessionCookie, userAgent })
+    // Use a non-sensitive identifier instead of raw session cookies
+    const userId = await getUserIdFromSession()
+
+    logUserAction({ userId, userAgent })
   })
   
   return new Response(JSON.stringify({ status: 'success' }), {
@@ -2077,6 +2078,8 @@ function Dropdown({ isOpen }: Props) {
 }
 ```
 
+> **Note:** The `<Activity>` component is currently only available in React Canary and is not part of a stable release yet. Check the [React documentation](https://react.dev) for current availability before using in production.
+
 Avoids expensive re-renders and state loss.
 
 ### 6.8 Use Explicit Conditional Rendering
@@ -2529,6 +2532,8 @@ function hasChanges(current: string[], original: string[]) {
   return current.sort().join() !== original.sort().join()
 }
 ```
+
+> **Warning:** This code has a critical bug beyond performance: `.sort()` mutates arrays in place. In React, mutating props or state leads to hard-to-debug issues. Always use `.toSorted()` for immutable sorting.
 
 Two O(n log n) sorts run even when `current.length` is 5 and `original.length` is 100. There is also overhead of joining the arrays and comparing the strings.
 

@@ -118,19 +118,12 @@ Reference these guidelines when:
 
 ## How to Use
 
-Read individual rule files for detailed explanations and code examples:
+Use this file for an overview and quick reference, then consult `AGENTS.md` for detailed explanations and code examples for each rule.
 
-```
-rules/async-parallel.md
-rules/bundle-barrel-imports.md
-```
+In `AGENTS.md`, rules are grouped by the same categories listed above. For any rule name (for example, `async-parallel` or `bundle-barrel-imports`), search within `AGENTS.md` to find its full guidance.
 
-Each rule file contains:
+Each rule section in `AGENTS.md` contains:
 - Brief explanation of why it matters
 - Incorrect code example with explanation
 - Correct code example with explanation
 - Additional context and references
-
-## Full Compiled Document
-
-For the complete guide with all rules expanded: `AGENTS.md`
