@@ -41,6 +41,13 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Hardhat build artifacts
+artifacts/
+cache/
+
+# Foundry build artifacts
+out/
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
