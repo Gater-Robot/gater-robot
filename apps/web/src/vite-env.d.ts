@@ -5,6 +5,7 @@ declare module 'ethereum-identity-kit/css'
 
 interface ImportMetaEnv {
   readonly VITE_WALLET_CONNECT_PROJECT_ID: string
+  readonly VITE_ARC_TESTNET_RPC_URL?: string
 }
 
 interface ImportMeta {
