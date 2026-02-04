@@ -10,5 +10,6 @@ export {
   CardContent,
 } from './card'
 export { Skeleton } from './skeleton'
+export { RadioGroup, RadioGroupItem } from './radio-group'
 export { ErrorBoundary } from './error-boundary'
 export { DiagnosticsDrawer } from './DiagnosticsDrawer'

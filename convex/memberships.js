@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { requireAuth } from "./lib/auth.js";
+import { requireAuth } from "./lib/auth";
 
 export const listMembershipsForUser = query({
   args: {
