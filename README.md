@@ -50,3 +50,9 @@ opening the Mini App in Telegram (and for any `startapp` deep links). Avoid comm
 ## Hackathon plan
 
 See `docs/FINAL_PLAN.md` for the reconciled 5‑day demo plan and where the older planning docs diverge.
+
+---
+
+## Webapp migration (apps/web → apps/webapp)
+
+See `docs/WEBAPP_MIGRATION_PLAN.md` for the parity definition, phased migration plan, and tracker.
