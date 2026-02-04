@@ -61,8 +61,8 @@ Phase 3 (Final) ─────────────────────�
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
-| Sprint 1: Foundation | ✅ Complete | All work merged to develop, branches cleaned |
-| Sprint 2: User Identity | Not Started | 9 issues created |
+| Sprint 1: Foundation | ✅ Done | All work merged to develop, #52 closed |
+| Sprint 2: User Identity | In Progress | #13 done, planning complete |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
 | Sprint 4: Eligibility + LiFi | Not Started | 8 issues created |
 | Sprint 5: Demo Polish | Not Started | 9 issues created |
