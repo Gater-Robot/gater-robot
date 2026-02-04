@@ -11,17 +11,18 @@ pnpm --filter @gater/contracts build
 
 ## Environment
 
-Copy the example env file and fill in keys:
+This package reads from the **monorepo root** `.env` file. Make sure you've set up the root environment:
 
 ```bash
+# From monorepo root
 cp .env.example .env
 ```
 
-Required variables:
-- `DEPLOYER_PRIVATE_KEY`
-- `BASE_RPC_URL`
-- `ARC_RPC_URL`
-- `ARC_CHAIN_ID`
+Required variables (in root `.env`):
+- `DEPLOYER_PRIVATE_KEY` - Wallet private key with funds for gas
+- `BASE_RPC_URL` - Base mainnet RPC endpoint
+- `ARC_RPC_URL` - Arc chain RPC endpoint
+- `ARC_CHAIN_ID` - Arc chain ID
 
 ## Deployments (Hardhat Ignition)
 

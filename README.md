@@ -18,7 +18,58 @@ Open in Telegram [@GaterRobot](https://t.me/gaterrobot)
 
 ---
 
-## Development tunnel (Cloudflare Quick Tunnel)
+## Quick Start
+
+### 1. Install dependencies
+
+```bash
+pnpm install
+```
+
+### 2. Set up environment variables
+
+```bash
+# Copy the example env file
+cp .env.example .env
+
+# Edit .env and fill in your values (see comments in file)
+```
+
+**Required values:**
+| Variable | Where to get it |
+|----------|-----------------|
+| `BOT_TOKEN` | [@BotFather](https://t.me/BotFather) |
+| `ADMIN_IDS` | [@userinfobot](https://t.me/userinfobot) |
+| `VITE_WALLET_CONNECT_PROJECT_ID` | [cloud.walletconnect.com](https://cloud.walletconnect.com) |
+
+**Also required in Convex Dashboard** (Settings → Environment Variables):
+- `BOT_TOKEN` (same value as .env)
+- `MAINNET_RPC_URL` (for ENS resolution)
+
+See `docs/SPRINT2_SETUP.md` for detailed setup instructions.
+
+### 3. Start Convex
+
+```bash
+npx convex dev
+```
+
+### 4. Run the app
+
+```bash
+# Terminal 1: Bot
+pnpm --filter @gater/bot dev
+
+# Terminal 2: Web app
+pnpm --filter @gater/web dev
+
+# Terminal 3: Tunnel (for Telegram access)
+cloudflared tunnel --url http://localhost:5173
+```
+
+---
+
+## Development Tunnel (Cloudflare Quick Tunnel)
 
 Telegram Mini Apps must be served from a **public HTTPS URL** during development. We use Cloudflare Quick Tunnel
 to expose the local Mini App so it can be opened inside Telegram.
