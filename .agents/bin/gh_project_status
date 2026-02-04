@@ -10,7 +10,7 @@
 #   gh_project_status --list-statuses
 #   gh_project_status --refresh-cache
 #
-# Statuses: "Todo", "In Progress", "Code Review / Fix", "Waiting for Merge", "Done"
+# Statuses: "Backlog", "Todo", "In Progress", "In Review", "Approved", "Done"
 #
 # Examples:
 #   gh_project_status --issue 3 --status "In Progress"
@@ -29,10 +29,11 @@ REPO="Gater-Robot/gater-robot"
 # Status Field ID and Option IDs (cached values)
 STATUS_FIELD_ID="PVTSSF_lADOD29KIs4BOKlhzg88nVM"
 declare -A STATUS_OPTIONS=(
+    ["Backlog"]="988c1075"
     ["Todo"]="f75ad846"
     ["In Progress"]="47fc9ee4"
-    ["Code Review / Fix"]="2438a9a8"
-    ["Waiting for Merge"]="a375cf6a"
+    ["In Review"]="2438a9a8"
+    ["Approved"]="a375cf6a"
     ["Done"]="98236657"
 )
 
@@ -75,18 +76,25 @@ OPTIONS:
     -h, --help               Show this help message
 
 AVAILABLE STATUSES:
+    Backlog             Ideas, stretch goals, not yet planned
     Todo                Work is planned but not started
     In Progress         Currently being worked on
-    Code Review / Fix   PR under review or needs fixes
-    Waiting for Merge   Approved, awaiting merge
-    Done                Completed and closed
+    In Review           PR open, awaiting code review
+    Approved            PR approved, ready to merge
+    Done                Completed and merged
 
 EXAMPLES:
+    # Move issue to backlog
+    gh_project_status --issue 3 --status "Backlog"
+
     # Start working on an issue
     gh_project_status --issue 3 --status "In Progress"
 
-    # Mark issue as waiting for PR review
-    gh_project_status --issue 3 --status "Waiting for Merge"
+    # Mark issue as under code review
+    gh_project_status --issue 3 --status "In Review"
+
+    # Mark issue as approved and ready to merge
+    gh_project_status --issue 3 --status "Approved"
 
     # Mark a PR as done
     gh_project_status --pr 5 --status "Done"
@@ -95,11 +103,11 @@ EXAMPLES:
     gh_project_status --list-statuses
 
 WORKFLOW:
-    No Status (Backlog) -> Todo -> In Progress -> Code Review / Fix -> Waiting for Merge -> Done
+    Backlog -> Todo -> In Progress -> In Review -> Approved -> Done
 
 NOTE:
     - "Done" status is usually set automatically when issues are closed
-    - Use "No Status" (by clearing) for backlog/ideas
+    - Use "Backlog" for ideas and stretch goals not yet planned
 EOF
     exit 0
 }
@@ -111,7 +119,7 @@ list_statuses() {
         echo "  - $status"
     done
     echo ""
-    echo "To clear status (move to backlog), use: --status clear"
+    echo "To clear status entirely, use: --status clear"
 }
 
 # Get item ID for an issue or PR

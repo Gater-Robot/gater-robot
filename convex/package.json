@@ -1,11 +1,20 @@
 {
   "name": "@gater/convex",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "echo 'Add convex dev script'",
-    "build": "echo 'Add convex build script'",
-    "lint": "echo 'Add convex lint script'",
-    "test": "echo 'Add convex test script'"
+    "dev": "convex dev",
+    "deploy": "convex deploy",
+    "lint": "eslint .",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "convex": "^1.17.4",
+    "viem": "^2.21.54"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "~5.7.2"
   }
 }
