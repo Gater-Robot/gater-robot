@@ -9,12 +9,13 @@ on:
       dry_run:
         description: 'Dry run (show what would be added without actually adding)'
         required: false
-        default: 'false'
+        default: false
         type: boolean
 
 env:
-  PROJECT_URL: https://github.com/orgs/Gater-Robot/projects/1
   REPO: Gater-Robot/gater-robot
+  PROJECT_NUMBER: "1"
+  PROJECT_OWNER: Gater-Robot
 
 jobs:
   backfill-issues:
@@ -27,22 +28,23 @@ jobs:
           GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
         run: |
           echo "Fetching all open issues..."
-          gh issue list --repo $REPO --state open --limit 500 --json number,title | jq -r '.[] | "\(.number) - \(.title)"'
+          gh issue list --repo "$REPO" --state open --limit 500 --json number,title | jq -r '.[] | "\(.number) - \(.title)"'
 
       - name: Add open issues to project
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ inputs.dry_run == false }}
         env:
           GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
         run: |
           echo "Adding open issues to project..."
-          for issue_number in $(gh issue list --repo $REPO --state open --limit 500 --json number --jq '.[].number'); do
+          for issue_number in $(gh issue list --repo "$REPO" --state open --limit 500 --json number --jq '.[].number'); do
             echo "Adding issue #$issue_number..."
-            gh project item-add 1 --owner Gater-Robot --url "https://github.com/$REPO/issues/$issue_number" || echo "  (may already exist)"
+            gh project item-add "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --url "https://github.com/$REPO/issues/$issue_number" || echo "  (may already exist)"
             sleep 0.5  # Rate limiting
           done
 
   backfill-prs:
     name: Backfill PRs
+    needs: backfill-issues
     runs-on: ubuntu-latest
     steps:
       - name: Get all open PRs
@@ -51,16 +53,16 @@ jobs:
           GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
         run: |
           echo "Fetching all open PRs..."
-          gh pr list --repo $REPO --state open --limit 500 --json number,title | jq -r '.[] | "\(.number) - \(.title)"'
+          gh pr list --repo "$REPO" --state open --limit 500 --json number,title | jq -r '.[] | "\(.number) - \(.title)"'
 
       - name: Add open PRs to project
-        if: ${{ inputs.dry_run != true }}
+        if: ${{ inputs.dry_run == false }}
         env:
           GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
         run: |
           echo "Adding open PRs to project..."
-          for pr_number in $(gh pr list --repo $REPO --state open --limit 500 --json number --jq '.[].number'); do
+          for pr_number in $(gh pr list --repo "$REPO" --state open --limit 500 --json number --jq '.[].number'); do
             echo "Adding PR #$pr_number..."
-            gh project item-add 1 --owner Gater-Robot --url "https://github.com/$REPO/pull/$pr_number" || echo "  (may already exist)"
+            gh project item-add "$PROJECT_NUMBER" --owner "$PROJECT_OWNER" --url "https://github.com/$REPO/pull/$pr_number" || echo "  (may already exist)"
             sleep 0.5  # Rate limiting
           done
