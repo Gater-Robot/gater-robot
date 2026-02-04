@@ -30,7 +30,7 @@ Issues #20-26: Admin UI toggle, org list/creation, bot admin verification, gate 
 | 29 | Check Eligibility button and result UI | Pending | 2 | #28 |
 | 31 | Create /get-eligible page with LiFi widget | Pending | 3 | #27, #28, #30 |
 | 32 | Re-check eligibility after swap | Pending | 3 | #28, #31 |
-| 33 | Support deep link params for get-eligible | Pending | 4 | #31 |
+| 33 | Support deep link params for get-eligible | Complete | 4 | #31 |
 
 ---
 
@@ -59,3 +59,11 @@ Issues #20-26: Admin UI toggle, org list/creation, bot admin verification, gate 
 - Closed Sprint 3 issues #20-26
 - Created Sprint 4 execution plan with 4 phases
 - Beginning Phase 1 implementation
+
+### 2026-02-04 - Issue #33 Deep Link Params
+- Implemented URL param support for direct bot links
+- Added `parseManualGateParams()` function to parse: token, amount, chain, symbol, decimals
+- Added "manual mode" UI flow that shows LiFi widget without Convex eligibility check
+- Added `getChainName()` helper for human-readable chain names
+- Updated gateConfig to work in both channel mode and manual mode
+- Bot can now link directly: `/get-eligible?token=0x...&amount=100&chain=8453&symbol=BEST`
