@@ -63,7 +63,7 @@ export const createGate = mutation({
     if (!/^0x[a-fA-F0-9]{40}$/.test(args.tokenAddress)) {
       throw new Error('Invalid token address format');
     }
-    // Normalize to checksummed format (lowercase for consistency)
+    // Normalize to lowercase for consistency
     const normalizedAddress = args.tokenAddress.toLowerCase();
 
     const now = Date.now();
