@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { useNetworkColor, useSelectedNetwork } from '@/hooks/web3'
 import { getBlockExplorerTxLink, getBlockExplorerName } from '@/utils/networks'
+import { notification } from '@/utils/notifications'
 import { cn } from '@/lib/utils'
 
 /**
@@ -106,6 +107,7 @@ export function TransactionStatus({
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       console.error('Failed to copy:', err)
+      notification.error('Failed to copy to clipboard')
     }
   }
 

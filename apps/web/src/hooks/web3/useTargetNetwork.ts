@@ -58,6 +58,12 @@ export function useSelectedNetwork(chainId?: number): ChainWithIcon {
     if (!chainId) return supportedChains[0]
 
     const network = supportedChains.find((n) => n.id === chainId)
-    return network ?? supportedChains[0]
+    if (!network) {
+      console.warn(
+        `[useTargetNetwork] useSelectedNetwork: Chain ${chainId} is not supported, falling back to ${supportedChains[0].name} (${supportedChains[0].id})`
+      )
+      return supportedChains[0]
+    }
+    return network
   }, [chainId])
 }

@@ -19,6 +19,7 @@ export function getBlockExplorerTxLink(chainId: number, txHash: string): string 
   const explorerUrl = chain?.blockExplorers?.default?.url
 
   if (!explorerUrl) {
+    console.warn(`[networks] getBlockExplorerTxLink: No block explorer configured for chainId ${chainId}`)
     return ''
   }
 
@@ -44,7 +45,8 @@ export function getBlockExplorerAddressLink(
   const explorerUrl = chain?.blockExplorers?.default?.url
 
   if (!explorerUrl) {
-    // Fallback to Etherscan for mainnet
+    const chainId = typeof chainOrId === 'number' ? chainOrId : chainOrId?.id
+    console.warn(`[networks] getBlockExplorerAddressLink: No block explorer for chainId ${chainId}, falling back to Etherscan`)
     return `https://etherscan.io/address/${address}`
   }
 
