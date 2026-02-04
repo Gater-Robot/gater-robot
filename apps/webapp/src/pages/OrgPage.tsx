@@ -65,8 +65,13 @@ export function OrgPage() {
     initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
   ) as OrgDoc | null | undefined
 
-  const { channels, isLoading: channelsLoading, createChannel, setChannelBotAdminStatus } =
-    useChannels(orgId)
+  const {
+    channels,
+    isLoading: channelsLoading,
+    createChannel,
+    setChannelBotAdminStatus,
+    verifyChannelBotAdmin,
+  } = useChannels(orgId)
 
   const [selectedChannelId, setSelectedChannelId] = React.useState<string | null>(null)
 
@@ -129,6 +134,8 @@ export function OrgPage() {
     symbol?: string
     decimals: number
   } | null>(null)
+
+  const [isVerifyingBotAdmin, setIsVerifyingBotAdmin] = React.useState(false)
 
   const onCreateGate = async (values: CreateGateValues) => {
     if (!orgId || !selectedChannelId) return
@@ -378,41 +385,105 @@ export function OrgPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {selectedChannel && (
-              <div className="flex items-center justify-between gap-3 rounded-lg border bg-muted/30 p-3 text-sm">
-                <div className="min-w-0">
-                  <div className="font-medium">Bot admin status</div>
-                  <div className="text-xs text-muted-foreground">
-                    Toggle for demos; production should reflect real Telegram checks.
+              <div className="space-y-3 rounded-lg border bg-muted/30 p-3 text-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 font-medium">
+                      Bot permissions
+                      {selectedChannel.botIsAdmin ? (
+                        <Badge variant="success" size="sm">
+                          Verified
+                        </Badge>
+                      ) : (
+                        <Badge variant="secondary" size="sm">
+                          Not verified
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      Add the bot as an admin in this Telegram chat and ensure it can restrict members, then verify.
+                    </div>
+                    {selectedChannel.verifiedAt && (
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Last verified: {new Date(selectedChannel.verifiedAt).toLocaleString()}
+                      </div>
+                    )}
                   </div>
+
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={selectedChannel.botIsAdmin ? "outline" : "success"}
+                    disabled={isVerifyingBotAdmin}
+                    onClick={async () => {
+                      try {
+                        setIsVerifyingBotAdmin(true)
+                        const result = await verifyChannelBotAdmin({
+                          channelId: selectedChannel._id,
+                        })
+
+                        if (result?.botIsAdmin) {
+                          toast.success("Bot permissions verified")
+                        } else {
+                          toast.error(result?.reason || "Bot is not an admin (or missing permission)")
+                        }
+                      } catch (error) {
+                        toast.error(error instanceof Error ? error.message : "Failed to verify bot permissions")
+                      } finally {
+                        setIsVerifyingBotAdmin(false)
+                      }
+                    }}
+                  >
+                    {selectedChannel.botIsAdmin ? (
+                      <>
+                        <VerifiedIcon className="size-4" />
+                        Re-check
+                      </>
+                    ) : (
+                      <>
+                        <ShieldIcon className="size-4" />
+                        Verify
+                      </>
+                    )}
+                  </Button>
                 </div>
-                <Button
-                  type="button"
-                  size="sm"
-                  variant={selectedChannel.botIsAdmin ? "success" : "outline"}
-                  onClick={async () => {
-                    try {
-                      await setChannelBotAdminStatus({
-                        channelId: selectedChannel._id,
-                        botIsAdmin: !selectedChannel.botIsAdmin,
-                      })
-                      toast.success("Updated bot admin status")
-                    } catch (error) {
-                      toast.error(error instanceof Error ? error.message : "Failed to update status")
-                    }
-                  }}
-                >
-                  {selectedChannel.botIsAdmin ? (
-                    <>
-                      <CheckCircle2Icon className="size-4" />
-                      Admin
-                    </>
-                  ) : (
-                    <>
-                      <XCircleIcon className="size-4" />
-                      Not admin
-                    </>
-                  )}
-                </Button>
+
+                {import.meta.env.DEV && (
+                  <div className="flex items-center justify-between gap-3 rounded-md border bg-background/70 px-3 py-2 text-xs">
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CircleSlash2Icon className="size-4" />
+                      Dev override
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={async () => {
+                        try {
+                          await setChannelBotAdminStatus({
+                            channelId: selectedChannel._id,
+                            botIsAdmin: !selectedChannel.botIsAdmin,
+                          })
+                          toast.success("Updated bot admin status (dev)")
+                        } catch (error) {
+                          toast.error(error instanceof Error ? error.message : "Failed to update status")
+                        }
+                      }}
+                    >
+                      {selectedChannel.botIsAdmin ? (
+                        <>
+                          <CheckCircle2Icon className="size-4" />
+                          Mark not admin
+                        </>
+                      ) : (
+                        <>
+                          <XCircleIcon className="size-4" />
+                          Mark admin
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -541,4 +612,3 @@ export function OrgPage() {
     </div>
   )
 }
-
