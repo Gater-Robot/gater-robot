@@ -17,7 +17,6 @@ type NetworkRecord = {
 type DeploymentsFile = {
   base: NetworkRecord;
   baseSepolia: NetworkRecord;
-  arc: NetworkRecord;
   arcTestnet: NetworkRecord;
 };
 
@@ -32,8 +31,7 @@ const readDeployments = async (): Promise<DeploymentsFile> => {
       return {
         base: { chainId: 8453, address: "", updatedAt: "" },
         baseSepolia: { chainId: 84532, address: "", updatedAt: "" },
-        arc: { chainId: null, address: "", updatedAt: "" },
-        arcTestnet: { chainId: null, address: "", updatedAt: "" },
+        arcTestnet: { chainId: 5042002, address: "", updatedAt: "" },
       };
     }
     throw error;
@@ -47,10 +45,9 @@ const writeDeployments = async (data: DeploymentsFile) => {
 
 const getNetworkKey = (
   networkName: string,
-): "base" | "baseSepolia" | "arc" | "arcTestnet" | null => {
+): "base" | "baseSepolia" | "arcTestnet" | null => {
   if (networkName === "base") return "base";
   if (networkName === "baseSepolia") return "baseSepolia";
-  if (networkName === "arc") return "arc";
   if (networkName === "arcTestnet") return "arcTestnet";
   return null;
 };
@@ -78,7 +75,7 @@ const main = async () => {
     console.log(`Updated deployments/addresses.json`);
   } else {
     console.warn(
-      `Warning: Network "${networkName}" is not recognized (expected: base, baseSepolia, arc, arcTestnet). ` +
+      `Warning: Network "${networkName}" is not recognized (expected: base, baseSepolia, arcTestnet). ` +
       `Deployment succeeded but address was NOT saved to addresses.json.`
     );
   }

@@ -9,13 +9,8 @@
     "address": "",
     "updatedAt": ""
   },
-  "arc": {
-    "chainId": null,
-    "address": "",
-    "updatedAt": ""
-  },
   "arcTestnet": {
-    "chainId": null,
+    "chainId": 5042002,
     "address": "",
     "updatedAt": ""
   }
