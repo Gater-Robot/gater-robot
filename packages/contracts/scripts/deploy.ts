@@ -16,7 +16,9 @@ type NetworkRecord = {
 
 type DeploymentsFile = {
   base: NetworkRecord;
+  baseSepolia: NetworkRecord;
   arc: NetworkRecord;
+  arcTestnet: NetworkRecord;
 };
 
 const deploymentsPath = path.join(__dirname, "..", "deployments", "addresses.json");
@@ -29,7 +31,9 @@ const readDeployments = async (): Promise<DeploymentsFile> => {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
       return {
         base: { chainId: 8453, address: "", updatedAt: "" },
+        baseSepolia: { chainId: 84532, address: "", updatedAt: "" },
         arc: { chainId: null, address: "", updatedAt: "" },
+        arcTestnet: { chainId: null, address: "", updatedAt: "" },
       };
     }
     throw error;
@@ -41,9 +45,13 @@ const writeDeployments = async (data: DeploymentsFile) => {
   await fs.writeFile(deploymentsPath, JSON.stringify(data, null, 2) + "\n");
 };
 
-const getNetworkKey = (networkName: string): "base" | "arc" | null => {
-  if (networkName === "base" || networkName === "baseSepolia") return "base";
-  if (networkName === "arc" || networkName === "arcTestnet") return "arc";
+const getNetworkKey = (
+  networkName: string,
+): "base" | "baseSepolia" | "arc" | "arcTestnet" | null => {
+  if (networkName === "base") return "base";
+  if (networkName === "baseSepolia") return "baseSepolia";
+  if (networkName === "arc") return "arc";
+  if (networkName === "arcTestnet") return "arcTestnet";
   return null;
 };
 

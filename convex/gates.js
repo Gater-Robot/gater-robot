@@ -1,15 +1,17 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuth } from "./lib/auth.js";
 
 export const listGatesForOrg = query({
   args: {
     orgId: v.id("orgs"),
-    callerTelegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org
     const org = await ctx.db.get(args.orgId);
-    if (!org || org.ownerTelegramUserId !== args.callerTelegramUserId) {
+    if (!org || org.ownerTelegramUserId !== user.id) {
       throw new Error("Not authorized to view gates for this org");
     }
 
@@ -21,9 +23,9 @@ export const listGatesForOrg = query({
 });
 
 export const listGatesForChannel = query({
-  args: { channelId: v.id("channels") },
+  args: { channelId: v.id("channels"), initDataRaw: v.string() },
   handler: async (ctx, args) => {
-    // Public query - gates are public info for eligibility checking
+    await requireAuth(ctx, args.initDataRaw);
     return ctx.db
       .query("gates")
       .withIndex("by_channel_id", (q) => q.eq("channelId", args.channelId))
@@ -41,12 +43,13 @@ export const createGate = mutation({
     tokenName: v.optional(v.string()),
     tokenDecimals: v.optional(v.number()),
     threshold: v.string(),
-    callerTelegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org
     const org = await ctx.db.get(args.orgId);
-    if (!org || org.ownerTelegramUserId !== args.callerTelegramUserId) {
+    if (!org || org.ownerTelegramUserId !== user.id) {
       throw new Error("Not authorized to create gates for this org");
     }
 
@@ -76,9 +79,10 @@ export const setGateActive = mutation({
   args: {
     gateId: v.id("gates"),
     active: v.boolean(),
-    callerTelegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org that owns this gate
     const gate = await ctx.db.get(args.gateId);
     if (!gate) {
@@ -86,7 +90,7 @@ export const setGateActive = mutation({
     }
 
     const org = await ctx.db.get(gate.orgId);
-    if (!org || org.ownerTelegramUserId !== args.callerTelegramUserId) {
+    if (!org || org.ownerTelegramUserId !== user.id) {
       throw new Error("Not authorized to modify this gate");
     }
 

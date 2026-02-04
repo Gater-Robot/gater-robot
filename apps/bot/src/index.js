@@ -11,7 +11,18 @@ if (!token) {
 }
 
 const bot = new TelegramBot(token, { polling: true });
+// Note: admin mode is stored in-memory and resets on restart.
 const adminModeByUser = new Map();
+
+const adminIds = (process.env.ADMIN_IDS ?? "")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+const sendMessageSafe = (chatId, text, options) =>
+  bot.sendMessage(chatId, text, options).catch((error) => {
+    console.error("Failed to send message:", error);
+  });
 
 const buildStartKeyboard = () => ({
   reply_markup: {
@@ -32,14 +43,14 @@ bot.onText(/\/start/, (msg) => {
   const message = `Hi ${firstName}! Welcome to Gater Robot.`;
 
   if (!webAppUrl) {
-    bot.sendMessage(
+    sendMessageSafe(
       chatId,
       `${message} The Mini App URL is not configured yet. Please set WEBAPP_URL in the bot environment.`,
     );
     return;
   }
 
-  bot.sendMessage(
+  sendMessageSafe(
     chatId,
     `${message} Tap below to open the Mini App.`,
     buildStartKeyboard(),
@@ -51,7 +62,20 @@ bot.onText(/\/admin/, (msg) => {
   const userId = msg.from?.id;
 
   if (!userId) {
-    bot.sendMessage(chatId, "Unable to determine your user ID.");
+    sendMessageSafe(chatId, "Unable to determine your user ID.");
+    return;
+  }
+
+  if (adminIds.length === 0) {
+    sendMessageSafe(
+      chatId,
+      "Admin mode is not configured. Please set ADMIN_IDS in the bot environment.",
+    );
+    return;
+  }
+
+  if (!adminIds.includes(String(userId))) {
+    sendMessageSafe(chatId, "You are not authorized to use admin mode.");
     return;
   }
 
@@ -61,7 +85,7 @@ bot.onText(/\/admin/, (msg) => {
   adminModeByUser.set(userId, nextMode);
 
   const status = nextMode ? "enabled" : "disabled";
-  bot.sendMessage(chatId, `Admin mode ${status}. Use /admin again to toggle.`);
+  sendMessageSafe(chatId, `Admin mode ${status}. Use /admin again to toggle.`);
 });
 
 bot.on("polling_error", (error) => {

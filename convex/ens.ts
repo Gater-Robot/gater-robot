@@ -7,6 +7,38 @@
 
 import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
+import { createPublicClient, getAddress, http, isAddress } from 'viem'
+import { mainnet } from 'viem/chains'
+import { requireAuth } from './lib/auth.js'
+
+const ENS_RPC_URL = process.env.MAINNET_RPC_URL || 'https://cloudflare-eth.com'
+
+const ensClient = createPublicClient({
+  chain: mainnet,
+  transport: http(ENS_RPC_URL),
+})
+
+const normalizeAddress = (address: string) => {
+  if (!isAddress(address)) {
+    throw new Error('Invalid address')
+  }
+  return getAddress(address)
+}
+
+const normalizeUsername = (value: string) =>
+  value.trim().replace(/^@/, '').toLowerCase()
+
+const resolveEnsTelegram = async (ensName: string) => {
+  const [resolvedAddress, ensTelegram] = await Promise.all([
+    ensClient.getEnsAddress({ name: ensName }),
+    ensClient.getEnsText({ name: ensName, key: 'org.telegram' }),
+  ])
+
+  return {
+    resolvedAddress,
+    ensTelegram: ensTelegram ? normalizeUsername(ensTelegram) : null,
+  }
+}
 
 /**
  * Auto-verify a wallet based on ENS org.telegram match
@@ -17,23 +49,24 @@ import { v } from 'convex/values'
  */
 export const autoVerifyTelegramLink = mutation({
   args: {
-    telegramUserId: v.string(),
+    initDataRaw: v.string(),
     address: v.string(),
     ensName: v.string(),
     ensTelegram: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
     // Find or create user
     let user = await ctx.db
       .query('users')
       .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', args.telegramUserId)
+        q.eq('telegramUserId', authUser.id)
       )
       .unique()
 
     if (!user) {
       const userId = await ctx.db.insert('users', {
-        telegramUserId: args.telegramUserId,
+        telegramUserId: authUser.id,
         createdAt: Date.now(),
         lastSeenAt: Date.now(),
       })
@@ -43,7 +76,17 @@ export const autoVerifyTelegramLink = mutation({
     if (!user) throw new Error('Failed to create user')
 
     // Normalize address
-    const normalizedAddress = args.address.toLowerCase()
+    const normalizedAddress = normalizeAddress(args.address)
+    const normalizedTelegram = normalizeUsername(args.ensTelegram)
+    const { resolvedAddress, ensTelegram } = await resolveEnsTelegram(args.ensName)
+
+    if (!resolvedAddress || normalizeAddress(resolvedAddress) !== normalizedAddress) {
+      throw new Error('ENS name does not resolve to the provided address')
+    }
+
+    if (!ensTelegram || ensTelegram !== normalizedTelegram) {
+      throw new Error('ENS org.telegram does not match the provided Telegram username')
+    }
 
     // Check if address already exists
     let addressRecord = await ctx.db
@@ -54,13 +97,16 @@ export const autoVerifyTelegramLink = mutation({
     const now = Date.now()
 
     if (addressRecord) {
+      if (addressRecord.userId !== user._id) {
+        throw new Error('Address already linked to another user')
+      }
       // Update existing address
       await ctx.db.patch(addressRecord._id, {
         status: 'verified',
         verifiedAt: now,
         verificationMethod: 'ens_telegram_match',
         ensName: args.ensName,
-        ensTelegram: args.ensTelegram,
+        ensTelegram: ensTelegram,
         ensUpdatedAt: now,
         updatedAt: now,
       })
@@ -73,7 +119,7 @@ export const autoVerifyTelegramLink = mutation({
         verifiedAt: now,
         verificationMethod: 'ens_telegram_match',
         ensName: args.ensName,
-        ensTelegram: args.ensTelegram,
+        ensTelegram: ensTelegram,
         ensUpdatedAt: now,
         createdAt: now,
         updatedAt: now,
@@ -120,9 +166,38 @@ export const updateAddressEns = mutation({
     ensGithub: v.optional(v.string()),
     ensUrl: v.optional(v.string()),
     ensDescription: v.optional(v.string()),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
-    const { addressId, ...ensData } = args
+    const authUser = await requireAuth(ctx, args.initDataRaw)
+    const { addressId, initDataRaw: _initDataRaw, ...ensData } = args
+
+    const addressRecord = await ctx.db.get(addressId)
+    if (!addressRecord) {
+      throw new Error('Address not found')
+    }
+
+    const user = await ctx.db.get(addressRecord.userId)
+    if (!user || user.telegramUserId !== authUser.id) {
+      throw new Error('Not authorized to update this address')
+    }
+
+    if (ensData.ensTelegram && !ensData.ensName) {
+      throw new Error('ENS name is required when providing telegram record')
+    }
+
+    if (ensData.ensName) {
+      const { resolvedAddress, ensTelegram } = await resolveEnsTelegram(ensData.ensName)
+      if (!resolvedAddress) {
+        throw new Error('ENS name does not resolve to an address')
+      }
+      if (normalizeAddress(resolvedAddress) !== normalizeAddress(addressRecord.address)) {
+        throw new Error('ENS name does not match this address')
+      }
+      if (ensData.ensTelegram && ensTelegram !== normalizeUsername(ensData.ensTelegram)) {
+        throw new Error('ENS telegram record does not match')
+      }
+    }
 
     await ctx.db.patch(addressId, {
       ...ensData,
@@ -139,21 +214,22 @@ export const updateAddressEns = mutation({
  */
 export const addAddress = mutation({
   args: {
-    telegramUserId: v.string(),
     address: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
     // Find user
     const user = await ctx.db
       .query('users')
       .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', args.telegramUserId)
+        q.eq('telegramUserId', authUser.id)
       )
       .unique()
 
     if (!user) throw new Error('User not found')
 
-    const normalizedAddress = args.address.toLowerCase()
+    const normalizedAddress = normalizeAddress(args.address)
     const now = Date.now()
 
     // Check if already exists
@@ -163,6 +239,9 @@ export const addAddress = mutation({
       .unique()
 
     if (existing) {
+      if (existing.userId !== user._id) {
+        throw new Error('Address already linked to another user')
+      }
       throw new Error('Address already linked')
     }
 
@@ -184,14 +263,15 @@ export const addAddress = mutation({
  */
 export const setDefaultAddress = mutation({
   args: {
-    telegramUserId: v.string(),
     addressId: v.id('addresses'),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
     const user = await ctx.db
       .query('users')
       .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', args.telegramUserId)
+        q.eq('telegramUserId', authUser.id)
       )
       .unique()
 
@@ -217,13 +297,14 @@ export const setDefaultAddress = mutation({
  */
 export const getUserAddresses = query({
   args: {
-    telegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
     const user = await ctx.db
       .query('users')
       .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', args.telegramUserId)
+        q.eq('telegramUserId', authUser.id)
       )
       .unique()
 
@@ -246,13 +327,14 @@ export const getUserAddresses = query({
  */
 export const getUserWithEns = query({
   args: {
-    telegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
     const user = await ctx.db
       .query('users')
       .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', args.telegramUserId)
+        q.eq('telegramUserId', authUser.id)
       )
       .unique()
 
@@ -275,16 +357,17 @@ export const getUserWithEns = query({
  */
 export const upsertUser = mutation({
   args: {
-    telegramUserId: v.string(),
     telegramUsername: v.optional(v.string()),
     telegramFirstName: v.optional(v.string()),
     telegramLastName: v.optional(v.string()),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
     const existing = await ctx.db
       .query('users')
       .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', args.telegramUserId)
+        q.eq('telegramUserId', authUser.id)
       )
       .unique()
 
@@ -301,7 +384,7 @@ export const upsertUser = mutation({
     }
 
     const userId = await ctx.db.insert('users', {
-      telegramUserId: args.telegramUserId,
+      telegramUserId: authUser.id,
       telegramUsername: args.telegramUsername,
       telegramFirstName: args.telegramFirstName,
       telegramLastName: args.telegramLastName,

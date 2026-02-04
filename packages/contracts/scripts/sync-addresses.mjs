@@ -1,18 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { config as loadEnv } from "dotenv";
+
+loadEnv();
 
 const rootDir = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const deploymentsDir = path.join(rootDir, "ignition", "deployments");
 const outputPath = path.join(rootDir, "deployments", "addresses.json");
 
 const baseChainId = 8453;
-const arcChainId = process.env.ARC_CHAIN_ID
-  ? Number(process.env.ARC_CHAIN_ID)
-  : undefined;
+const baseSepoliaChainId = 84532;
+const arcChainIdEnv = process.env.ARC_CHAIN_ID;
+const arcChainId = arcChainIdEnv ? Number(arcChainIdEnv) : undefined;
+const hasArcChainId = Number.isFinite(arcChainId);
 
 const readDeploymentAddress = (chainId) => {
-  if (!chainId) {
+  if (chainId === null || chainId === undefined) {
     return undefined;
   }
   const filePath = path.join(
@@ -44,7 +48,8 @@ if (fs.existsSync(outputPath)) {
 const now = new Date().toISOString();
 
 const baseAddress = readDeploymentAddress(baseChainId);
-const arcAddress = readDeploymentAddress(arcChainId);
+const baseSepoliaAddress = readDeploymentAddress(baseSepoliaChainId);
+const arcAddress = readDeploymentAddress(hasArcChainId ? arcChainId : undefined);
 
 const updated = {
   base: {
@@ -52,8 +57,13 @@ const updated = {
     address: baseAddress ?? existing?.base?.address ?? "",
     updatedAt: baseAddress ? now : existing?.base?.updatedAt ?? ""
   },
+  baseSepolia: {
+    chainId: baseSepoliaChainId,
+    address: baseSepoliaAddress ?? existing?.baseSepolia?.address ?? "",
+    updatedAt: baseSepoliaAddress ? now : existing?.baseSepolia?.updatedAt ?? ""
+  },
   arc: {
-    chainId: arcChainId ?? existing?.arc?.chainId ?? null,
+    chainId: hasArcChainId ? arcChainId : existing?.arc?.chainId ?? null,
     address: arcAddress ?? existing?.arc?.address ?? "",
     updatedAt: arcAddress ? now : existing?.arc?.updatedAt ?? ""
   }

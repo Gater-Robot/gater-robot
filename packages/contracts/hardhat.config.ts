@@ -18,7 +18,6 @@ const networks: HardhatUserConfig["networks"] = {};
 
 if (process.env.BASE_RPC_URL) {
   networks.base = {
-    type: "http",
     url: process.env.BASE_RPC_URL,
     chainId: 8453,
     accounts
@@ -27,7 +26,6 @@ if (process.env.BASE_RPC_URL) {
 
 if (process.env.ARC_RPC_URL && arcChainId) {
   networks.arc = {
-    type: "http",
     url: process.env.ARC_RPC_URL,
     chainId: arcChainId,
     accounts

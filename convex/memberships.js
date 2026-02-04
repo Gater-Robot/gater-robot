@@ -1,15 +1,17 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAuth } from "./lib/auth.js";
 
 export const listMembershipsForUser = query({
   args: {
     userId: v.id("users"),
-    callerTelegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller is the user
     const user = await ctx.db.get(args.userId);
-    if (!user || user.telegramUserId !== args.callerTelegramUserId) {
+    if (!user || user.telegramUserId !== authUser.id) {
       throw new Error("Not authorized to view memberships for this user");
     }
 
@@ -23,9 +25,10 @@ export const listMembershipsForUser = query({
 export const listMembershipsForChannel = query({
   args: {
     channelId: v.id("channels"),
-    callerTelegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org that owns this channel
     const channel = await ctx.db.get(args.channelId);
     if (!channel) {
@@ -33,7 +36,7 @@ export const listMembershipsForChannel = query({
     }
 
     const org = await ctx.db.get(channel.orgId);
-    if (!org || org.ownerTelegramUserId !== args.callerTelegramUserId) {
+    if (!org || org.ownerTelegramUserId !== authUser.id) {
       throw new Error("Not authorized to view memberships for this channel");
     }
 
@@ -57,9 +60,15 @@ export const createMembership = mutation({
         v.literal("pending"),
       ),
     ),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
-    // Membership creation is allowed for users joining - verified via Telegram initData
+    const authUser = await requireAuth(ctx, args.initDataRaw);
+    const user = await ctx.db.get(args.userId);
+    if (!user || user.telegramUserId !== authUser.id) {
+      throw new Error("Not authorized to create membership for this user");
+    }
+
     const now = Date.now();
     return ctx.db.insert("memberships", {
       orgId: args.orgId,
@@ -81,9 +90,10 @@ export const updateMembershipStatus = mutation({
       v.literal("pending"),
     ),
     lastKnownBalance: v.optional(v.string()),
-    callerTelegramUserId: v.string(),
+    initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org
     const membership = await ctx.db.get(args.membershipId);
     if (!membership) {
@@ -91,7 +101,7 @@ export const updateMembershipStatus = mutation({
     }
 
     const org = await ctx.db.get(membership.orgId);
-    if (!org || org.ownerTelegramUserId !== args.callerTelegramUserId) {
+    if (!org || org.ownerTelegramUserId !== authUser.id) {
       throw new Error("Not authorized to update this membership");
     }
 

@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 export const DEFAULT_MAX_AGE_SECONDS = 24 * 60 * 60;
 
 const parseAuthDate = (value) => {
-  if (!value) return null;
+  if (value === null) return null;
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : null;
 };
@@ -47,7 +47,7 @@ export const validateInitData = ({
   }
 
   const authDate = parseAuthDate(params.get("auth_date"));
-  if (!authDate) {
+  if (authDate === null) {
     return { isValid: false, reason: "invalid_auth_date" };
   }
 

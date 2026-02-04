@@ -26,10 +26,14 @@ export const validateTelegramInitData = action({
       };
     }
 
+    const user = result.user
+      ? { ...result.user, id: String(result.user.id) }
+      : null;
+
     return {
       ok: true,
       authDate: result.authDate,
-      user: result.user,
+      user,
       data: result.data,
     };
   },
