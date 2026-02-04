@@ -10,7 +10,7 @@
 #   gh_project_status --list-statuses
 #   gh_project_status --refresh-cache
 #
-# Statuses: "Todo", "In Progress", "Waiting for Merge", "Done"
+# Statuses: "Todo", "In Progress", "Code Review / Fix", "Waiting for Merge", "Done"
 #
 # Examples:
 #   gh_project_status --issue 3 --status "In Progress"
@@ -31,6 +31,7 @@ STATUS_FIELD_ID="PVTSSF_lADOD29KIs4BOKlhzg88nVM"
 declare -A STATUS_OPTIONS=(
     ["Todo"]="f75ad846"
     ["In Progress"]="47fc9ee4"
+    ["Code Review / Fix"]="2438a9a8"
     ["Waiting for Merge"]="a375cf6a"
     ["Done"]="98236657"
 )
@@ -76,7 +77,8 @@ OPTIONS:
 AVAILABLE STATUSES:
     Todo                Work is planned but not started
     In Progress         Currently being worked on
-    Waiting for Merge   PR created, awaiting review/merge
+    Code Review / Fix   PR under review or needs fixes
+    Waiting for Merge   Approved, awaiting merge
     Done                Completed and closed
 
 EXAMPLES:
@@ -93,7 +95,7 @@ EXAMPLES:
     gh_project_status --list-statuses
 
 WORKFLOW:
-    No Status (Backlog) -> Todo -> In Progress -> Waiting for Merge -> Done
+    No Status (Backlog) -> Todo -> In Progress -> Code Review / Fix -> Waiting for Merge -> Done
 
 NOTE:
     - "Done" status is usually set automatically when issues are closed

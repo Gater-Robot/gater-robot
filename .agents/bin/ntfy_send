@@ -328,9 +328,23 @@ send_notification() {
     fi
 }
 
+# Auto-detect Claude session URL if no click URL provided
+auto_detect_session_url() {
+    # If click URL is already set, don't override
+    if [[ -n "$CLICK" ]]; then
+        return
+    fi
+
+    # Check for Claude Code remote session
+    if [[ -n "${CLAUDE_CODE_REMOTE_SESSION_ID:-}" ]]; then
+        CLICK="https://claude.ai/code/${CLAUDE_CODE_REMOTE_SESSION_ID}"
+        return
+    fi
+}
 # Main execution
 main() {
     parse_args "$@"
+    auto_detect_session_url
     validate
     send_notification
 }

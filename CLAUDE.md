@@ -118,7 +118,7 @@ Use this tool to update issue/PR status in the GitHub Project board.
 
 **Workflow:**
 ```
-No Status (Backlog) → Todo → In Progress → Waiting for Merge → Done
+No Status (Backlog) → Todo → In Progress → Code Review / Fix → Waiting for Merge → Done
 ```
 
 **Commands:**
@@ -126,7 +126,10 @@ No Status (Backlog) → Todo → In Progress → Waiting for Merge → Done
 # Start working on an issue
 .agents/bin/gh_project_status --issue 3 --status "In Progress"
 
-# PR created, waiting for review
+# PR created, needs review
+.agents/bin/gh_project_status --issue 3 --status "Code Review / Fix"
+
+# PR approved, waiting to merge
 .agents/bin/gh_project_status --issue 3 --status "Waiting for Merge"
 
 # List available statuses
@@ -141,8 +144,11 @@ Before starting work:
 
 After creating PR:
 - [ ] Link PR to issue with "Closes #X" or "Part of #X"
-- [ ] Update issue status to "Waiting for Merge"
+- [ ] Update issue status to "Code Review / Fix"
 - [ ] ntfy_send notification with PR link
+
+After PR approved:
+- [ ] Update issue status to "Waiting for Merge"
 
 After PR merged:
 - [ ] Status auto-updates to "Done" (built-in workflow)
