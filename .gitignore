@@ -147,6 +147,7 @@ vite.config.ts.timestamp-*
 .claude/settings.local.json
 .claude/hooks/private/
 .claude/private/
+airdrop-admin-ui-paytiers-opus.zip
 
 # Backups
 backups/github/
