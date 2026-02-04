@@ -2,15 +2,17 @@
  * App - Main Application Entry
  *
  * Sets up providers and routing for the Gater Robot web app.
- * Includes wagmi for wallet connection, TanStack Query for caching,
- * TransactionProvider from ethereum-identity-kit, TelegramProvider for
- * Telegram Mini App integration, and React Router for navigation.
+ * Includes Convex for backend, wagmi for wallet connection, TanStack Query
+ * for caching, TransactionProvider from ethereum-identity-kit, TelegramProvider
+ * for Telegram Mini App integration, and React Router for navigation.
  */
 
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
+import { ConvexProvider } from 'convex/react'
 import { TransactionProvider } from 'ethereum-identity-kit'
+import { convex } from '@/lib/convex'
 import { wagmiConfig } from '@/lib/wagmi'
 import { TelegramProvider } from '@/contexts/TelegramContext'
 import { DiagnosticsDrawer } from '@/components/ui'
@@ -19,6 +21,7 @@ import { UserPage } from '@/pages/UserPage'
 import { AdminPage } from '@/pages/AdminPage'
 import { OrgsPage } from '@/pages/OrgsPage'
 import { GetEligiblePage } from '@/pages/GetEligiblePage'
+import { FaucetPage } from '@/pages/FaucetPage'
 
 // Create a client for TanStack Query
 const queryClient = new QueryClient({
@@ -55,20 +58,25 @@ const router = createBrowserRouter([
 
   // ENS demo page (for hackathon)
   { path: '/ens-eth-id', element: <ENSDemoPage /> },
+
+  // Faucet page for claiming tokens
+  { path: '/faucet', element: <FaucetPage /> },
 ])
 
 export function App() {
   return (
-    <TelegramProvider mockUser={MOCK_USER}>
-      <WagmiProvider config={wagmiConfig}>
-        <QueryClientProvider client={queryClient}>
-          <TransactionProvider>
-            <RouterProvider router={router} />
-            {/* Debug panel - only shows toggle button in corner */}
-            {import.meta.env.DEV && <DiagnosticsDrawer />}
-          </TransactionProvider>
-        </QueryClientProvider>
-      </WagmiProvider>
-    </TelegramProvider>
+    <ConvexProvider client={convex}>
+      <TelegramProvider mockUser={MOCK_USER}>
+        <WagmiProvider config={wagmiConfig}>
+          <QueryClientProvider client={queryClient}>
+            <TransactionProvider>
+              <RouterProvider router={router} />
+              {/* Debug panel - only shows toggle button in corner */}
+              {import.meta.env.DEV && <DiagnosticsDrawer />}
+            </TransactionProvider>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </TelegramProvider>
+    </ConvexProvider>
   )
 }

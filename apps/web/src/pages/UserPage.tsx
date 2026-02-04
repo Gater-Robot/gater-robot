@@ -19,10 +19,18 @@ import {
   Badge,
   Skeleton,
 } from '@/components/ui'
-import { User, Wallet, Plus, Settings } from 'lucide-react'
+import { ConnectWallet, SIWEButton } from '@/components/wallet'
+import { ENSIdentityCard } from '@/components/ens'
+import { AddressList } from '@/components/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
+import { User, Wallet as WalletIcon, Settings } from 'lucide-react'
+import { useAccount } from 'wagmi'
 
 export function UserPage() {
   const { user, isLoading, isInTelegram } = useTelegram()
+  const { address, isConnected } = useAccount()
+  const { addresses } = useAddresses()
+  const hasLinkedAddresses = addresses.length > 0
 
   if (isLoading) {
     return (
@@ -118,32 +126,65 @@ export function UserPage() {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <Wallet className="h-5 w-5" />
+                <WalletIcon className="h-5 w-5" />
                 Linked Wallets
               </CardTitle>
               <CardDescription>
                 Wallet addresses linked to your account
               </CardDescription>
             </div>
-            <Button size="sm">
-              <Plus className="h-4 w-4 mr-2" />
-              Link Wallet
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {/* Placeholder for wallet list */}
-          <div className="text-center py-8 text-muted-foreground">
-            <Wallet className="h-8 w-8 mx-auto mb-3 opacity-50" />
-            <p>No wallets linked yet</p>
-            <p className="text-sm">
-              Connect a wallet to verify your on-chain identity
-            </p>
-          </div>
+          {/* Show linked addresses if any exist */}
+          {hasLinkedAddresses && (
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground mb-3">
+                Select a default address for eligibility checks:
+              </p>
+              <AddressList />
+            </div>
+          )}
+
+          {/* Wallet connection and verification section */}
+          {isConnected && address ? (
+            <div className="space-y-4">
+              {hasLinkedAddresses && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium mb-2">Add another wallet</p>
+                </div>
+              )}
+              <ConnectWallet />
+              <div className="pt-2 border-t">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Sign a message to verify wallet ownership and link it to your Telegram account.
+                </p>
+                <SIWEButton
+                  onSuccess={() => {
+                    console.log('Wallet verified successfully!')
+                  }}
+                  onError={(error) => {
+                    console.error('Wallet verification failed:', error)
+                  }}
+                />
+              </div>
+            </div>
+          ) : !hasLinkedAddresses ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <WalletIcon className="h-8 w-8 mx-auto mb-3 opacity-50" />
+              <p className="mb-4">No wallets linked yet</p>
+              <ConnectWallet />
+            </div>
+          ) : (
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-2">Add another wallet</p>
+              <ConnectWallet />
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* ENS Identity Card - Placeholder */}
+      {/* ENS Identity Card */}
       <Card>
         <CardHeader>
           <CardTitle>ENS Identity</CardTitle>
@@ -152,9 +193,13 @@ export function UserPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Link a wallet to view your ENS identity</p>
-          </div>
+          {isConnected && address ? (
+            <ENSIdentityCard address={address} />
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Connect a wallet to view your ENS identity</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
