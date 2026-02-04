@@ -156,6 +156,28 @@ After PR merged:
 
 **View Project Board:** https://github.com/orgs/Gater-Robot/projects/1
 
+## Project Board Automation
+
+Issues and PRs are automatically added to the project board via GitHub Actions.
+
+**Automatic Tracking (`.github/workflows/auto-add-to-project.yml`):**
+- Triggers on: issue opened/transferred/reopened, PR opened/reopened
+- Requires: `PROJECT_TOKEN` secret with `repo` and `project` scopes
+
+**Backfill Script (`scripts/backfill-project-board.sh`):**
+```bash
+# Dry run - see what would be added
+./scripts/backfill-project-board.sh --dry-run
+
+# Add all open issues and PRs to project
+./scripts/backfill-project-board.sh
+```
+
+**Manual Backfill Workflow (`.github/workflows/backfill-project.yml`):**
+- Trigger manually from Actions tab
+- Useful after setting up automation or if items were missed
+- Requires same `PROJECT_TOKEN` secret as automatic tracking
+
 ## Notifications (ntfy_send)
 
 **Location:** `.agents/bin/ntfy_send`
