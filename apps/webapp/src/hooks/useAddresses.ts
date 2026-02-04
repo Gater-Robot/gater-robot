@@ -30,7 +30,14 @@ export interface UserAddress {
   isDefault: boolean
 }
 
-export function useAddresses() {
+export function useAddresses(): {
+  addresses: UserAddress[]
+  isLoading: boolean
+  error: Error | null
+  setDefault: (addressId: Id<"addresses">) => Promise<void>
+  isSettingDefault: boolean
+  setDefaultError: Error | null
+} {
   const { initDataRaw, isLoading: telegramLoading } = useTelegram()
   const [setDefaultError, setSetDefaultError] = useState<Error | null>(null)
   const [isSettingDefault, setIsSettingDefault] = useState(false)
@@ -38,7 +45,7 @@ export function useAddresses() {
   const addresses = useQuery(
     api.ens.getUserAddresses,
     initDataRaw ? { initDataRaw } : "skip",
-  )
+  ) as UserAddress[] | undefined
 
   const setDefaultMutation = useMutation(api.ens.setDefaultAddress)
 
