@@ -20,6 +20,7 @@ import {
   Skeleton,
 } from '@/components/ui'
 import { ConnectWallet } from '@/components/wallet'
+import { ENSIdentityCard } from '@/components/ens'
 import { User, Wallet as WalletIcon, Settings } from 'lucide-react'
 import { useAccount } from 'wagmi'
 
@@ -148,7 +149,7 @@ export function UserPage() {
         </CardContent>
       </Card>
 
-      {/* ENS Identity Card - Placeholder */}
+      {/* ENS Identity Card */}
       <Card>
         <CardHeader>
           <CardTitle>ENS Identity</CardTitle>
@@ -157,9 +158,13 @@ export function UserPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>Link a wallet to view your ENS identity</p>
-          </div>
+          {isConnected && address ? (
+            <ENSIdentityCard address={address} />
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Connect a wallet to view your ENS identity</p>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
