@@ -309,6 +309,105 @@ export function OrgPage() {
         </Dialog>
       </div>
 
+      <Card className="py-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <VerifiedIcon className="size-5" />
+            Setup checklist
+          </CardTitle>
+          <CardDescription>
+            A quick path to a working gated channel: add a channel, verify the bot, then create a gate.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 font-medium">
+                {channels.length > 0 ? (
+                  <CheckCircle2Icon className="size-4 text-emerald-600" />
+                ) : (
+                  <XCircleIcon className="size-4 text-muted-foreground" />
+                )}
+                Add a channel
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Register the Telegram chat ID you want to manage.
+              </div>
+            </div>
+            {channels.length === 0 && (
+              <Button type="button" size="sm" onClick={() => setIsCreateChannelOpen(true)}>
+                <PlusIcon className="size-4" />
+                Add
+              </Button>
+            )}
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 font-medium">
+                {selectedChannel?.botIsAdmin ? (
+                  <CheckCircle2Icon className="size-4 text-emerald-600" />
+                ) : (
+                  <XCircleIcon className="size-4 text-muted-foreground" />
+                )}
+                Verify bot permissions
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Add <span className="font-mono">@GaterRobot</span> as an admin and enable “restrict members”, then click Check Done.
+              </div>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant={selectedChannel?.botIsAdmin ? "secondary" : "success"}
+              disabled={!selectedChannel || isVerifyingBotAdmin}
+              onClick={async () => {
+                if (!selectedChannel) return
+                try {
+                  setIsVerifyingBotAdmin(true)
+                  const result = await verifyChannelBotAdmin({ channelId: selectedChannel._id })
+                  if (result?.botIsAdmin) toast.success("Bot permissions verified")
+                  else toast.error(result?.reason || "Bot is not an admin (or missing permission)")
+                } catch (error) {
+                  toast.error(error instanceof Error ? error.message : "Failed to verify bot permissions")
+                } finally {
+                  setIsVerifyingBotAdmin(false)
+                }
+              }}
+            >
+              Check Done
+            </Button>
+          </div>
+
+          <div className="flex items-center justify-between gap-3 rounded-lg border p-3">
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 font-medium">
+                {gates.length > 0 ? (
+                  <CheckCircle2Icon className="size-4 text-emerald-600" />
+                ) : (
+                  <XCircleIcon className="size-4 text-muted-foreground" />
+                )}
+                Create a gate
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Choose chain + token + threshold, then save to Convex.
+              </div>
+            </div>
+            {gates.length === 0 && (
+              <Button
+                type="button"
+                size="sm"
+                disabled={!selectedChannel}
+                onClick={() => setIsCreateGateOpen(true)}
+              >
+                <ShieldIcon className="size-4" />
+                Create
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="grid gap-4 lg:grid-cols-[1fr_22rem]">
         <Card className="py-0">
           <CardHeader>
