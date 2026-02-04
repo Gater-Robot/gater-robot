@@ -16,6 +16,7 @@ import type * as lib_auth from "../lib/auth.js";
 import type * as lib_telegramInitData from "../lib/telegramInitData.js";
 import type * as memberships from "../memberships.js";
 import type * as orgs from "../orgs.js";
+import type * as siwe from "../siwe.js";
 import type * as telegram from "../telegram.js";
 import type * as users from "../users.js";
 
@@ -34,6 +35,7 @@ declare const fullApi: ApiFromModules<{
   "lib/telegramInitData": typeof lib_telegramInitData;
   memberships: typeof memberships;
   orgs: typeof orgs;
+  siwe: typeof siwe;
   telegram: typeof telegram;
   users: typeof users;
 }>;
