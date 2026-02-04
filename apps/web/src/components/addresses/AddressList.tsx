@@ -36,12 +36,14 @@ export function AddressList({ className, onDefaultChange }: AddressListProps) {
     useAddresses()
 
   const handleValueChange = async (value: string) => {
-    const addressId = value as Id<'addresses'>
+    const address = addresses.find(a => a._id === value)
+    if (!address) return
+
     try {
-      await setDefault(addressId)
-      onDefaultChange?.(addressId)
+      await setDefault(address._id)
+      onDefaultChange?.(address._id)
     } catch {
-      // Error is already tracked in the hook
+      // Error handled in hook
     }
   }
 

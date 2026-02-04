@@ -9,11 +9,9 @@ interface TelegramUser {
   is_premium?: boolean
 }
 
-interface ValidationResult {
-  ok: boolean
-  user?: TelegramUser
-  reason?: string
-}
+type ValidationResult =
+  | { ok: true; user: TelegramUser }
+  | { ok: false; reason: string }
 
 // Convex context type - using `any` because runAction is a runtime method
 // that isn't fully typed in Convex's type definitions. This function is called
@@ -31,7 +29,7 @@ export const requireAuth = async (
   )
 
   if (!result?.ok || !result.user?.id) {
-    throw new Error('Unauthorized')
+    throw new Error(`Unauthorized: ${result?.ok === false ? result.reason : 'validation failed'}`)
   }
 
   return result.user

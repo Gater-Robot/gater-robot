@@ -2,35 +2,68 @@
 
 ## Current Status
 
-**Sprint:** 2 - User Identity
-**Branch:** `claude/sprint-2-planning-kDE7s`
+**Sprint:** 4 - Eligibility + LiFi
+**Branch:** `claude/plan-sprint-4-klpOj`
 
-## Sprint 2 Progress
+---
 
-| # | Issue | Status | Phase |
-|---|-------|--------|-------|
-| 12 | ConnectWallet UI | ✅ Done | 1 |
-| 13 | Deploy $BEST token | ✅ Done | - |
-| 14 | Faucet UI | In Progress | 2 |
-| 15 | SIWE nonce generation | ✅ Done | 1 |
-| 16 | SIWE verification | In Progress | 2 |
-| 17 | ENS display component | In Progress | 2 |
-| 18 | Multi-address table | Pending | 3 |
-| 19 | Default address UI | In Progress | 2 |
+## Previous Sprints Summary
 
-## Sprint 1 Summary (Complete)
+### Sprint 1 (Complete)
+Issues #3-11: Monorepo setup, bot commands, Convex schema + auth, web app shell, ENS components.
 
-Issues #3-11 delivered: monorepo setup, bot commands (/start, /admin), Convex schema + auth, web app shell, ENS components, $BEST token contracts.
+### Sprint 2 (Complete)
+Issues #12-19: ConnectWallet UI, SIWE auth flow, ENS resolution + identity card, FaucetPage, multi-address support.
 
-Key security: `requireAuth()` on mutations, `sendMessageSafe()`, `isSafeUrl()` XSS prevention.
+### Sprint 3 (Complete)
+Issues #20-26: Admin UI toggle, org list/creation, bot admin verification, gate config form, token metadata, gate storage.
+
+---
+
+## Sprint 4 Progress
+
+| # | Issue | Status | Phase | Depends On |
+|---|-------|--------|-------|------------|
+| 27 | Fetch token balance for verified wallets | Pending | 1 | - |
+| 30 | Install and configure LiFi Widget SDK | Pending | 1 | - |
+| 28 | Create eligibility check mutation | Pending | 2 | #27 |
+| 29 | Check Eligibility button and result UI | Pending | 2 | #28 |
+| 31 | Create /get-eligible page with LiFi widget | Pending | 3 | #27, #28, #30 |
+| 32 | Re-check eligibility after swap | Pending | 3 | #28, #31 |
+| 33 | Support deep link params for get-eligible | Complete | 4 | #31 |
+
+---
+
+## Execution Plan
+
+### Phase 1: Foundation (Parallel)
+- #27: Balance fetching with viem
+- #30: LiFi Widget SDK installation
+
+### Phase 2: Eligibility Engine (Sequential)
+- #28: Core eligibility check mutation
+- #29: Check Eligibility UI
+
+### Phase 3: Get Eligible Flow (Parallel)
+- #31: Full LiFi widget page
+- #32: Re-check after swap
+
+### Phase 4: Deep Linking
+- #33: URL param support for bot links
 
 ---
 
 ## Session Notes
 
-### 2026-02-04 - Sprint 2 Phase 1
+### 2026-02-04 - Sprint 4 Start
+- Closed Sprint 3 issues #20-26
+- Created Sprint 4 execution plan with 4 phases
+- Beginning Phase 1 implementation
 
-- Created `ConnectWallet.tsx` with wagmi hooks
-- Created `convex/siwe.ts` with nonce generation + verification
-- Converted `auth.js` → `auth.ts`
-- Fixed turbo.json v2 migration (`pipeline` → `tasks`)
+### 2026-02-04 - Issue #33 Deep Link Params
+- Implemented URL param support for direct bot links
+- Added `parseManualGateParams()` function to parse: token, amount, chain, symbol, decimals
+- Added "manual mode" UI flow that shows LiFi widget without Convex eligibility check
+- Added `getChainName()` helper for human-readable chain names
+- Updated gateConfig to work in both channel mode and manual mode
+- Bot can now link directly: `/get-eligible?token=0x...&amount=100&chain=8453&symbol=BEST`

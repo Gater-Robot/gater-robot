@@ -68,6 +68,18 @@ export const createMembership = mutation({
       throw new Error("Not authorized to create membership for this user");
     }
 
+    // Check for existing membership
+    const existing = await ctx.db
+      .query("memberships")
+      .withIndex("by_channel_and_user", (q) =>
+        q.eq("channelId", args.channelId).eq("userId", args.userId)
+      )
+      .unique();
+
+    if (existing) {
+      throw new Error("Membership already exists for this channel");
+    }
+
     const now = Date.now();
     return ctx.db.insert("memberships", {
       channelId: args.channelId,

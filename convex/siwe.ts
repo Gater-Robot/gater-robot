@@ -173,8 +173,8 @@ export const verifySignature = mutation({
     let parsedMessage
     try {
       parsedMessage = parseSiweMessage(args.message)
-    } catch {
-      throw new Error('Invalid SIWE message format')
+    } catch (err) {
+      throw new Error(`Invalid SIWE message format: ${err instanceof Error ? err.message : 'unknown error'}`)
     }
 
     // Validate domain
