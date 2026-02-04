@@ -121,7 +121,7 @@ Use this tool to update issue/PR status in the GitHub Project board.
 
 **Workflow:**
 ```
-No Status (Backlog) → Todo → In Progress → Code Review / Fix → Waiting for Merge → Done
+Backlog → Todo → In Progress → In Review → Approved → Done
 ```
 
 **Commands:**
@@ -130,10 +130,10 @@ No Status (Backlog) → Todo → In Progress → Code Review / Fix → Waiting f
 .agents/bin/gh_project_status --issue 3 --status "In Progress"
 
 # PR created, needs review
-.agents/bin/gh_project_status --issue 3 --status "Code Review / Fix"
+.agents/bin/gh_project_status --issue 3 --status "In Review"
 
-# PR approved, waiting to merge
-.agents/bin/gh_project_status --issue 3 --status "Waiting for Merge"
+# PR approved, ready to merge
+.agents/bin/gh_project_status --issue 3 --status "Approved"
 
 # List available statuses
 .agents/bin/gh_project_status --list-statuses
@@ -148,11 +148,11 @@ Before starting work:
 
 After creating PR:
 - [ ] Link PR to issue with "Closes #X" or "Part of #X" in PR body
-- [ ] Update issue status to "Code Review / Fix"
+- [ ] Update issue status to "In Review"
 - [ ] ntfy_send notification with PR link
 
 After PR approved:
-- [ ] Update issue status to "Waiting for Merge"
+- [ ] Update issue status to "Approved"
 
 After PR merged:
 - [ ] Status auto-updates to "Done" (built-in workflow)
@@ -208,14 +208,14 @@ See `docs/notes.md` for full documentation and examples.
 | Stage | Actions |
 |-------|---------|
 | **Pick up issue** | 1. Assign yourself: `gh issue edit <N> --add-assignee @me`<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "In Progress"` |
-| **Create PR** | 1. Include `Closes #N` or `Part of #N` in PR body<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "Code Review / Fix"` |
-| **PR approved** | Update status: `.agents/bin/gh_project_status --issue <N> --status "Waiting for Merge"` |
+| **Create PR** | 1. Include `Closes #N` or `Part of #N` in PR body<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "In Review"` |
+| **PR approved** | Update status: `.agents/bin/gh_project_status --issue <N> --status "Approved"` |
 | **PR merged** | Status auto-updates to "Done"; verify issue closed |
 | **Hand off work** | Remove yourself: `gh issue edit <N> --remove-assignee @me` |
 
 **Status Workflow:**
 ```
-(No Status) → Todo → In Progress → Code Review / Fix → Waiting for Merge → Done
-     ↑         ↑          ↑                ↑                    ↑           ↑
-  Backlog   Planned    Working         PR exists            Approved     Merged
+Backlog → Todo → In Progress → In Review → Approved → Done
+   ↑        ↑         ↑            ↑           ↑        ↑
+ Ideas   Planned   Working    PR open    PR approved  Merged
 ```
