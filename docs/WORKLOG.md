@@ -40,6 +40,9 @@ AND
 2. Resolve any merge conflicts during PR merge
 3. Merge approved PRs to develop
 4. Continue Sprint 1 implementation
+1. Land Sprint 1: Foundation issues #7 (Cloudflare tunnel), #8 (Convex schema), #9 (initData validation)
+2. Start bot /start handler and admin toggle
+3. Set up GitHub Projects v2 kanban board (in progress)
 
 **Blocked On:** Nothing - ready for manual UAT
 
@@ -150,3 +153,13 @@ AND
 1. UAT test each feature branch
 2. Merge to develop after testing
 3. Continue Sprint 1 implementation
+### 2026-02-05 - Sprint 1 Backend Foundations
+
+**Completed:**
+1. Drafted Cloudflare Quick Tunnel instructions for dev Mini App access (issue #7)
+2. Implemented Convex schema and scaffolded core queries/mutations (issue #8)
+3. Added Telegram initData HMAC validation action with unit tests (issue #9)
+
+**Next Up:**
+- Wire Convex actions into Mini App onboarding flow
+- Implement bot /start and /admin commands
