@@ -9,7 +9,7 @@ import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
 import { createPublicClient, getAddress, http, isAddress } from 'viem'
 import { mainnet } from 'viem/chains'
-import { requireAuth } from './lib/auth.js'
+import { requireAuth } from './lib/auth'
 
 const ENS_RPC_URL = process.env.MAINNET_RPC_URL || 'https://cloudflare-eth.com'
 
