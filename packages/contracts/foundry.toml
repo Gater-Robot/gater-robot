@@ -2,6 +2,6 @@
 src = "contracts"
 out = "out"
 libs = ["lib"]
-test = "test"
+test = "forge-test"
 solc_version = "0.8.24"
 remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
