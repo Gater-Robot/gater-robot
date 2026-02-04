@@ -10,6 +10,12 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    allowedHosts: [
+      'gater-dev.agentix.bot',
+      'gater-app.agentix.bot'
+    ],
+  },
   ssr: {
     noExternal: ['ethereum-identity-kit'],
   },
