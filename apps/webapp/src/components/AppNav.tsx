@@ -8,9 +8,11 @@ import {
   ShieldIcon,
   UserCircleIcon,
 } from "lucide-react"
-import { Link, useLocation } from "react-router-dom"
+import { Link, useLocation, useSearchParams } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
+import { useTelegram } from "@/contexts/TelegramContext"
+import { getIsAdminMode } from "@/lib/adminMode"
 
 type NavItem = {
   to: string
@@ -57,8 +59,22 @@ function getIsFullscreen() {
 
 export function AppNav() {
   const location = useLocation()
+  const telegram = useTelegram()
+  const [searchParams] = useSearchParams()
   const [isOpen, setIsOpen] = React.useState(false)
   const [isFullscreen, setIsFullscreen] = React.useState(getIsFullscreen)
+
+  const isAdminMode = getIsAdminMode({
+    startParam: telegram.startParam,
+    pathname: location.pathname,
+    searchParams,
+    dev: import.meta.env.DEV,
+  })
+
+  const items = React.useMemo(() => {
+    if (isAdminMode) return NAV_ITEMS
+    return NAV_ITEMS.filter((item) => item.to !== "/admin" && item.to !== "/orgs")
+  }, [isAdminMode])
 
   React.useEffect(() => {
     setIsOpen(false)
@@ -107,7 +123,7 @@ export function AppNav() {
         </div>
 
         <div className="flex flex-col gap-1">
-          {NAV_ITEMS.map(({ to, label, Icon }) => {
+          {items.map(({ to, label, Icon }) => {
             const isActive = location.pathname === to
             return (
               <Link
@@ -165,7 +181,7 @@ export function AppNav() {
             </div>
 
             <div className="mt-2 flex flex-col gap-1">
-              {NAV_ITEMS.map(({ to, label, Icon }) => {
+              {items.map(({ to, label, Icon }) => {
                 const isActive = location.pathname === to
                 return (
                   <Link
@@ -192,4 +208,3 @@ export function AppNav() {
     </>
   )
 }
-

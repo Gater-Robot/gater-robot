@@ -1,8 +1,11 @@
-import { Outlet, useLocation } from "react-router-dom"
+import * as React from "react"
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom"
 
 import { AppNav } from "@/components/AppNav"
 import { TelegramThemeSync } from "@/components/TelegramThemeSync"
 import { Toaster } from "@/components/ui/sonner"
+import { useTelegram } from "@/contexts/TelegramContext"
+import { getAdminStartParamRedirect } from "@/lib/adminMode"
 
 function getPageKey(pathname: string) {
   if (pathname.startsWith("/user")) return "user"
@@ -17,6 +20,22 @@ function getPageKey(pathname: string) {
 export function RootLayout() {
   const location = useLocation()
   const pageKey = getPageKey(location.pathname)
+  const navigate = useNavigate()
+  const telegram = useTelegram()
+  const [searchParams] = useSearchParams()
+
+  React.useEffect(() => {
+    // Redirect only from the default landing pages; avoid clobbering explicit deep-links.
+    if (location.pathname !== "/" && location.pathname !== "/user") return
+
+    // Preserve user-channel deep-links like /user?channelId=...
+    if (searchParams.get("channelId")) return
+
+    const redirectTo = getAdminStartParamRedirect(telegram.startParam)
+    if (!redirectTo) return
+
+    navigate(redirectTo, { replace: true })
+  }, [location.pathname, navigate, searchParams, telegram.startParam])
 
   return (
     <div

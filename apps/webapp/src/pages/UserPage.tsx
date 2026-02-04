@@ -24,10 +24,21 @@ export function UserPage() {
   const [searchParams] = useSearchParams()
 
   const urlChannelId = searchParams.get("channelId")
-  const channelIdFromStartParam = startParam?.startsWith("channel_")
-    ? startParam.replace("channel_", "")
-    : startParam
-  const channelId = urlChannelId || channelIdFromStartParam
+  const channelIdFromStartParam = (() => {
+    if (!startParam) return null
+    if (startParam === "admin" || startParam.startsWith("org_")) return null
+
+    if (startParam.startsWith("channel_")) {
+      const id = startParam.slice("channel_".length).trim()
+      return id.length > 0 ? id : null
+    }
+
+    // Back-compat: some flows use a raw Telegram chat id as startParam.
+    if (/^-?\d{5,}$/.test(startParam)) return startParam
+    return null
+  })()
+
+  const channelId = urlChannelId || channelIdFromStartParam || null
 
   if (isLoading) {
     return (
