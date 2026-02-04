@@ -188,6 +188,9 @@ export const verifySignature = mutation({
     }
 
     // Validate address matches
+    if (!parsedMessage.address) {
+      throw new Error('Missing address in SIWE message')
+    }
     if (getAddress(parsedMessage.address) !== normalizedAddress) {
       throw new Error('Address mismatch in SIWE message')
     }

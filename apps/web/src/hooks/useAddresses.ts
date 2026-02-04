@@ -26,7 +26,7 @@ export interface UserAddress {
   status: 'pending' | 'verified'
   verifiedAt?: number
   verificationMethod?: 'siwe' | 'ens_telegram_match'
-  siweNonce?: string
+  siweNonce?: string | null
   siweMessage?: string
   siweSignature?: string
   ensName?: string

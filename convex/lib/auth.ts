@@ -1,5 +1,4 @@
 import { api } from '../_generated/api'
-import type { MutationCtx, QueryCtx } from '../_generated/server'
 
 interface TelegramUser {
   id: string
@@ -16,7 +15,11 @@ interface ValidationResult {
   reason?: string
 }
 
-type ConvexCtx = MutationCtx | QueryCtx
+// Convex context type - using `any` because runAction is a runtime method
+// that isn't fully typed in Convex's type definitions. This function is called
+// from both queries and mutations, and runAction works at runtime.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ConvexCtx = any
 
 export const requireAuth = async (
   ctx: ConvexCtx,
