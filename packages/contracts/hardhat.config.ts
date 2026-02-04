@@ -1,12 +1,10 @@
-import path from "path";
 import { config as loadEnv } from "dotenv";
 import "@nomicfoundation/hardhat-ignition";
 import "@nomicfoundation/hardhat-ignition-viem";
 import "@nomicfoundation/hardhat-viem";
 import { defineConfig, type HardhatUserConfig } from "hardhat/config";
 
-// Load .env from monorepo root
-loadEnv({ path: path.resolve(__dirname, "../../.env") });
+loadEnv();
 
 const accounts = process.env.DEPLOYER_PRIVATE_KEY
   ? [process.env.DEPLOYER_PRIVATE_KEY]
