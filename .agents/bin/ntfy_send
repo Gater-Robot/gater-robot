@@ -39,6 +39,7 @@ DELAY=""
 MESSAGE=""
 ICON=""
 VERBOSE=0
+NO_SESSION=0
 
 # Color output helpers
 RED='\033[0;31m'
@@ -83,6 +84,8 @@ OPTIONS:
     -s, --server URL        Override server URL (default: https://ntfy.sh)
     -h, --help              Show this help message
     -v, --verbose           Show curl command being executed
+    --no-session            Don't prepend session context to message
+                            (Default: "session: user@host:repo(branch)")
 
 ENVIRONMENT:
     NTFY_CHANNEL    Required. The ntfy.sh topic/channel name
@@ -140,6 +143,9 @@ EXAMPLES:
 
     # Custom icon URL
     ntfy.sh -i "https://example.com/icon.png" -t "Custom" "With custom icon"
+
+    # Without session prefix
+    ntfy.sh --no-session "Plain message without context"
 
 EOF
     exit 0
@@ -208,6 +214,10 @@ parse_args() {
                 VERBOSE=1
                 shift
                 ;;
+            --no-session)
+                NO_SESSION=1
+                shift
+                ;;
             -*)
                 error "Unknown option: $1. Use --help for usage."
                 ;;
@@ -251,8 +261,55 @@ Or for a single command:
     fi
 }
 
+# Build session context prefix for message body
+# Output format: "session: user@host[cc]:repo([wt:]branch)"
+# - [cc] appears when CLAUDE_CODE_REMOTE_SESSION_ID is set
+# - wt: prefix on branch when running in a git worktree
+get_session_prefix() {
+    local user host repo branch
+
+    # Get user@hostname
+    user="${USER:-$(whoami 2>/dev/null || echo 'unknown')}"
+    host=$(hostname -s 2>/dev/null || echo "unknown")
+
+    # Check for Claude Code web session (bash parameter expansion idiom)
+    local cc_indicator="${CLAUDE_CODE_REMOTE_SESSION_ID:+[cc]}"
+
+    # Single git toplevel check to avoid race conditions
+    local git_toplevel
+    if git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null); then
+        repo=$(basename "$git_toplevel")
+        branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+
+        # Handle detached HEAD state (returns literal "HEAD")
+        if [[ "$branch" == "HEAD" ]]; then
+            branch="detached"
+        fi
+
+        # Detect git worktrees: git-dir path contains /worktrees/<name>
+        local git_dir
+        git_dir=$(git rev-parse --git-dir 2>/dev/null)
+        if [[ "$git_dir" == *"/worktrees/"* ]]; then
+            branch="wt:${branch}"
+        fi
+    else
+        repo="no-repo"
+        branch="no-branch"
+    fi
+
+    echo "session: ${user}@${host}${cc_indicator}:${repo}(${branch})"
+}
+
 # Build and execute curl command
 send_notification() {
+    # Prepend session context to message if enabled
+    if [[ "$NO_SESSION" -eq 0 ]]; then
+        local session_prefix
+        session_prefix=$(get_session_prefix)
+        MESSAGE="${session_prefix}
+${MESSAGE}"
+    fi
+
     local URL="${NTFY_SERVER}/${NTFY_CHANNEL}"
     local CURL_ARGS=(-s -S -X POST)
 
@@ -328,9 +385,23 @@ send_notification() {
     fi
 }
 
+# Auto-detect Claude session URL if no click URL provided
+auto_detect_session_url() {
+    # If click URL is already set, don't override
+    if [[ -n "$CLICK" ]]; then
+        return
+    fi
+
+    # Check for Claude Code remote session
+    if [[ -n "${CLAUDE_CODE_REMOTE_SESSION_ID:-}" ]]; then
+        CLICK="https://claude.ai/code/${CLAUDE_CODE_REMOTE_SESSION_ID}"
+        return
+    fi
+}
 # Main execution
 main() {
     parse_args "$@"
+    auto_detect_session_url
     validate
     send_notification
 }

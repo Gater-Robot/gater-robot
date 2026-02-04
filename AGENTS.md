@@ -1,1 +1,2 @@
 - ignore .claude/ directory unless otherwise directed
+- repo_slug: Gater-Robot/gater-robot

@@ -1,0 +1,22 @@
+{
+  "base": {
+    "chainId": 8453,
+    "address": "",
+    "updatedAt": ""
+  },
+  "baseSepolia": {
+    "chainId": 84532,
+    "address": "",
+    "updatedAt": ""
+  },
+  "arc": {
+    "chainId": null,
+    "address": "",
+    "updatedAt": ""
+  },
+  "arcTestnet": {
+    "chainId": null,
+    "address": "",
+    "updatedAt": ""
+  }
+}
