@@ -56,3 +56,13 @@ See `docs/FINAL_PLAN.md` for the reconciled 5‑day demo plan and where the olde
 ## Webapp migration (apps/web → apps/webapp)
 
 See `docs/WEBAPP_MIGRATION_PLAN.md` for the parity definition, phased migration plan, and tracker.
+
+---
+
+## Credits
+
+- **Scaffold-ETH 2** — multi-chain dapp patterns and tooling inspiration.
+- **ethid.org** / **ethereum-identity-kit** — identity + SIWE UX building blocks.
+- **ENS** — Ethereum identity primitives and ecosystem.
+- **LI.FI** — cross-chain swap/bridge infrastructure and widget.
+- **ETHGlobal Hacker Pass NFT** — hackathon participation and access.
