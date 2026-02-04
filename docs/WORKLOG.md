@@ -4,12 +4,13 @@
 
 **Phase:** Sprint 1: Foundation - Ready for UAT
 **Sprint:** Sprint 1: Foundation
-**Branch:** `develop` (feature branches ready for testing)
+**Branch:** `work`
 
 ## Sprint Progress
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
+| Sprint 1: Foundation | In Progress | Issue #4 and #5 bot commands implemented |
 | Sprint 1: Foundation | UAT Ready | 4 feature PRs ready for testing (#99, #100, #101, #102) |
 | Sprint 2: User Identity | Not Started | 9 issues created |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
@@ -29,6 +30,12 @@
 - `feat/6-webapp` → PR #102 - Test web app and ENS components
 
 **Next Steps:**
+1. Implement Mini App shell (routes + SDK)
+2. Set up GitHub Projects v2 kanban board (in progress)
+3. Start Convex schema and auth scaffolding
+
+AND 
+
 1. UAT test each feature branch
 2. Resolve any merge conflicts during PR merge
 3. Merge approved PRs to develop
@@ -93,6 +100,17 @@
 **Next Up:**
 - Implement Sprint 1 bot + mini-app features
 
+### 2026-02-05 - Bot Command Foundation
+
+**Completed:**
+1. **Bot polling scaffold**
+   - Added Node Telegram bot entrypoint
+   - Implemented /start greeting with Mini App button
+   - Implemented /admin in-memory toggle
+
+**Next Up:**
+- Wire Mini App shell routes
+- Add Convex schema and auth scaffolding
 ### 2026-02-04 - PR Triage Complete
 
 **Problem Solved:**
