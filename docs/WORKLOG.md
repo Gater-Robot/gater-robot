@@ -2,9 +2,60 @@
 
 ## Current Status
 
-**Phase:** Sprint 1: Foundation - Complete ✅
-**Sprint:** Sprint 2: User Identity (ready to start)
-**Branch:** `develop`
+**Phase:** Sprint 2: User Identity - In Progress
+**Sprint:** Sprint 2: User Identity
+**Branch:** `claude/sprint-2-planning-kDE7s`
+
+## Sprint 2 Execution Plan
+
+### Issue Summary
+
+| # | Issue | Status | Dependencies | Estimated |
+|---|-------|--------|--------------|-----------|
+| 12 | Set up wagmi + viem with MetaMask connector | 80% done | None | 3-4h |
+| 13 | Deploy $BEST token on Base + Arc mainnets | CLOSED ✅ | None | Done |
+| 14 | Create faucet UI for claiming tokens | Not started | #12, #13 | 4h |
+| 15 | Generate SIWE nonce in Convex | Not started | None | 2h |
+| 16 | Verify SIWE signature and bind wallet | Not started | #12, #15 | 5-6h |
+| 17 | Resolve ENS name + avatar for addresses | 70% done | Backend ready | 3h |
+| 18 | Create multi-address table UI | Not started | #16, #17, #19 | 3-4h |
+| 19 | Store default address preference | Backend done | UI only | 1-2h |
+
+### Dependency Graph
+
+```
+Phase 1 (Parallel) ─────────────────────────────────────────
+  #12: Wallet Connect UI (finish - 80% done)
+  #15: SIWE Nonce Generation (new)
+        │
+        ▼
+Phase 2 (Parallel, depends on Phase 1) ─────────────────────
+  #14: Faucet UI (depends on #12, #13✅)
+  #16: SIWE Verification (depends on #12, #15)
+  #17: ENS Display Component (frontend only)
+  #19: Wire Default Address (UI only)
+        │
+        ▼
+Phase 3 (Final) ────────────────────────────────────────────
+  #18: Multi-Address Table UI (depends on #16, #17, #19)
+  Integration Testing
+```
+
+### Technical Notes
+
+**Already Implemented (Sprint 1):**
+- wagmi v2 + viem configured (`apps/web/src/lib/wagmi.ts`)
+- Convex schema with users, addresses, orgs tables
+- ENS resolution functions in `convex/ens.ts`
+- `setDefaultAddress` mutation ready
+- `requireAuth()` security on all mutations
+
+**To Create:**
+- `apps/web/src/components/wallet/ConnectWallet.tsx`
+- `apps/web/src/components/wallet/SIWEButton.tsx`
+- `apps/web/src/components/wallet/AddressTable.tsx`
+- `apps/web/src/components/ens/ENSDisplay.tsx`
+- `convex/siwe.ts` (nonce generation + verification)
 
 ## Sprint Progress
 
