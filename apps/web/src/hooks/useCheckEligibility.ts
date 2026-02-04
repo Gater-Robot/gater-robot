@@ -41,6 +41,14 @@ export interface EligibilityResult {
   tokenSymbol: string
   /** Chain name (e.g., "Ethereum", "Polygon") */
   chainName: string
+  /** Token contract address (for LiFi widget) */
+  tokenAddress: string
+  /** Chain ID (for LiFi widget) */
+  chainId: number
+  /** Token decimals (for LiFi widget) */
+  decimals: number
+  /** Channel title/name */
+  channelTitle: string
 }
 
 /**

@@ -542,7 +542,18 @@ export const getChannelEligibilityStatus = action({
     formattedThreshold: string;
     tokenSymbol: string;
     chainName: string;
+    // Additional fields for LiFi widget integration
+    tokenAddress: string;
+    chainId: number;
+    decimals: number;
+    channelTitle: string;
   }> => {
+    // Fetch channel info first
+    const channel = await ctx.runQuery(internal.eligibility.getChannelById, {
+      channelId: args.channelId,
+    });
+    const channelTitle = channel?.title || "Channel";
+
     // Find user by telegram ID
     const user = await ctx.runQuery(internal.eligibility.getUserByTelegramId, {
       telegramUserId: args.telegramUserId,
@@ -561,6 +572,10 @@ export const getChannelEligibilityStatus = action({
         formattedThreshold: "0.00",
         tokenSymbol: "",
         chainName: "",
+        tokenAddress: "",
+        chainId: 0,
+        decimals: 18,
+        channelTitle,
       };
     }
 
@@ -594,6 +609,10 @@ export const getChannelEligibilityStatus = action({
         formattedThreshold: "0.00",
         tokenSymbol: "",
         chainName: "",
+        tokenAddress: "",
+        chainId: 0,
+        decimals: 18,
+        channelTitle,
       };
     }
 
@@ -612,6 +631,10 @@ export const getChannelEligibilityStatus = action({
         formattedThreshold: gate.thresholdFormatted || formatBalance(gate.threshold, gate.tokenDecimals || 18),
         tokenSymbol: gate.tokenSymbol || "TOKEN",
         chainName: CHAIN_NAMES[gate.chainId] || `Chain ${gate.chainId}`,
+        tokenAddress: gate.tokenAddress,
+        chainId: gate.chainId,
+        decimals: gate.tokenDecimals || 18,
+        channelTitle,
       };
     }
 
@@ -637,6 +660,10 @@ export const getChannelEligibilityStatus = action({
       formattedThreshold: gate.thresholdFormatted || formatBalance(gate.threshold, gate.tokenDecimals || 18),
       tokenSymbol: gate.tokenSymbol || "TOKEN",
       chainName: CHAIN_NAMES[gate.chainId] || `Chain ${gate.chainId}`,
+      tokenAddress: gate.tokenAddress,
+      chainId: gate.chainId,
+      decimals: gate.tokenDecimals || 18,
+      channelTitle,
     };
   },
 });
@@ -673,5 +700,17 @@ export const getMembershipByUserAndChannel = internalQuery({
         q.eq("channelId", args.channelId).eq("userId", args.userId)
       )
       .unique();
+  },
+});
+
+/**
+ * Internal query to get channel by ID
+ */
+export const getChannelById = internalQuery({
+  args: {
+    channelId: v.id("channels"),
+  },
+  handler: async (ctx, args): Promise<Doc<"channels"> | null> => {
+    return await ctx.db.get(args.channelId);
   },
 });
