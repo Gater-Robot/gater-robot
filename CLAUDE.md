@@ -26,21 +26,43 @@ After completing major work, checking in code, or making significant discoveries
 1. Read `docs/WORKLOG.md` for current status and next steps
 2. Check the "Current Task Context" section for what to work on
 3. Review relevant GitHub issues for acceptance criteria
+4. **Before starting work on an issue:**
+   - Assign yourself: `gh issue edit <number> --add-assignee @me --repo Gater-Robot/gater-robot`
+   - Update status to "In Progress": `.agents/bin/gh_project_status --issue <number> --status "In Progress"`
 
 ## Key Documentation Files
 
 | File | Purpose |
 |------|---------|
 | `docs/WORKLOG.md` | Current status, sprint progress, session history |
-| `docs/ISSUES-v1.0.0.md` | Sprint definitions with acceptance criteria |
+| `docs/FINAL_PLAN.md` | Consolidated hackathon plan with day-by-day tasks |
+| `docs/CONTEXT.md` | TL;DR for new chats, demo script reference |
 | `docs/findings-gotchas.md` | Technical solutions, code snippets to reuse |
 | `docs/notes.md` | Setup instructions, troubleshooting |
+| `issues/issues.json` | Issue definitions (run `scripts/create_github_issues.py`) |
 
 ## Project Context
 
 - **App:** Telegram token-gated private groups bot and mini-app
-- **Stack:** Next.js+ React + TypeScript + shadcn + Tailwind +...
+- **Stack:** Vite + React Router + Convex + wagmi/viem + TypeScript + shadcn + Tailwind
 - **Target:** EthGlobal 2026 HackMoney - Async Hack-a-thon First Place Winner!
+
+## GitHub Project Structure
+
+**Milestones (Sprints):**
+- Sprint 1: Foundation (Day 1-2)
+- Sprint 2: User Identity (Day 3)
+- Sprint 3: Admin + Gates (Day 3-4)
+- Sprint 4: Eligibility + LiFi (Day 4)
+- Sprint 5: Demo Polish (Day 5)
+- Sprint 6: Subscriptions (Stretch)
+- Sprint 7: Misc Stretch (Stretch)
+
+**Label Schema:**
+- Priority: `P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`
+- Area: `area:bot`, `area:mini-app`, `area:convex`, `area:lifi`, `area:contracts`, `area:hackathon`
+- Type: `type:feature`, `type:bug`, `type:chore`, `type:docs`, `type:milestone`
+- Status: `blocked`, `needs-review`, `partner-bounty`
 
 ## Git Branching Strategy
 
@@ -89,8 +111,133 @@ When asked to review a Pull Request: use gh cli to read code review comments on 
 - install the gh cli if it is not installed
 - when reviewer(s) has left comments, summarize them; state whether you believe each one requires addressing now, should be delayed (create a new gh issue) or ignored/not a problem/false positve. present summary and recommend what you think should be done next. wait for user direction to continue fixing (unless otherwise directed to immediately start fixes)
 
+# Agent Tools
+
+## GitHub Project Status (gh_project_status)
+
+**Location:** `.agents/bin/gh_project_status`
+
+Use this tool to update issue/PR status in the GitHub Project board.
+
+**Workflow:**
+```
+Backlog → Todo → In Progress → In Review → Approved → Done
+```
+
+**Commands:**
+```bash
+# Start working on an issue
+.agents/bin/gh_project_status --issue 3 --status "In Progress"
+
+# PR created, needs review
+.agents/bin/gh_project_status --issue 3 --status "In Review"
+
+# PR approved, ready to merge
+.agents/bin/gh_project_status --issue 3 --status "Approved"
+
+# List available statuses
+.agents/bin/gh_project_status --list-statuses
+```
+
+**Agent Checklist:**
+
+Before starting work:
+- [ ] **Assign yourself to the issue** using `gh issue edit <number> --add-assignee @me`
+- [ ] Update issue status to "In Progress"
+- [ ] Comment on issue with approach/plan
+
+After creating PR:
+- [ ] Link PR to issue with "Closes #X" or "Part of #X" in PR body
+- [ ] Update issue status to "In Review"
+- [ ] ntfy_send notification with PR link
+
+After PR approved:
+- [ ] Update issue status to "Approved"
+
+After PR merged:
+- [ ] Status auto-updates to "Done" (built-in workflow)
+- [ ] Verify issue was closed
+
+**Issue Assignment Commands:**
+```bash
+# Assign yourself to an issue
+gh issue edit 123 --add-assignee @me --repo Gater-Robot/gater-robot
+
+# View current assignees
+gh issue view 123 --json assignees --repo Gater-Robot/gater-robot
+
+# Remove yourself from an issue (when handing off)
+gh issue edit 123 --remove-assignee @me --repo Gater-Robot/gater-robot
+```
+
+**View Project Board:** https://github.com/orgs/Gater-Robot/projects/1
+
+## Project Board Automation
+
+Issues and PRs are automatically added to the project board via GitHub Actions.
+
+**Automatic Tracking (`.github/workflows/auto-add-to-project.yml`):**
+- Triggers on: issue opened/transferred/reopened, PR opened/reopened
+- Requires: `PROJECT_TOKEN` secret with `repo` and `project` scopes
+
+**Backfill Script (`scripts/backfill-project-board.sh`):**
+```bash
+# Dry run - see what would be added
+./scripts/backfill-project-board.sh --dry-run
+
+# Add all open issues and PRs to project
+./scripts/backfill-project-board.sh
+```
+
+**Manual Backfill Workflow (`.github/workflows/backfill-project.yml`):**
+- Trigger manually from Actions tab
+- Useful after setting up automation or if items were missed
+- Requires same `PROJECT_TOKEN` secret as automatic tracking
+
+## Notifications (ntfy_send)
+
+**Location:** `.agents/bin/ntfy_send`
+
+Use this tool to notify the developer after completing tasks, creating PRs, updating issues, or encountering blockers.
+
+**Required format:**
+```bash
+.agents/bin/ntfy_send \
+  --title "Action Title" \
+  --tags "emoji_tag" \
+  --click "https://github.com/Gater-Robot/gater-robot/..." \
+  "Message body with details"
+```
+
+**Always include:**
+- `--title` - Brief action summary
+- `--click` - Direct link to GitHub resource (PR, issue, comment)
+- Message body - What was done
+
+See `docs/notes.md` for full documentation and examples.
+
 # Important
-- never use npm. only use pnpm.
-- always use gh cli to check for issues matching the work we are doing. use gh cli to manage PRs, linked to uses, and post comment on issues updating work statuses, and close issues when PRs get merged. use gh cli to follow software development lifecycle and project management best practices
-- whenever done a task, try notifying the user using ntfy.sh/$NTFY_CHANNEL. be sure to include link(s) to any issues, comments, or PRs that your updating using gh, and briefly describe the completed work.
-- when creating GitHub issues, always assign a priority label (priority:critical/high/medium/low). If priority is unclear, ask the user for clarification via ntfy.sh before creating the issue.
+
+- Never use npm. Only use pnpm.
+- Always use gh cli to check for issues matching the work we are doing. Use gh cli to manage PRs, link to issues, and post comments on issues updating work statuses. Close issues when PRs get merged. Follow software development lifecycle and project management best practices.
+- After completing a task, notify the user using `.agents/bin/ntfy_send` with a clickable link to the relevant GitHub resource.
+- When creating GitHub issues, always assign a priority label (`P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`). If priority is unclear, ask the user for clarification via ntfy_send before creating the issue.
+
+## Issue Management Workflow
+
+**Complete lifecycle for working on an issue:**
+
+| Stage | Actions |
+|-------|---------|
+| **Pick up issue** | 1. Assign yourself: `gh issue edit <N> --add-assignee @me`<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "In Progress"` |
+| **Create PR** | 1. Include `Closes #N` or `Part of #N` in PR body<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "In Review"` |
+| **PR approved** | Update status: `.agents/bin/gh_project_status --issue <N> --status "Approved"` |
+| **PR merged** | Status auto-updates to "Done"; verify issue closed |
+| **Hand off work** | Remove yourself: `gh issue edit <N> --remove-assignee @me` |
+
+**Status Workflow:**
+```
+Backlog → Todo → In Progress → In Review → Approved → Done
+   ↑        ↑         ↑            ↑           ↑        ↑
+ Ideas   Planned   Working    PR open    PR approved  Merged
+```
