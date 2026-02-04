@@ -1,4 +1,5 @@
-import crypto from "node:crypto";
+"use node";
+import crypto from "crypto";
 
 export const DEFAULT_MAX_AGE_SECONDS = 24 * 60 * 60;
 

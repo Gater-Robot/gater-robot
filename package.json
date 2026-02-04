@@ -11,6 +11,9 @@
     "lint": "turbo run lint",
     "test": "turbo run test"
   },
+  "dependencies": {
+    "convex": "^1.17.4"
+  },
   "devDependencies": {
     "turbo": "^2.1.3"
   }
