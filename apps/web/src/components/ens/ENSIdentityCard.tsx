@@ -238,7 +238,7 @@ export function ENSIdentityCard({
                 <span className="hidden sm:inline">{profile.github}</span>
               </a>
             )}
-            {profile.url && isSafeUrl(profile.url) && (
+            {profile.url && (
               <a
                 href={profile.url}
                 target="_blank"
@@ -291,12 +291,3 @@ function ENSIdentityCardSkeleton({ compact }: { compact?: boolean }) {
 }
 
 export { ENSIdentityCardSkeleton }
-
-function isSafeUrl(url: string) {
-  try {
-    const parsed = new URL(url)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}

@@ -44,7 +44,14 @@ pnpm --filter @gater/contracts test
 Foundry tests:
 
 ```bash
-forge install foundry-rs/forge-std
 forge install OpenZeppelin/openzeppelin-contracts
 pnpm --filter @gater/contracts test:forge
 ```
+
+## Typechain
+
+```bash
+pnpm --filter @gater/contracts typechain
+```
+
+Generated types will be written to `packages/contracts/typechain` for consumption by the Mini App.

@@ -87,3 +87,34 @@ function normalizeUsername(username: string | null | undefined): string | null {
   if (!username) return null
   return username.toLowerCase().replace(/^@/, '').trim()
 }
+
+/**
+ * Hook for checking multiple addresses for Telegram match
+ * Useful for finding which of a user's wallets has matching ENS.
+ *
+ * @deprecated This is an incomplete stub. Use useEnsTelegramMatch for single address matching.
+ * TODO: Implement proper multi-address matching if needed.
+ */
+export function useEnsTelegramMatchForAddresses(
+  addresses: Array<{ address: `0x${string}`; ensName: string | null }>,
+  _telegramUsername: string | null
+) {
+  // Note: telegramUsername would be used for matching in real implementation
+  void _telegramUsername
+
+  // For each address with an ENS name, check for telegram match
+  const matches = addresses
+    .filter((a) => a.ensName)
+    .map((a) => ({
+      address: a.address,
+      ensName: a.ensName,
+      // Note: In real implementation, we'd need to handle multiple useEnsText calls
+      // This is simplified for PoC
+    }))
+
+  return {
+    matches,
+    hasAnyMatch: false, // Would be computed from actual hook results
+    isLoading: false,
+  }
+}

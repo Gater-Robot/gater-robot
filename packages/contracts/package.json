@@ -7,7 +7,7 @@
     "build": "hardhat compile",
     "test": "hardhat test",
     "test:forge": "forge test",
-    "deploy": "hardhat run scripts/deploy.ts",
+    "deploy": "tsx scripts/deploy.ts",
     "deploy:base": "hardhat ignition deploy ignition/modules/BestToken.ts --network base",
     "deploy:arc": "hardhat ignition deploy ignition/modules/BestToken.ts --network arc",
     "sync:addresses": "node scripts/sync-addresses.mjs"
