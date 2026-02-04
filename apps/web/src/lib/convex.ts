@@ -11,7 +11,10 @@ import { ConvexReactClient } from 'convex/react'
 const convexUrl = import.meta.env.VITE_CONVEX_URL
 
 if (!convexUrl) {
-  console.warn('VITE_CONVEX_URL is not set. Convex client may not work properly.')
+  if (import.meta.env.PROD) {
+    throw new Error('VITE_CONVEX_URL environment variable is required')
+  }
+  console.warn('VITE_CONVEX_URL not set - Convex features will not work')
 }
 
 /**
@@ -20,4 +23,4 @@ if (!convexUrl) {
  * This client connects to the Convex backend and provides real-time
  * subscriptions and mutations.
  */
-export const convex = new ConvexReactClient(convexUrl || '')
+export const convex = new ConvexReactClient(convexUrl || 'https://placeholder.convex.cloud')

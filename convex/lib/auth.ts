@@ -15,6 +15,9 @@ interface ValidationResult {
   reason?: string
 }
 
+// Convex context type - using `any` because runAction is a runtime method
+// that isn't fully typed in Convex's type definitions. This function is called
+// from both queries and mutations, and runAction works at runtime.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ConvexCtx = any
 
