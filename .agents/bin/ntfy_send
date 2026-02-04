@@ -85,6 +85,7 @@ OPTIONS:
     -h, --help              Show this help message
     -v, --verbose           Show curl command being executed
     --no-session            Don't prepend session context to message
+                            (Default: "session: user@host:repo(branch)")
 
 ENVIRONMENT:
     NTFY_CHANNEL    Required. The ntfy.sh topic/channel name
@@ -261,38 +262,39 @@ Or for a single command:
 }
 
 # Build session context prefix for message body
+# Output format: "session: user@host[cc]:repo([wt:]branch)"
+# - [cc] appears when CLAUDE_CODE_REMOTE_SESSION_ID is set
+# - wt: prefix on branch when running in a git worktree
 get_session_prefix() {
-    local user host cc_indicator repo branch
+    local user host repo branch
 
     # Get user@hostname
     user="${USER:-$(whoami 2>/dev/null || echo 'unknown')}"
     host=$(hostname -s 2>/dev/null || echo "unknown")
 
-    # Check for Claude Code web session
-    cc_indicator=""
-    if [[ -n "${CLAUDE_CODE_REMOTE_SESSION_ID:-}" ]]; then
-        cc_indicator="[cc]"
-    fi
+    # Check for Claude Code web session (bash parameter expansion idiom)
+    local cc_indicator="${CLAUDE_CODE_REMOTE_SESSION_ID:+[cc]}"
 
-    # Get repo name from git
-    if git rev-parse --show-toplevel &>/dev/null; then
-        repo=$(basename "$(git rev-parse --show-toplevel)")
-    else
-        repo="no-repo"
-    fi
-
-    # Get branch with worktree detection
-    if git rev-parse --is-inside-work-tree &>/dev/null; then
+    # Single git toplevel check to avoid race conditions
+    local git_toplevel
+    if git_toplevel=$(git rev-parse --show-toplevel 2>/dev/null); then
+        repo=$(basename "$git_toplevel")
         branch=$(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
 
-        # Check if in a worktree (git dir contains /worktrees/)
+        # Handle detached HEAD state (returns literal "HEAD")
+        if [[ "$branch" == "HEAD" ]]; then
+            branch="detached"
+        fi
+
+        # Detect git worktrees: git-dir path contains /worktrees/<name>
         local git_dir
         git_dir=$(git rev-parse --git-dir 2>/dev/null)
         if [[ "$git_dir" == *"/worktrees/"* ]]; then
             branch="wt:${branch}"
         fi
     else
-        branch="detached"
+        repo="no-repo"
+        branch="no-branch"
     fi
 
     echo "session: ${user}@${host}${cc_indicator}:${repo}(${branch})"
