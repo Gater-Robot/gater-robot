@@ -1,5 +1,12 @@
 # Gater Robot
 
+Run 4 terminals (outside vscode to avoid port forwarding fights with remote-ssh)
+```sh
+cloudflared tunnel run gater
+pnpm convex dev
+pnpm -F @gater/web
+pnpm -F @gater/bot
+```
 
 >**Elevator pitch**
 >
