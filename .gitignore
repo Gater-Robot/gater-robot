@@ -41,6 +41,13 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Hardhat build artifacts
+artifacts/
+cache/
+
+# Foundry build artifacts
+out/
+
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
@@ -140,6 +147,8 @@ vite.config.ts.timestamp-*
 .claude/settings.local.json
 .claude/hooks/private/
 .claude/private/
+airdrop-admin-ui-paytiers-opus.zip
 
 # Backups
 backups/github/
+backups/

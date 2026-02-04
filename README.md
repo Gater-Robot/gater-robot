@@ -18,6 +18,28 @@ Open in Telegram [@GaterRobot](https://t.me/gaterrobot)
 
 ---
 
+## Development tunnel (Cloudflare Quick Tunnel)
+
+Telegram Mini Apps must be served from a **public HTTPS URL** during development. We use Cloudflare Quick Tunnel
+to expose the local Mini App so it can be opened inside Telegram.
+
+**Prereqs**
+- Install `cloudflared` (https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/install-and-setup/installation/)
+
+**Run the Mini App and tunnel**
+```bash
+# terminal 1: run the web app (assumes it starts on :5173)
+pnpm --filter @gater/web dev
+
+# terminal 2: expose it publicly
+cloudflared tunnel --url http://localhost:5173
+```
+
+Cloudflared will print a public HTTPS URL (e.g. `https://<random>.trycloudflare.com`). Use this URL when
+opening the Mini App in Telegram (and for any `startapp` deep links). Avoid committing personal tunnel URLs.
+
+---
+
 ## Hackathon plan
 
 See `docs/FINAL_PLAN.md` for the reconciled 5‑day demo plan and where the older planning docs diverge.
