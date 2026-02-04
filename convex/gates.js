@@ -59,12 +59,19 @@ export const createGate = mutation({
       throw new Error("Channel does not belong to this org");
     }
 
+    // Validate token address format
+    if (!/^0x[a-fA-F0-9]{40}$/.test(args.tokenAddress)) {
+      throw new Error('Invalid token address format');
+    }
+    // Normalize to checksummed format (lowercase for consistency)
+    const normalizedAddress = args.tokenAddress.toLowerCase();
+
     const now = Date.now();
     return ctx.db.insert("gates", {
       orgId: args.orgId,
       channelId: args.channelId,
       chainId: args.chainId,
-      tokenAddress: args.tokenAddress,
+      tokenAddress: normalizedAddress,
       tokenSymbol: args.tokenSymbol,
       tokenName: args.tokenName,
       tokenDecimals: args.tokenDecimals,

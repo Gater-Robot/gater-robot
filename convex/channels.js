@@ -95,7 +95,7 @@ export const setChannelBotAdminStatus = mutation({
 
     await ctx.db.patch(args.channelId, {
       botIsAdmin: args.botIsAdmin,
-      verifiedAt: args.botIsAdmin ? Date.now() : null,
+      verifiedAt: args.botIsAdmin ? Date.now() : undefined,
     });
   },
 });
