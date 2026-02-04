@@ -24,6 +24,19 @@ import {
 } from '@/components/ui'
 import { Twitter, Github, Globe, ExternalLink, Check, Clock } from 'lucide-react'
 
+/**
+ * Validate that a URL uses a safe protocol (http: or https:)
+ * Prevents XSS via javascript: URIs in ENS text records
+ */
+function isSafeUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url)
+    return ['http:', 'https:'].includes(parsed.protocol)
+  } catch {
+    return false
+  }
+}
+
 // Telegram icon component
 function TelegramIcon({ className }: { className?: string }) {
   return (
@@ -238,7 +251,7 @@ export function ENSIdentityCard({
                 <span className="hidden sm:inline">{profile.github}</span>
               </a>
             )}
-            {profile.url && (
+            {profile.url && isSafeUrl(profile.url) && (
               <a
                 href={profile.url}
                 target="_blank"

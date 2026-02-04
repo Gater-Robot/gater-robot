@@ -52,7 +52,7 @@ export function ENSDemoPage() {
   }, [])
 
   const chains = [mainnet, base, arbitrum, sepolia]
-  const currentChainName = chains.find((c) => c.id === chainId)?.name
+  const currentChainName = chains.find((c) => c.id === chainId)?.name ?? `Chain ${chainId}`
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
