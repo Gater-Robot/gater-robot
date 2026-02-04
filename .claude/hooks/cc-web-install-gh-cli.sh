@@ -70,6 +70,7 @@ log "gh CLI installed successfully: $($LOCAL_BIN/gh --version | head -1)"
 
 
 
+
 log "===================================================="
 log "Run pnpm install to ensure all dependencies are set up."
 log "===================================================="

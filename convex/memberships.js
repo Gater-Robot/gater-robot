@@ -17,7 +17,7 @@ export const listMembershipsForUser = query({
 
     return ctx.db
       .query("memberships")
-      .withIndex("by_user_id", (q) => q.eq("userId", args.userId))
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
   },
 });
@@ -42,14 +42,13 @@ export const listMembershipsForChannel = query({
 
     return ctx.db
       .query("memberships")
-      .withIndex("by_channel_id", (q) => q.eq("channelId", args.channelId))
+      .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
       .collect();
   },
 });
 
 export const createMembership = mutation({
   args: {
-    orgId: v.id("orgs"),
     channelId: v.id("channels"),
     userId: v.id("users"),
     status: v.optional(
@@ -71,11 +70,10 @@ export const createMembership = mutation({
 
     const now = Date.now();
     return ctx.db.insert("memberships", {
-      orgId: args.orgId,
       channelId: args.channelId,
       userId: args.userId,
       status: args.status ?? "pending",
-      createdAt: now,
+      joinedAt: now,
     });
   },
 });
@@ -100,7 +98,13 @@ export const updateMembershipStatus = mutation({
       throw new Error("Membership not found");
     }
 
-    const org = await ctx.db.get(membership.orgId);
+    // Look up org through channel (memberships don't have direct orgId)
+    const channel = await ctx.db.get(membership.channelId);
+    if (!channel) {
+      throw new Error("Channel not found");
+    }
+
+    const org = await ctx.db.get(channel.orgId);
     if (!org || org.ownerTelegramUserId !== authUser.id) {
       throw new Error("Not authorized to update this membership");
     }

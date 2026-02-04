@@ -6,10 +6,9 @@
  */
 
 import { mainnet, base, arbitrum, sepolia } from 'wagmi/chains'
-import { arcTestnet } from '../chains'
 
 // Chains that support ENS resolution
-export const ENS_SUPPORTED_CHAINS = [mainnet, base, arbitrum, sepolia, arcTestnet] as const
+export const ENS_SUPPORTED_CHAINS = [mainnet, base, arbitrum, sepolia] as const
 
 // For cross-chain resolution, always query mainnet for ENS
 export const ENS_RESOLUTION_CHAIN_ID = mainnet.id

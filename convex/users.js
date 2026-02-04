@@ -11,7 +11,7 @@ export const getUserByTelegramId = query({
     }
     return ctx.db
       .query("users")
-      .withIndex("by_telegram_user_id", (q) =>
+      .withIndex("by_telegram_id", (q) =>
         q.eq("telegramUserId", args.telegramUserId),
       )
       .unique();
@@ -22,14 +22,14 @@ export const upsertUserFromTelegram = mutation({
   args: {
     initDataRaw: v.string(),
     telegramUsername: v.optional(v.string()),
-    firstName: v.optional(v.string()),
-    lastName: v.optional(v.string()),
+    telegramFirstName: v.optional(v.string()),
+    telegramLastName: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const authUser = await requireAuth(ctx, args.initDataRaw);
     const existing = await ctx.db
       .query("users")
-      .withIndex("by_telegram_user_id", (q) =>
+      .withIndex("by_telegram_id", (q) =>
         q.eq("telegramUserId", authUser.id),
       )
       .unique();
@@ -39,23 +39,29 @@ export const upsertUserFromTelegram = mutation({
     if (existing) {
       await ctx.db.patch(existing._id, {
         telegramUsername: args.telegramUsername ?? existing.telegramUsername,
-        firstName: args.firstName ?? existing.firstName,
-        lastName: args.lastName ?? existing.lastName,
+        telegramFirstName: args.telegramFirstName ?? existing.telegramFirstName,
+        telegramLastName: args.telegramLastName ?? existing.telegramLastName,
         lastSeenAt: now,
       });
-      return existing._id;
+      // Return full user record instead of just ID
+      return await ctx.db.get(existing._id);
     }
 
-    return ctx.db.insert("users", {
+    const userId = await ctx.db.insert("users", {
       telegramUserId: authUser.id,
       telegramUsername: args.telegramUsername,
-      firstName: args.firstName,
-      lastName: args.lastName,
+      telegramFirstName: args.telegramFirstName,
+      telegramLastName: args.telegramLastName,
       createdAt: now,
       lastSeenAt: now,
     });
+    // Return full user record instead of just ID
+    return await ctx.db.get(userId);
   },
 });
+
+// Alias for validateAndUpsertUser
+export const validateAndUpsertUser = upsertUserFromTelegram;
 
 export const setDefaultAddress = mutation({
   args: {
@@ -67,7 +73,7 @@ export const setDefaultAddress = mutation({
     // Authorization: caller must own the user record
     const user = await ctx.db
       .query("users")
-      .withIndex("by_telegram_user_id", (q) =>
+      .withIndex("by_telegram_id", (q) =>
         q.eq("telegramUserId", authUser.id),
       )
       .unique();

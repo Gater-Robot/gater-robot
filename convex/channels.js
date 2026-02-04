@@ -17,7 +17,7 @@ export const listChannelsForOrg = query({
 
     return ctx.db
       .query("channels")
-      .withIndex("by_org_id", (q) => q.eq("orgId", args.orgId))
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
   },
 });

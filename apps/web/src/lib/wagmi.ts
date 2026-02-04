@@ -8,13 +8,12 @@
 import { createConfig, http } from 'wagmi'
 import { mainnet, base, arbitrum, sepolia } from 'wagmi/chains'
 import { injected, walletConnect } from 'wagmi/connectors'
-import { arcTestnet } from './chains'
 
 // WalletConnect project ID (for production, use env variable)
 const WALLET_CONNECT_PROJECT_ID = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || 'demo'
 
 export const wagmiConfig = createConfig({
-  chains: [mainnet, base, arbitrum, sepolia, arcTestnet],
+  chains: [mainnet, base, arbitrum, sepolia],
   connectors: [
     injected(),
     walletConnect({
@@ -32,7 +31,6 @@ export const wagmiConfig = createConfig({
     [base.id]: http(),
     [arbitrum.id]: http(),
     [sepolia.id]: http(),
-    [arcTestnet.id]: http(import.meta.env.VITE_ARC_TESTNET_RPC_URL),
   },
 })
 
