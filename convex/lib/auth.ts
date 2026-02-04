@@ -1,4 +1,5 @@
 import { api } from '../_generated/api'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
 
 interface TelegramUser {
   id: string
@@ -15,8 +16,7 @@ interface ValidationResult {
   reason?: string
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ConvexCtx = any
+type ConvexCtx = MutationCtx | QueryCtx
 
 export const requireAuth = async (
   ctx: ConvexCtx,

@@ -50,7 +50,7 @@ export default defineSchema({
     ),
 
     // SIWE data (for siwe verification)
-    siweNonce: v.optional(v.string()),
+    siweNonce: v.optional(v.union(v.string(), v.null())),
     siweMessage: v.optional(v.string()),
     siweSignature: v.optional(v.string()),
 

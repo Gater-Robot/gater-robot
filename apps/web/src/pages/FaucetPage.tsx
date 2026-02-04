@@ -31,7 +31,7 @@ import {
 import { ConnectWallet } from '@/components/wallet'
 import { GoldMedalIcon } from '@/components/icons'
 import { Loader2, CheckCircle, XCircle, Plus, ExternalLink, Droplets } from 'lucide-react'
-import type { Address } from 'viem'
+import { formatUnits, type Address } from 'viem'
 
 // Token configuration
 const BEST_TOKEN_SYMBOL = 'BEST'
@@ -40,6 +40,15 @@ const FAUCET_AMOUNT = '2026'
 
 // Get token address from environment or use placeholder
 const BEST_TOKEN_ADDRESS = (import.meta.env.VITE_BEST_TOKEN_ADDRESS || '0x0000000000000000000000000000000000000000') as Address
+
+// Chain explorers for transaction links
+const CHAIN_EXPLORERS: Record<number, string> = {
+  1: 'https://etherscan.io',
+  8453: 'https://basescan.org',
+  84532: 'https://sepolia.basescan.org',
+  42161: 'https://arbiscan.io',
+  11155111: 'https://sepolia.etherscan.io',
+}
 
 // Minimal ABI for the faucet contract
 const BEST_TOKEN_ABI = [
@@ -97,7 +106,7 @@ export function FaucetPage() {
   const [addedToWallet, setAddedToWallet] = useState(false)
 
   // Check if user has already claimed
-  const { data: hasClaimed, refetch: refetchHasClaimed } = useReadContract({
+  const { data: hasClaimed, refetch: refetchHasClaimed, isLoading: isLoadingHasClaimed } = useReadContract({
     address: BEST_TOKEN_ADDRESS,
     abi: BEST_TOKEN_ABI,
     functionName: 'hasClaimed',
@@ -151,6 +160,13 @@ export function FaucetPage() {
     }
   }, [isWritePending, isConfirming, isConfirmed, writeError, confirmError, refetchHasClaimed, refetchBalance])
 
+  // Reset claim state when account or chain changes
+  useEffect(() => {
+    setClaimState('idle')
+    setErrorMessage('')
+    setAddedToWallet(false)
+  }, [address, chainId])
+
   // Handle claim button click
   const handleClaim = async () => {
     setErrorMessage('')
@@ -200,12 +216,14 @@ export function FaucetPage() {
     }
   }
 
-  // Format balance for display
+  // Format balance for display (using formatUnits for BigInt precision)
   const formatBalance = (value: bigint | undefined): string => {
     if (!value) return '0'
-    const formatted = Number(value) / 10 ** BEST_TOKEN_DECIMALS
-    return formatted.toLocaleString(undefined, { maximumFractionDigits: 2 })
+    return parseFloat(formatUnits(value, BEST_TOKEN_DECIMALS)).toLocaleString(undefined, { maximumFractionDigits: 2 })
   }
+
+  // Get explorer URL for current chain
+  const explorerUrl = CHAIN_EXPLORERS[chainId] || 'https://basescan.org'
 
   // Check if contract is configured
   const isContractConfigured = BEST_TOKEN_ADDRESS !== '0x0000000000000000000000000000000000000000'
@@ -291,7 +309,7 @@ export function FaucetPage() {
                 )}
 
                 {/* Idle state - ready to claim */}
-                {!hasClaimed && claimState === 'idle' && (
+                {hasClaimed === false && !isLoadingHasClaimed && claimState === 'idle' && (
                   <div className="text-center py-6 space-y-4">
                     <p className="text-muted-foreground">
                       You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong> tokens!
@@ -409,7 +427,7 @@ export function FaucetPage() {
             </div>
             {txHash && (
               <a
-                href={`https://basescan.org/tx/${txHash}`}
+                href={`${explorerUrl}/tx/${txHash}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-primary hover:underline"

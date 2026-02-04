@@ -11,10 +11,14 @@
 import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
 import { verifyMessage, getAddress, isAddress } from 'viem'
+import { parseSiweMessage } from 'viem/siwe'
 import { requireAuth } from './lib/auth'
 
 // Nonce TTL: 15 minutes
 const NONCE_TTL_MS = 15 * 60 * 1000
+
+// Allowed domains for SIWE verification
+const ALLOWED_DOMAINS = ['localhost', 'localhost:5173', 'gater.bot', 'app.gater.bot']
 
 /**
  * Generate a cryptographically secure nonce for SIWE
@@ -165,9 +169,27 @@ export const verifySignature = mutation({
       throw new Error('Nonce expired. Please generate a new nonce.')
     }
 
-    // Verify the message contains the correct nonce
-    if (!args.message.includes(addressRecord.siweNonce)) {
+    // Parse and validate SIWE message
+    let parsedMessage
+    try {
+      parsedMessage = parseSiweMessage(args.message)
+    } catch {
+      throw new Error('Invalid SIWE message format')
+    }
+
+    // Validate domain
+    if (!parsedMessage.domain || !ALLOWED_DOMAINS.includes(parsedMessage.domain)) {
+      throw new Error('Invalid domain in SIWE message')
+    }
+
+    // Validate nonce from parsed message (not substring search)
+    if (parsedMessage.nonce !== addressRecord.siweNonce) {
       throw new Error('Invalid nonce in message')
+    }
+
+    // Validate address matches
+    if (getAddress(parsedMessage.address) !== normalizedAddress) {
+      throw new Error('Address mismatch in SIWE message')
     }
 
     // Verify signature using viem
@@ -200,7 +222,7 @@ export const verifySignature = mutation({
       verificationMethod: 'siwe',
       siweMessage: args.message,
       siweSignature: args.signature,
-      siweNonce: undefined, // Clear nonce to prevent replay
+      siweNonce: null, // Clear nonce to prevent replay
       updatedAt: now,
     })
 

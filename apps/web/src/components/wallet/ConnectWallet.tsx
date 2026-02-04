@@ -17,6 +17,11 @@ const CHAIN_NAMES: Record<number, string> = {
   11155111: 'Sepolia',
 }
 
+// Shared utility for formatting addresses
+const formatAddress = (addr: string, prefixLen = 6, suffixLen = 4) => {
+  return `${addr.slice(0, prefixLen)}...${addr.slice(-suffixLen)}`
+}
+
 export function ConnectWallet() {
   const { address, isConnected, isConnecting } = useAccount()
   const { connect, connectors, isPending } = useConnect()
@@ -25,10 +30,6 @@ export function ConnectWallet() {
   const [showConnectors, setShowConnectors] = useState(false)
 
   const chainName = chainId ? CHAIN_NAMES[chainId] || `Chain ${chainId}` : 'Unknown'
-
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`
-  }
 
   if (isConnected && address) {
     return (
@@ -105,10 +106,6 @@ export function ConnectWalletCompact() {
   const { connect, connectors, isPending } = useConnect()
   const { disconnect } = useDisconnect()
 
-  const formatAddress = (addr: string) => {
-    return `${addr.slice(0, 4)}...${addr.slice(-4)}`
-  }
-
   if (isConnected && address) {
     return (
       <Button
@@ -117,7 +114,7 @@ export function ConnectWalletCompact() {
         onClick={() => disconnect()}
         className="font-mono"
       >
-        {formatAddress(address)}
+        {formatAddress(address, 4, 4)}
       </Button>
     )
   }
