@@ -17,7 +17,7 @@ export const listGatesForOrg = query({
 
     return ctx.db
       .query("gates")
-      .withIndex("by_org_id", (q) => q.eq("orgId", args.orgId))
+      .withIndex("by_org", (q) => q.eq("orgId", args.orgId))
       .collect();
   },
 });
@@ -28,7 +28,7 @@ export const listGatesForChannel = query({
     await requireAuth(ctx, args.initDataRaw);
     return ctx.db
       .query("gates")
-      .withIndex("by_channel_id", (q) => q.eq("channelId", args.channelId))
+      .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
       .collect();
   },
 });
@@ -71,6 +71,7 @@ export const createGate = mutation({
       threshold: args.threshold,
       active: true,
       createdAt: now,
+      updatedAt: now,
     });
   },
 });
