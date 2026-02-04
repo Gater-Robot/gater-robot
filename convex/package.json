@@ -2,10 +2,12 @@
   "name": "@gater/convex",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "convex dev",
     "deploy": "convex deploy",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "node --test"
   },
   "dependencies": {
     "convex": "^1.17.4",

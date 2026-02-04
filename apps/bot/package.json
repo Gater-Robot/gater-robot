@@ -3,9 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "dev": "echo 'Add bot dev script'",
-    "build": "echo 'Add bot build script'",
-    "lint": "echo 'Add bot lint script'",
-    "test": "echo 'Add bot test script'"
+    "dev": "node src/index.js",
+    "start": "node src/index.js",
+    "build": "echo 'No build step configured'",
+    "lint": "echo 'No lint step configured'",
+    "test": "echo 'No test step configured'"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-telegram-bot-api": "^0.66.0"
   }
 }

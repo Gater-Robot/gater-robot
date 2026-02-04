@@ -1,0 +1,12 @@
+{
+  "base": {
+    "chainId": 8453,
+    "address": "",
+    "updatedAt": ""
+  },
+  "arc": {
+    "chainId": null,
+    "address": "",
+    "updatedAt": ""
+  }
+}

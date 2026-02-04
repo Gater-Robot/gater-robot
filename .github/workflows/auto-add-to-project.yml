@@ -1,0 +1,33 @@
+# Automatically add issues and PRs to the organization project board
+# Project: https://github.com/orgs/Gater-Robot/projects/1
+#
+# This workflow ensures all new issues and PRs are tracked on our project board.
+# For this to work, you need to add a PAT or GitHub App token with `project` scope
+# as a repository secret named `PROJECT_TOKEN`.
+#
+# To create a PAT:
+# 1. Go to https://github.com/settings/tokens
+# 2. Generate new token (classic)
+# 3. Select scopes: `repo`, `project`
+# 4. Add as repository secret: Settings > Secrets > Actions > New repository secret
+#
+# Alternatively, use the built-in project auto-add feature in project settings.
+
+name: Add to Project Board
+
+on:
+  issues:
+    types: [opened, transferred, reopened]
+  pull_request_target:
+    types: [opened, reopened]
+
+jobs:
+  add-to-project:
+    name: Add to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add to project
+        uses: actions/add-to-project@v1
+        with:
+          project-url: https://github.com/orgs/Gater-Robot/projects/1
+          github-token: ${{ secrets.PROJECT_TOKEN }}
