@@ -83,25 +83,28 @@ This is not required for initial parity.
 > Update checkboxes as work progresses. Keep this doc as the living tracker.
 
 ### Phase 0 — Pre-flight (parity agreement)
-- [ ] Confirm Tailwind v4 is the target (vs migrating on v3 then upgrading)
-- [ ] Decide status of `/ens-eth-id` (prod route vs dev-only)
-- [ ] Confirm deployment hostnames for SIWE domain allowlists (frontend + Convex)
-- [ ] Create a “Parity QA” workflow (manual UAT list, plus quick smoke steps)
+- [x] Confirm Tailwind v4 is the target (migrate directly onto `apps/webapp`)
+- [x] Decide status of `/ens-eth-id` (keep dev-only until after parity)
+- [x] Confirm deployment hostnames for SIWE domain allowlists (frontend + Convex)
+  - Dev: `gater-dev.agentix.bot`
+  - Prod: `gater-app.agentix.bot`
+  - Local: `localhost` / `localhost:5173`
+- [x] Create a “Parity QA” workflow (manual UAT list, plus quick smoke steps)
 
 **Done when:** everyone agrees what “parity” means and what is allowed to change.
 
 ### Phase 1 — `apps/webapp` baseline parity (can compile/run)
-- [ ] Add required dependencies to match `apps/web` functionality (router, Convex, wagmi/viem, query, Telegram SDK, LiFi, etc.)
-- [ ] Add Vite config parity where needed
-  - [ ] `@` alias
-  - [ ] Buffer polyfill + `global` define as needed by web3 deps
-  - [ ] `server.allowedHosts` (dev tunnel domains)
-  - [ ] `ssr.noExternal` for any problematic deps (e.g. `ethereum-identity-kit`)
-- [ ] Add required env vars + documentation
-  - [ ] `VITE_CONVEX_URL`
-  - [ ] `VITE_WALLET_CONNECT_PROJECT_ID`
-  - [ ] `VITE_BEST_TOKEN_ADDRESS`
-- [ ] Copy/port any required `public/` assets (e.g., chain logos if LiFi/UX depends on them)
+- [x] Add required dependencies to match `apps/web` functionality (router, Convex, wagmi/viem, query, Telegram SDK, LiFi, etc.)
+- [x] Add Vite config parity where needed
+  - [x] `@` alias
+  - [x] Buffer polyfill + `global` define as needed by web3 deps
+  - [x] `server.allowedHosts` (dev tunnel domains)
+  - [x] `ssr.noExternal` for any problematic deps (e.g. `ethereum-identity-kit`)
+- [x] Add required env vars + documentation
+  - [x] `VITE_CONVEX_URL`
+  - [x] `VITE_WALLET_CONNECT_PROJECT_ID`
+  - [x] `VITE_BEST_TOKEN_ADDRESS`
+- [x] Copy/port any required `public/` assets (e.g., chain logos if LiFi/UX depends on them)
 
 **Done when:** `pnpm --filter @gater/webapp dev` runs and renders a basic shell with routing.
 
@@ -204,8 +207,9 @@ This is not required for initial parity.
 ---
 
 ## Open Questions / Decisions Needed
-- Tailwind v4 vs v3 migration path: hard requirement or flexible?
-- `apps/web` UI primitives: port as-is first, or rebuild from shadcn CLI?
-- `/ens-eth-id`: keep in production, or dev-only?
-- Production hostnames for SIWE allowlists (frontend + Convex)
-
+- **Locked decisions**
+  - Tailwind v4 is the target (no Tailwind v3 intermediate step).
+  - `/ens-eth-id` stays dev-only until parity is complete.
+  - SIWE domain allowlists must include: `gater-dev.agentix.bot`, `gater-app.agentix.bot`, `localhost`, `localhost:5173`.
+- **Still open**
+  - `apps/web` UI primitives: port as-is first, or rebuild via shadcn CLI?

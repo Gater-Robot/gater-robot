@@ -4,7 +4,7 @@ Run 4 terminals (outside vscode to avoid port forwarding fights with remote-ssh)
 ```sh
 cloudflared tunnel run gater
 pnpm convex dev
-pnpm -F @gater/web
+pnpm --filter @gater/webapp dev
 pnpm -F @gater/bot
 ```
 
@@ -25,7 +25,7 @@ Open in Telegram [@GaterRobot](https://t.me/gaterrobot)
 
 ---
 
-## Development tunnel (Cloudflare Quick Tunnel)
+## Development tunnel (Cloudflare Tunnel)
 
 Telegram Mini Apps must be served from a **public HTTPS URL** during development. We use Cloudflare Quick Tunnel
 to expose the local Mini App so it can be opened inside Telegram.
@@ -36,14 +36,14 @@ to expose the local Mini App so it can be opened inside Telegram.
 **Run the Mini App and tunnel**
 ```bash
 # terminal 1: run the web app (assumes it starts on :5173)
-pnpm --filter @gater/web dev
+pnpm --filter @gater/webapp dev
 
-# terminal 2: expose it publicly
-cloudflared tunnel --url http://localhost:5173
+# terminal 2: expose it publicly (named tunnel)
+cloudflared tunnel run gater
 ```
 
-Cloudflared will print a public HTTPS URL (e.g. `https://<random>.trycloudflare.com`). Use this URL when
-opening the Mini App in Telegram (and for any `startapp` deep links). Avoid committing personal tunnel URLs.
+Dev URL: `https://gater-dev.agentix.bot`  
+Prod URL: `https://gater-app.agentix.bot`
 
 ---
 

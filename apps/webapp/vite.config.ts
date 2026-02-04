@@ -9,6 +9,20 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force browser-compatible polyfill instead of Node builtin.
+      buffer: "buffer/",
     },
+  },
+  define: {
+    global: "globalThis",
+  },
+  optimizeDeps: {
+    include: ["buffer"],
+  },
+  server: {
+    allowedHosts: ["gater-dev.agentix.bot", "gater-app.agentix.bot"],
+  },
+  ssr: {
+    noExternal: ["ethereum-identity-kit"],
   },
 })
