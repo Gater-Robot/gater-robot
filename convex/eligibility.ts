@@ -45,6 +45,7 @@ async function fetchTotalBalanceForAddresses(
   balancesByAddress: Record<string, string>;
   formattedTotal: string;
   decimals: number;
+  errors: string[];
 }> {
   if (addresses.length === 0) {
     return {
@@ -52,6 +53,7 @@ async function fetchTotalBalanceForAddresses(
       balancesByAddress: {},
       formattedTotal: "0.00",
       decimals: 18,
+      errors: [],
     };
   }
 
@@ -60,23 +62,35 @@ async function fetchTotalBalanceForAddresses(
 
   // Fetch balances for all addresses in parallel
   const balancePromises = addresses.map(async (addr: VerifiedAddress) => {
-    const balance = await fetchTokenBalance(
+    const result = await fetchTokenBalance(
       chainId,
       tokenAddress,
       addr.address
     );
-    return { address: addr.address, balance };
+    return { address: addr.address, result };
   });
 
   const balanceResults = await Promise.all(balancePromises);
 
-  // Build balances map and calculate total
+  // Build balances map and calculate total, tracking errors
   const balancesByAddress: Record<string, string> = {};
+  const errors: string[] = [];
   let totalBalance = BigInt(0);
 
-  for (const result of balanceResults) {
-    balancesByAddress[result.address] = result.balance;
-    totalBalance += BigInt(result.balance);
+  for (const { address, result } of balanceResults) {
+    if (result.success) {
+      balancesByAddress[address] = result.balance;
+      totalBalance += BigInt(result.balance);
+    } else {
+      // Track the error but continue processing other addresses
+      errors.push(`Failed to fetch balance for ${address}: ${result.error}`);
+      balancesByAddress[address] = "0"; // Use 0 for failed lookups
+    }
+  }
+
+  // If ALL balance fetches failed, throw an error to indicate RPC issues
+  if (errors.length === balanceResults.length && balanceResults.length > 0) {
+    throw new Error(`All RPC calls failed. Errors: ${errors.join("; ")}`);
   }
 
   const totalBalanceStr = totalBalance.toString();
@@ -86,6 +100,7 @@ async function fetchTotalBalanceForAddresses(
     balancesByAddress,
     formattedTotal: formatBalance(totalBalanceStr, metadata.decimals),
     decimals: metadata.decimals,
+    errors,
   };
 }
 
@@ -385,10 +400,11 @@ export const updateMembershipInternal = internalMutation({
 });
 
 /**
- * Public mutation to update membership eligibility (with auth)
- * Called by admins or scheduled jobs
+ * Internal mutation to update membership eligibility
+ * Only callable by other Convex functions (admins or scheduled jobs)
+ * Changed from public mutation to prevent unauthorized access bypass
  */
-export const updateMembershipEligibility = mutation({
+export const updateMembershipEligibility = internalMutation({
   args: {
     membershipId: v.id("memberships"),
     status: v.union(

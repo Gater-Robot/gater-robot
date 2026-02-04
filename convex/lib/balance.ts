@@ -107,17 +107,24 @@ export function getChainClient(chainId: number): PublicClient {
 }
 
 /**
+ * Result type for balance fetching operations
+ */
+export type BalanceResult =
+  | { success: true; balance: string }
+  | { success: false; error: string }
+
+/**
  * Fetch ERC20 token balance for a wallet address
  * @param chainId - The chain ID where the token exists
  * @param tokenAddress - The ERC20 token contract address
  * @param userAddress - The wallet address to check balance for
- * @returns The raw balance as a string (in wei/smallest unit)
+ * @returns Result object with balance on success, or error message on failure
  */
 export async function fetchTokenBalance(
   chainId: number,
   tokenAddress: string,
   userAddress: string
-): Promise<string> {
+): Promise<BalanceResult> {
   try {
     const client = getChainClient(chainId)
     const balance = await client.readContract({
@@ -126,10 +133,11 @@ export async function fetchTokenBalance(
       functionName: 'balanceOf',
       args: [userAddress as `0x${string}`],
     })
-    return balance.toString()
+    return { success: true, balance: balance.toString() }
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown RPC error'
     console.error(`Failed to fetch balance on chain ${chainId} for ${userAddress}:`, error)
-    return '0'
+    return { success: false, error: errorMessage }
   }
 }
 
