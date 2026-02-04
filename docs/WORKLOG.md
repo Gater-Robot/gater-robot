@@ -41,6 +41,25 @@
 
 ---
 
+## Session Checklist
+
+### Before Starting Work on an Issue
+- [ ] Assign yourself: `gh issue edit <N> --add-assignee @me --repo Gater-Robot/gater-robot`
+- [ ] Update status to "In Progress": `.agents/bin/gh_project_status --issue <N> --status "In Progress"`
+- [ ] Comment on issue with approach (if complex)
+
+### After Creating a PR
+- [ ] Include `Closes #N` or `Part of #N` in PR body
+- [ ] Update status to "Code Review / Fix": `.agents/bin/gh_project_status --issue <N> --status "Code Review / Fix"`
+- [ ] Send notification: `.agents/bin/ntfy_send --title "PR Created" --click "<PR_URL>" "..."`
+
+### Before Ending Session
+- [ ] Update this WORKLOG.md with session notes
+- [ ] Ensure all worked issues have correct status and assignee
+- [ ] Push all changes to remote
+
+---
+
 ## Session Notes
 
 ### 2026-02-03 - Project Setup Session
