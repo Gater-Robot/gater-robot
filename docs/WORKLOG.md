@@ -2,15 +2,15 @@
 
 ## Current Status
 
-**Phase:** Sprint 1: Foundation - Merged
-**Sprint:** Sprint 1: Foundation
+**Phase:** Sprint 1: Foundation - Complete ✅
+**Sprint:** Sprint 2: User Identity (ready to start)
 **Branch:** `develop`
 
 ## Sprint Progress
 
 | Sprint | Status | Notes |
 |--------|--------|-------|
-| Sprint 1: Foundation | Merged | PRs #99-102 consolidated via chore/pr-cleanup (PR #113) |
+| Sprint 1: Foundation | ✅ Complete | All work merged to develop, branches cleaned |
 | Sprint 2: User Identity | Not Started | 9 issues created |
 | Sprint 3: Admin + Gates | Not Started | 8 issues created |
 | Sprint 4: Eligibility + LiFi | Not Started | 8 issues created |
@@ -20,18 +20,19 @@
 
 ## Current Task Context
 
-**Current Work:** Sprint 1 Consolidation Complete
+**Current Work:** Ready for Sprint 2
 
-**Merged Work:**
-- Bot: /start and /admin commands with ADMIN_IDS authorization
-- Convex: Schema, initData validation, requireAuth security
+**Sprint 1 Delivered:**
+- Bot: /start and /admin commands with ADMIN_IDS authorization, sendMessageSafe error handling
+- Convex: Schema, initData validation, requireAuth security for all mutations
 - Contracts: BEST token with Hardhat Ignition deploys
-- Web: ENS identity components
+- Web: ENS identity components with XSS prevention (isSafeUrl)
+- Agents: ntfy_send with session context, gh_project_status tool
 
 **Next Steps:**
-1. Merge PR #113 (chore/pr-cleanup → develop)
-2. Continue to Sprint 2: User Identity
-3. Implement wallet connection in mini-app
+1. Start Sprint 2: User Identity
+2. Implement wallet connection in mini-app
+3. Add SIWE (Sign-In With Ethereum) flow
 
 **Blocked On:** Nothing
 
@@ -39,73 +40,65 @@
 
 ## Session Notes
 
-### 2026-02-03 - Project Setup Session
+### 2026-02-04 - PR Consolidation & Branch Cleanup
+
+**Problem Solved:**
+- Complex PR dependency chain blocking merges
+- 20+ stale remote branches cluttering repository
+- Security fixes scattered across branches
 
 **Completed:**
 
-1. **Consolidated Planning Docs**
-   - Reconciled conflicting docs (issues.json, POC_PLAN.md, TENCHICAL_OVERVIEW.md)
-   - Created `docs/FINAL_PLAN.md` with 5-day hackathon plan + 2 stretch sprints
-   - Archived old docs to `docs/archive/`
+1. **Resolved PR #112 Conflicts (patch → chore)**
+   - Merged chore/pr-cleanup into patch-pr-cleanup
+   - Preserved security fixes: sendMessageSafe, ADMIN_IDS, requireAuth
+   - PR #112 merged successfully
 
-2. **GitHub Project Management Setup**
-   - Created 22 GitHub labels (P0-P3 priorities, area:*, type:*, etc.)
-   - Created 7 milestones (Sprint 1-7)
-   - Created 57 GitHub issues with proper labels and milestones
-   - Issues include task checklists and epic back-links
+2. **Merged PR #113 (chore → develop)**
+   - Consolidated all Sprint 1 work into develop
+   - Resolved WORKLOG.md merge conflict
 
-3. **Agent Notification Tool**
-   - Created `.agents/bin/ntfy_send` CLI wrapper for ntfy.sh
-   - Features: title, priority, tags, clickable links, action buttons
-   - Updated `docs/notes.md` with agent usage examples
-   - Updated `CLAUDE.md` with tool reference
+3. **Closed Superseded PRs**
+   - #99 (feat/4-5-bot) - consolidated into chore
+   - #100 (feat/8-9-10-convex) - consolidated into chore
+   - #101 (feat/13-contracts) - consolidated into chore
+   - #102 (feat/6-webapp) - consolidated into chore
+   - #106 (docs PR) - no longer needed
 
-4. **Updated Documentation**
-   - Updated `docs/erd.mmd` with new Convex schema
-   - Updated `CLAUDE.md` with project structure and label schema
+4. **Fixed PR #97 (ntfy-session-context)**
+   - Cherry-picked unique improvements to develop
+   - Fixed race condition in get_session_prefix()
+   - Added detached HEAD handling
+   - Closed PR as content merged
 
-5. **In Progress:**
-   - Adding model icons to ntfy_send (--claude, --codex, --gemini flags)
-   - Researching GitHub Projects v2 for org-level kanban
+5. **Merged PR #111 (project status dates)**
+   - Fixed workflow trigger: projects_v2_item → project_v2_item
+   - Hardened status-change parsing with fallbacks
 
-**Key Decisions:**
-- Stack: Vite + React Router + Convex + wagmi/viem
-- Token: $BEST on Base + Arc mainnets with faucet (user pays gas)
-- Demo: 4-minute recorded video
-- Partner bounties: ENS, LiFi, Circle/Arc
+6. **Cherry-picked Security Fixes**
+   - isSafeUrl() XSS prevention for ENS URL records
+   - Chain ID fallback for unknown chains
+   - From claude/ui-ux-code-simplification-fixes branch
 
-**Branch:** `claude/gh-project-manager-setup`
-**Commits:**
-- feat(issues): create new issues.json matching FINAL_PLAN.md
-- docs(claude): update CLAUDE.md with new project structure
-- docs(erd): update ERD to match Convex schema
-- feat(agents): add ntfy_send notification tool for agents
+7. **Deleted 20 Stale Branches**
+   - 4 feat/* branches (merged via chore)
+   - 6 codex-2026-02-03/* branches (auto-generated)
+   - 6 claude/* branches (work complete or regressions)
+   - copilot/sub-pr-85, work, feat/ntfy-session-context
 
-### 2026-02-04 - Monorepo Scaffold
+**Final Repository State:**
+- Remote branches: `origin/develop`, `origin/main` only
+- Open PRs: 0
+- All Sprint 1 work in develop with security fixes
 
-**Completed:**
-1. **Initialized pnpm + turborepo layout**
-   - Added root pnpm workspace + turbo config
-   - Added scaffolded package.json files for bot, web, and convex
-   - Updated .env.example with baseline environment variables
+**Security Improvements Merged:**
+- `requireAuth()` for all Convex mutations (prevents trust-based auth bypass)
+- `sendMessageSafe()` for bot error handling
+- `ADMIN_IDS` authorization for /admin command
+- `isSafeUrl()` XSS prevention for ENS records
 
-**Next Up:**
-- Implement Sprint 1 bot + mini-app features
+---
 
-<<<<<<< HEAD
-### 2026-02-05 - Bot Command Foundation
-
-**Completed:**
-1. **Bot polling scaffold**
-   - Added Node Telegram bot entrypoint
-   - Implemented /start greeting with Mini App button
-   - Implemented /admin in-memory toggle
-
-**Next Up:**
-- Wire Mini App shell routes
-- Add Convex schema and auth scaffolding
-=======
->>>>>>> origin/develop
 ### 2026-02-04 - PR Triage Complete
 
 **Problem Solved:**
@@ -132,29 +125,45 @@
 4. **Closed PRs:**
    - #74, #75, #76, #77, #78, #79, #80, #81, #82, #84, #85, #88, #89, #93, #94
 
-**Final State:**
-| PR | Branch | Status |
-|----|--------|--------|
-| #99 | feat/4-5-bot | Ready for UAT |
-| #100 | feat/8-9-10-convex | Ready for UAT |
-| #101 | feat/13-contracts | Ready for UAT |
-| #102 | feat/6-webapp | Ready for UAT |
-| #97 | feat/ntfy-session-context | Ready for review |
+---
 
-**Next Steps:**
-1. UAT test each feature branch
-2. Merge to develop after testing
-3. Continue Sprint 1 implementation
-<<<<<<< HEAD
-### 2026-02-05 - Sprint 1 Backend Foundations
+### 2026-02-04 - Monorepo Scaffold
 
 **Completed:**
-1. Drafted Cloudflare Quick Tunnel instructions for dev Mini App access (issue #7)
-2. Implemented Convex schema and scaffolded core queries/mutations (issue #8)
-3. Added Telegram initData HMAC validation action with unit tests (issue #9)
+1. **Initialized pnpm + turborepo layout**
+   - Added root pnpm workspace + turbo config
+   - Added scaffolded package.json files for bot, web, and convex
+   - Updated .env.example with baseline environment variables
 
-**Next Up:**
-- Wire Convex actions into Mini App onboarding flow
-- Implement bot /start and /admin commands
-=======
->>>>>>> origin/develop
+---
+
+### 2026-02-03 - Project Setup Session
+
+**Completed:**
+
+1. **Consolidated Planning Docs**
+   - Reconciled conflicting docs (issues.json, POC_PLAN.md, TENCHICAL_OVERVIEW.md)
+   - Created `docs/FINAL_PLAN.md` with 5-day hackathon plan + 2 stretch sprints
+   - Archived old docs to `docs/archive/`
+
+2. **GitHub Project Management Setup**
+   - Created 22 GitHub labels (P0-P3 priorities, area:*, type:*, etc.)
+   - Created 7 milestones (Sprint 1-7)
+   - Created 57 GitHub issues with proper labels and milestones
+   - Issues include task checklists and epic back-links
+
+3. **Agent Notification Tool**
+   - Created `.agents/bin/ntfy_send` CLI wrapper for ntfy.sh
+   - Features: title, priority, tags, clickable links, action buttons
+   - Updated `docs/notes.md` with agent usage examples
+   - Updated `CLAUDE.md` with tool reference
+
+4. **Updated Documentation**
+   - Updated `docs/erd.mmd` with new Convex schema
+   - Updated `CLAUDE.md` with project structure and label schema
+
+**Key Decisions:**
+- Stack: Vite + React Router + Convex + wagmi/viem
+- Token: $BEST on Base + Arc mainnets with faucet (user pays gas)
+- Demo: 4-minute recorded video
+- Partner bounties: ENS, LiFi, Circle/Arc
