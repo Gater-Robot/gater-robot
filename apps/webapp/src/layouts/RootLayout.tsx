@@ -1,63 +1,35 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Outlet, useLocation } from "react-router-dom"
 
-type NavItem = {
-  to: string
-  label: string
-  devOnly?: boolean
+import { AppNav } from "@/components/AppNav"
+import { TelegramThemeSync } from "@/components/TelegramThemeSync"
+import { Toaster } from "@/components/ui/sonner"
+
+function getPageKey(pathname: string) {
+  if (pathname.startsWith("/user")) return "user"
+  if (pathname.startsWith("/get-eligible")) return "get-eligible"
+  if (pathname.startsWith("/faucet")) return "faucet"
+  if (pathname.startsWith("/orgs")) return "orgs"
+  if (pathname.startsWith("/admin")) return "admin"
+  if (pathname.startsWith("/ens-eth-id")) return "ens-eth-id"
+  return "not-found"
 }
-
-const NAV_ITEMS: NavItem[] = [
-  { to: '/user', label: 'User' },
-  { to: '/get-eligible', label: 'Get Eligible' },
-  { to: '/faucet', label: 'Faucet' },
-  { to: '/orgs', label: 'Orgs' },
-  { to: '/admin', label: 'Admin' },
-  { to: '/ens-eth-id', label: 'ENS Demo', devOnly: true },
-]
 
 export function RootLayout() {
   const location = useLocation()
-
-  const navItems = NAV_ITEMS.filter((item) => !item.devOnly || import.meta.env.DEV)
+  const pageKey = getPageKey(location.pathname)
 
   return (
-    <div className="min-h-screen bg-white text-zinc-900">
-      <header className="border-b border-zinc-200 bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-zinc-900 text-sm font-semibold text-white">
-              G
-            </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold">Gater Robot</div>
-              <div className="text-xs text-zinc-500">webapp migration</div>
-            </div>
-          </div>
-
-          <nav className="flex items-center gap-3 text-sm">
-            {navItems.map((item) => {
-              const isActive = location.pathname === item.to
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={[
-                    'rounded-md px-2 py-1 transition-colors',
-                    isActive ? 'bg-zinc-900 text-white' : 'text-zinc-700 hover:bg-zinc-100',
-                  ].join(' ')}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </nav>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-5xl px-4 py-6">
+    <div
+      data-page={pageKey}
+      className="min-h-[100svh] bg-[var(--app-page-bg)] font-mono text-foreground"
+    >
+      <main className="mx-auto max-w-5xl px-4 py-6 pr-4 sm:pr-20">
         <Outlet />
       </main>
+
+      <AppNav />
+      <Toaster />
+      <TelegramThemeSync />
     </div>
   )
 }
-

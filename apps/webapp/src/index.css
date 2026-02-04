@@ -46,6 +46,8 @@
 
 :root {
   --radius: 0.625rem;
+  --app-page-bg-base: color-mix(in oklch, var(--background) 94%, var(--muted) 6%);
+  --app-page-bg: var(--app-page-bg-base);
   --background: oklch(1 0 0);
   --foreground: oklch(0.147 0.004 49.25);
   --card: oklch(1 0 0);
@@ -77,6 +79,34 @@
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
   --sidebar-ring: hsl(217.2 91.2% 59.8%);
+}
+
+[data-page="user"] {
+  --app-page-bg: color-mix(in oklch, var(--app-page-bg-base) 96%, var(--chart-2) 4%);
+}
+
+[data-page="get-eligible"] {
+  --app-page-bg: color-mix(in oklch, var(--app-page-bg-base) 96%, var(--chart-1) 4%);
+}
+
+[data-page="faucet"] {
+  --app-page-bg: color-mix(in oklch, var(--app-page-bg-base) 96%, var(--chart-5) 4%);
+}
+
+[data-page="orgs"] {
+  --app-page-bg: color-mix(in oklch, var(--app-page-bg-base) 96%, var(--chart-4) 4%);
+}
+
+[data-page="admin"] {
+  --app-page-bg: color-mix(in oklch, var(--app-page-bg-base) 96%, var(--chart-3) 4%);
+}
+
+[data-page="ens-eth-id"] {
+  --app-page-bg: color-mix(in oklch, var(--app-page-bg-base) 96%, var(--chart-2) 4%);
+}
+
+[data-page="not-found"] {
+  --app-page-bg: var(--app-page-bg-base);
 }
 
 .dark {
@@ -118,6 +148,59 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-mono text-foreground;
+  }
+}
+
+@keyframes app-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-1 * var(--marquee-distance, 0px)));
+  }
+}
+
+@layer components {
+  .overflow-marquee {
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .overflow-marquee__inner {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  .overflow-marquee[data-animate="true"] .overflow-marquee__inner {
+    animation: app-marquee var(--marquee-duration, 8s) linear infinite alternate;
+  }
+
+  .overflow-marquee::before,
+  .overflow-marquee::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 16px;
+    pointer-events: none;
+    backdrop-filter: blur(2px);
+  }
+
+  .overflow-marquee::before {
+    left: 0;
+    background: linear-gradient(to right, var(--marquee-fade-bg, var(--background)), transparent);
+  }
+
+  .overflow-marquee::after {
+    right: 0;
+    background: linear-gradient(to left, var(--marquee-fade-bg, var(--background)), transparent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overflow-marquee[data-animate="true"] .overflow-marquee__inner {
+      animation: none;
+    }
   }
 }

@@ -15,9 +15,7 @@ const appRoutes = [
   { path: 'orgs', element: <OrgsPage /> },
   { path: 'get-eligible', element: <GetEligiblePage /> },
   { path: 'faucet', element: <FaucetPage /> },
-
-  // Keep ENS demo route dev-only until parity is complete.
-  ...(import.meta.env.DEV ? [{ path: 'ens-eth-id', element: <EnsDemoPage /> }] : []),
+  { path: 'ens-eth-id', element: <EnsDemoPage /> },
 
   { path: '*', element: <NotFoundPage /> },
 ]
