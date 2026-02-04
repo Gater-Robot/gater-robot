@@ -10,24 +10,22 @@ const accounts = process.env.DEPLOYER_PRIVATE_KEY
   ? [process.env.DEPLOYER_PRIVATE_KEY]
   : [];
 
-const arcChainId = process.env.ARC_CHAIN_ID
-  ? Number(process.env.ARC_CHAIN_ID)
-  : undefined;
-
 const networks: HardhatUserConfig["networks"] = {};
 
 if (process.env.BASE_RPC_URL) {
   networks.base = {
+    type: "http",
     url: process.env.BASE_RPC_URL,
     chainId: 8453,
     accounts
   };
 }
 
-if (process.env.ARC_RPC_URL && arcChainId) {
-  networks.arc = {
-    url: process.env.ARC_RPC_URL,
-    chainId: arcChainId,
+if (process.env.ARC_TESTNET_RPC_URL) {
+  networks.arcTestnet = {
+    type: "http",
+    url: process.env.ARC_TESTNET_RPC_URL,
+    chainId: 5042002,
     accounts
   };
 }
