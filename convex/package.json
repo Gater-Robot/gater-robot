@@ -8,9 +8,10 @@
     "deploy": "convex deploy",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "node --test"
+    "test": "pnpm --filter @gater/chain-registry build && tsc -p tsconfig.test.json && node --test"
   },
   "dependencies": {
+    "@gater/chain-registry": "workspace:*",
     "convex": "^1.17.4",
     "viem": "^2.21.54"
   },

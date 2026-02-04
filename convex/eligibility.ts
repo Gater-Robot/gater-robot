@@ -19,8 +19,8 @@ import {
   formatBalance,
   isSupportedChain,
   getSupportedChains,
-  CHAIN_NAMES,
 } from "./lib/balance";
+import { getChainLabel } from "@gater/chain-registry";
 
 // Re-check interval: 1 hour
 const RECHECK_INTERVAL_MS = 60 * 60 * 1000;
@@ -162,7 +162,7 @@ export const checkEligibility = action({
         threshold: gate.threshold,
         formattedThreshold: gate.thresholdFormatted || formatBalance(gate.threshold, gate.tokenDecimals || 18),
         tokenSymbol: gate.tokenSymbol || "TOKEN",
-        chainName: CHAIN_NAMES[gate.chainId] || `Chain ${gate.chainId}`,
+        chainName: getChainLabel(gate.chainId),
         gateId: gate._id,
         noActiveGates: false,
         noVerifiedWallets: true,
@@ -185,7 +185,7 @@ export const checkEligibility = action({
       threshold: gate.threshold,
       formattedThreshold: gate.thresholdFormatted || formatBalance(gate.threshold, gate.tokenDecimals || 18),
       tokenSymbol: gate.tokenSymbol || "TOKEN",
-      chainName: CHAIN_NAMES[gate.chainId] || `Chain ${gate.chainId}`,
+      chainName: getChainLabel(gate.chainId),
       gateId: gate._id,
       noActiveGates: false,
       noVerifiedWallets: false,
@@ -388,7 +388,7 @@ export const getChannelEligibilityStatus = action({
         threshold: gate.threshold,
         formattedThreshold: gate.thresholdFormatted || formatBalance(gate.threshold, gate.tokenDecimals || 18),
         tokenSymbol: gate.tokenSymbol || "TOKEN",
-        chainName: CHAIN_NAMES[gate.chainId] || `Chain ${gate.chainId}`,
+        chainName: getChainLabel(gate.chainId),
         tokenAddress: gate.tokenAddress,
         chainId: gate.chainId,
         decimals: gate.tokenDecimals || 18,
@@ -416,7 +416,7 @@ export const getChannelEligibilityStatus = action({
       threshold: gate.threshold,
       formattedThreshold: gate.thresholdFormatted || formatBalance(gate.threshold, gate.tokenDecimals || 18),
       tokenSymbol: gate.tokenSymbol || "TOKEN",
-      chainName: CHAIN_NAMES[gate.chainId] || `Chain ${gate.chainId}`,
+      chainName: getChainLabel(gate.chainId),
       tokenAddress: gate.tokenAddress,
       chainId: gate.chainId,
       decimals: gate.tokenDecimals || 18,

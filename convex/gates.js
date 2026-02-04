@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
+import { isSupportedChain } from "./lib/balance";
 
 export const listGatesForOrg = query({
   args: {
@@ -57,6 +58,10 @@ export const createGate = mutation({
     const channel = await ctx.db.get(args.channelId);
     if (!channel || channel.orgId !== args.orgId) {
       throw new Error("Channel does not belong to this org");
+    }
+
+    if (!isSupportedChain(args.chainId)) {
+      throw new Error(`Unsupported chain: ${args.chainId}`);
     }
 
     // Validate token address format
