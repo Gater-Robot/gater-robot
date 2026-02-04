@@ -1,7 +1,7 @@
 name: Sync Project Dates
 
 on:
-  projects_v2_item:
+  project_v2_item:
     types: [edited]
 
 permissions:
@@ -39,19 +39,40 @@ jobs:
             );
             const doneStatus = process.env.DONE_STATUS;
 
-            const change = context.payload.changes?.field_value;
-            if (!change || change.field_name !== statusFieldName) {
+            const change =
+              context.payload.changes?.field_value ??
+              context.payload.changes?.fieldValue ??
+              context.payload.changes ??
+              null;
+            const changeFieldName =
+              change?.field_name ??
+              change?.fieldName ??
+              change?.field?.name ??
+              change?.field_value?.field_name ??
+              change?.fieldValue?.field_name ??
+              null;
+            if (!change || (changeFieldName && changeFieldName !== statusFieldName)) {
               core.info("No Status field change detected; skipping.");
               return;
             }
 
             const toStatus =
-              change.field_value?.name ?? change.field_value ?? change.to?.name ?? change.to;
+              change.to?.name ??
+              change.to ??
+              change.field_value?.name ??
+              change.field_value ??
+              change.fieldValue?.name ??
+              change.fieldValue ??
+              change.value?.name ??
+              change.value ??
+              null;
             const fromStatus =
-              change.previous_value?.name ??
-              change.previous_value ??
               change.from?.name ??
               change.from ??
+              change.previous_value?.name ??
+              change.previous_value ??
+              change.previousValue?.name ??
+              change.previousValue ??
               "";
 
             if (!toStatus) {
