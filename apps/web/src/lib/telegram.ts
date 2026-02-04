@@ -128,10 +128,8 @@ export async function initTelegramSdk(): Promise<TelegramInitResult> {
     // Extract user from init data
     const user = extractUser(launchParams.tgWebAppData?.user)
 
-    // Get init data raw string
-    const initDataRaw = launchParams.tgWebAppData
-      ? new URLSearchParams(launchParams.tgWebAppData as any).toString()
-      : null
+    // Get init data raw string (use original signed string, not reconstructed)
+    const initDataRaw = launchParams.tgWebAppDataRaw ?? null
 
     // Signal to Telegram that app is ready
     if (miniApp.ready.isAvailable()) {
@@ -177,10 +175,9 @@ export function getInitDataRaw(): string | null {
     if (!isInTelegramEnvironment()) return null
 
     const launchParams = retrieveLaunchParams()
-    if (!launchParams.tgWebAppData) return null
 
-    // Convert init data to raw string format
-    return new URLSearchParams(launchParams.tgWebAppData as any).toString()
+    // Use original signed string for backend validation
+    return launchParams.tgWebAppDataRaw ?? null
   } catch {
     return null
   }

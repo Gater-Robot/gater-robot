@@ -81,9 +81,9 @@ export function DiagnosticsDrawer({
         <Bug className="h-4 w-4" />
         Debug
         {isOpen ? (
-          <ChevronDown className="h-4 w-4" />
-        ) : (
           <ChevronUp className="h-4 w-4" />
+        ) : (
+          <ChevronDown className="h-4 w-4" />
         )}
       </Button>
 
