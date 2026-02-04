@@ -1,0 +1,207 @@
+name: Sync Project Dates
+
+on:
+  projects_v2_item:
+    types: [edited]
+
+permissions:
+  projects: write
+
+env:
+  PROJECT_OWNER: Gater-Robot
+  PROJECT_NUMBER: "1"
+  START_DATE_FIELD: "Start date"
+  COMPLETED_DATE_FIELD: "Completion date"
+  START_STATUSES: "In Progress,Code Review,Merge"
+  TODO_STATUSES: "Todo"
+  DONE_STATUS: "Done"
+
+jobs:
+  update-dates:
+    name: Update project date fields
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync date fields
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PROJECT_TOKEN }}
+          script: |
+            const org = process.env.PROJECT_OWNER;
+            const projectNumber = Number(process.env.PROJECT_NUMBER);
+            const statusFieldName = "Status";
+            const startFieldName = process.env.START_DATE_FIELD;
+            const completionFieldName = process.env.COMPLETED_DATE_FIELD;
+            const startStatuses = new Set(
+              process.env.START_STATUSES.split(",").map((status) => status.trim())
+            );
+            const todoStatuses = new Set(
+              process.env.TODO_STATUSES.split(",").map((status) => status.trim())
+            );
+            const doneStatus = process.env.DONE_STATUS;
+
+            const change = context.payload.changes?.field_value;
+            if (!change || change.field_name !== statusFieldName) {
+              core.info("No Status field change detected; skipping.");
+              return;
+            }
+
+            const toStatus =
+              change.field_value?.name ?? change.field_value ?? change.to?.name ?? change.to;
+            const fromStatus =
+              change.previous_value?.name ??
+              change.previous_value ??
+              change.from?.name ??
+              change.from ??
+              "";
+
+            if (!toStatus) {
+              core.info("No target status value; skipping.");
+              return;
+            }
+
+            const hasTodoSource = !fromStatus || todoStatuses.has(fromStatus);
+            const shouldStart = startStatuses.has(toStatus) && hasTodoSource;
+            const shouldDone = toStatus === doneStatus;
+
+            if (!shouldStart && !shouldDone) {
+              core.info(`Status ${toStatus} not tracked; skipping.`);
+              return;
+            }
+
+            const itemId =
+              context.payload.projects_v2_item?.node_id ??
+              context.payload.projects_v2_item?.id;
+            if (!itemId) {
+              core.info("No project item id found; skipping.");
+              return;
+            }
+
+            const projectData = await github.graphql(
+              `query($org: String!, $number: Int!) {
+                organization(login: $org) {
+                  projectV2(number: $number) {
+                    id
+                    fields(first: 50) {
+                      nodes {
+                        ... on ProjectV2FieldCommon { id name }
+                        ... on ProjectV2SingleSelectField { id name }
+                      }
+                    }
+                  }
+                }
+              }`,
+              { org, number: projectNumber }
+            );
+
+            const project = projectData.organization.projectV2;
+            if (!project) {
+              core.setFailed("Project not found.");
+              return;
+            }
+
+            const fields = project.fields.nodes;
+            const startField = fields.find((field) => field.name === startFieldName);
+            const completionField = fields.find(
+              (field) => field.name === completionFieldName
+            );
+
+            if (shouldStart && !startField) {
+              core.setFailed(`Start field '${startFieldName}' not found.`);
+              return;
+            }
+
+            if (shouldDone && !completionField) {
+              core.setFailed(`Completion field '${completionFieldName}' not found.`);
+              return;
+            }
+
+            const itemData = await github.graphql(
+              `query($id: ID!) {
+                node(id: $id) {
+                  ... on ProjectV2Item {
+                    id
+                    fieldValues(first: 50) {
+                      nodes {
+                        ... on ProjectV2ItemFieldDateValue {
+                          date
+                          field {
+                            ... on ProjectV2FieldCommon { id name }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }`,
+              { id: itemId }
+            );
+
+            const item = itemData.node;
+            if (!item) {
+              core.info("Project item not found; skipping.");
+              return;
+            }
+
+            const fieldValues = item.fieldValues.nodes;
+            const getDateValue = (fieldName) => {
+              const match = fieldValues.find((value) => value.field?.name === fieldName);
+              return match?.date ?? null;
+            };
+
+            const startDate = getDateValue(startFieldName);
+            const completionDate = getDateValue(completionFieldName);
+            const today = new Date().toISOString().slice(0, 10);
+
+            if (shouldStart) {
+              if (!startDate) {
+                core.info(`Setting ${startFieldName} to ${today}.`);
+                await github.graphql(
+                  `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
+                    updateProjectV2ItemFieldValue(input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { date: $date }
+                    }) {
+                      projectV2Item { id }
+                    }
+                  }`,
+                  {
+                    projectId: project.id,
+                    itemId: item.id,
+                    fieldId: startField.id,
+                    date: today,
+                  }
+                );
+              } else {
+                core.info(`${startFieldName} already set (${startDate}); skipping.`);
+              }
+            }
+
+            if (shouldDone) {
+              if (!completionDate) {
+                core.info(`Setting ${completionFieldName} to ${today}.`);
+                await github.graphql(
+                  `mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $date: Date!) {
+                    updateProjectV2ItemFieldValue(input: {
+                      projectId: $projectId
+                      itemId: $itemId
+                      fieldId: $fieldId
+                      value: { date: $date }
+                    }) {
+                      projectV2Item { id }
+                    }
+                  }`,
+                  {
+                    projectId: project.id,
+                    itemId: item.id,
+                    fieldId: completionField.id,
+                    date: today,
+                  }
+                );
+              } else {
+                core.info(
+                  `${completionFieldName} already set (${completionDate}); skipping.`
+                );
+              }
+            }

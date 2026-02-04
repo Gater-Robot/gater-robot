@@ -1,0 +1,300 @@
+#!/usr/bin/env bash
+#
+# gh_backup - Backup all GitHub issues and PRs to local files
+#
+# Creates a timestamped backup of all issues and PRs including:
+# - Issue/PR metadata (title, body, state, labels, assignees, milestone)
+# - Comments
+# - PR reviews and review comments
+# - Project status
+#
+# Usage:
+#   gh_backup [--output-dir <dir>] [--issues-only] [--prs-only]
+#
+# Examples:
+#   gh_backup                           # Full backup to ./backups/github/
+#   gh_backup --output-dir /tmp/backup  # Custom output directory
+#   gh_backup --issues-only             # Only backup issues
+#
+
+set -euo pipefail
+
+# Configuration
+REPO="Gater-Robot/gater-robot"
+DEFAULT_BACKUP_DIR="./backups/github"
+
+# Color output helpers
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+error() {
+    echo -e "${RED}Error:${NC} $1" >&2
+    exit 1
+}
+
+success() {
+    echo -e "${GREEN}Success:${NC} $1"
+}
+
+info() {
+    echo -e "${CYAN}Info:${NC} $1"
+}
+
+warn() {
+    echo -e "${YELLOW}Warning:${NC} $1"
+}
+
+usage() {
+    cat << 'EOF'
+gh_backup - Backup all GitHub issues and PRs to local files
+
+USAGE:
+    gh_backup [OPTIONS]
+
+OPTIONS:
+    -o, --output-dir <dir>   Output directory (default: ./backups/github)
+    -i, --issues-only        Only backup issues
+    -p, --prs-only           Only backup pull requests
+    -a, --all-states         Include closed issues/PRs (default: all states)
+    -h, --help               Show this help message
+
+OUTPUT STRUCTURE:
+    <output-dir>/
+    └── <timestamp>/
+        ├── metadata.json           # Backup metadata
+        ├── issues/
+        │   ├── index.json          # All issues summary
+        │   └── <number>/
+        │       ├── issue.json      # Issue details
+        │       └── comments.json   # Issue comments
+        └── prs/
+            ├── index.json          # All PRs summary
+            └── <number>/
+                ├── pr.json         # PR details
+                ├── comments.json   # PR comments
+                └── reviews.json    # PR reviews
+
+EXAMPLES:
+    # Full backup to default location
+    gh_backup
+
+    # Backup to custom directory
+    gh_backup --output-dir ~/my-backups
+
+    # Only backup issues
+    gh_backup --issues-only
+EOF
+    exit 0
+}
+
+# Check if gh CLI is available
+check_gh() {
+    if ! command -v gh &> /dev/null; then
+        error "GitHub CLI (gh) is not installed. Install it from https://cli.github.com/"
+    fi
+
+    if ! gh auth status &> /dev/null; then
+        error "Not authenticated with GitHub CLI. Run 'gh auth login' first."
+    fi
+}
+
+# Backup all issues
+backup_issues() {
+    local output_dir="$1"
+    local issues_dir="${output_dir}/issues"
+    mkdir -p "$issues_dir"
+
+    info "Fetching all issues..."
+
+    # Get all issues (open and closed)
+    local issues_json
+    issues_json=$(gh issue list --repo "$REPO" --state all --limit 1000 --json number,title,state,createdAt,updatedAt,closedAt,author,labels,assignees,milestone,projectItems)
+
+    local issue_count
+    issue_count=$(echo "$issues_json" | jq length)
+    info "Found ${issue_count} issues"
+
+    # Save issues index
+    echo "$issues_json" > "${issues_dir}/index.json"
+
+    # Backup each issue with details and comments
+    local numbers
+    numbers=$(echo "$issues_json" | jq -r '.[].number')
+
+    for num in $numbers; do
+        local issue_dir="${issues_dir}/${num}"
+        mkdir -p "$issue_dir"
+
+        info "  Backing up issue #${num}..."
+
+        # Get full issue details
+        gh issue view "$num" --repo "$REPO" --json number,title,body,state,createdAt,updatedAt,closedAt,author,labels,assignees,milestone,projectItems,reactionGroups,url > "${issue_dir}/issue.json" 2>/dev/null || {
+            warn "    Could not fetch issue #${num} details"
+            continue
+        }
+
+        # Get issue comments
+        gh issue view "$num" --repo "$REPO" --json comments | jq '.comments' > "${issue_dir}/comments.json" 2>/dev/null || {
+            echo "[]" > "${issue_dir}/comments.json"
+        }
+    done
+
+    success "Issues backed up to ${issues_dir}/"
+}
+
+# Backup all PRs
+backup_prs() {
+    local output_dir="$1"
+    local prs_dir="${output_dir}/prs"
+    mkdir -p "$prs_dir"
+
+    info "Fetching all pull requests..."
+
+    # Get all PRs (open, closed, merged)
+    local prs_json
+    prs_json=$(gh pr list --repo "$REPO" --state all --limit 1000 --json number,title,state,createdAt,updatedAt,closedAt,mergedAt,author,labels,assignees,milestone,baseRefName,headRefName,isDraft,mergeable)
+
+    local pr_count
+    pr_count=$(echo "$prs_json" | jq length)
+    info "Found ${pr_count} pull requests"
+
+    # Save PRs index
+    echo "$prs_json" > "${prs_dir}/index.json"
+
+    # Backup each PR with details, comments, and reviews
+    local numbers
+    numbers=$(echo "$prs_json" | jq -r '.[].number')
+
+    for num in $numbers; do
+        local pr_dir="${prs_dir}/${num}"
+        mkdir -p "$pr_dir"
+
+        info "  Backing up PR #${num}..."
+
+        # Get full PR details
+        gh pr view "$num" --repo "$REPO" --json number,title,body,state,createdAt,updatedAt,closedAt,mergedAt,author,labels,assignees,milestone,baseRefName,headRefName,isDraft,mergeable,additions,deletions,changedFiles,commits,files,reactionGroups,url > "${pr_dir}/pr.json" 2>/dev/null || {
+            warn "    Could not fetch PR #${num} details"
+            continue
+        }
+
+        # Get PR comments
+        gh pr view "$num" --repo "$REPO" --json comments | jq '.comments' > "${pr_dir}/comments.json" 2>/dev/null || {
+            echo "[]" > "${pr_dir}/comments.json"
+        }
+
+        # Get PR reviews
+        gh pr view "$num" --repo "$REPO" --json reviews | jq '.reviews' > "${pr_dir}/reviews.json" 2>/dev/null || {
+            echo "[]" > "${pr_dir}/reviews.json"
+        }
+
+        # Get PR review comments (inline comments on code)
+        gh api "repos/${REPO}/pulls/${num}/comments" > "${pr_dir}/review_comments.json" 2>/dev/null || {
+            echo "[]" > "${pr_dir}/review_comments.json"
+        }
+    done
+
+    success "Pull requests backed up to ${prs_dir}/"
+}
+
+# Create backup metadata
+create_metadata() {
+    local output_dir="$1"
+    local backup_type="$2"
+
+    cat > "${output_dir}/metadata.json" << EOF
+{
+    "repository": "${REPO}",
+    "backup_type": "${backup_type}",
+    "created_at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+    "created_by": "gh_backup",
+    "gh_version": "$(gh --version | head -1)"
+}
+EOF
+}
+
+# Main function
+main() {
+    local output_dir="$DEFAULT_BACKUP_DIR"
+    local backup_issues=true
+    local backup_prs=true
+
+    # Parse arguments
+    while [[ $# -gt 0 ]]; do
+        case "$1" in
+            -o|--output-dir)
+                output_dir="$2"
+                shift 2
+                ;;
+            -i|--issues-only)
+                backup_prs=false
+                shift
+                ;;
+            -p|--prs-only)
+                backup_issues=false
+                shift
+                ;;
+            -h|--help)
+                usage
+                ;;
+            *)
+                error "Unknown option: $1\nUse --help for usage."
+                ;;
+        esac
+    done
+
+    # Check prerequisites
+    check_gh
+
+    # Create timestamped backup directory
+    local timestamp
+    timestamp=$(date +"%Y%m%d_%H%M%S")
+    local backup_dir="${output_dir}/${timestamp}"
+
+    info "Creating backup in ${backup_dir}/"
+    mkdir -p "$backup_dir"
+
+    # Determine backup type for metadata
+    local backup_type="full"
+    if [[ "$backup_issues" == true && "$backup_prs" == false ]]; then
+        backup_type="issues_only"
+    elif [[ "$backup_issues" == false && "$backup_prs" == true ]]; then
+        backup_type="prs_only"
+    fi
+
+    # Create metadata
+    create_metadata "$backup_dir" "$backup_type"
+
+    # Run backups
+    if [[ "$backup_issues" == true ]]; then
+        backup_issues "$backup_dir"
+    fi
+
+    if [[ "$backup_prs" == true ]]; then
+        backup_prs "$backup_dir"
+    fi
+
+    # Summary
+    echo ""
+    success "Backup complete!"
+    echo ""
+    echo "Backup location: ${backup_dir}/"
+    echo ""
+
+    # Show backup size
+    if command -v du &> /dev/null; then
+        local size
+        size=$(du -sh "$backup_dir" | cut -f1)
+        echo "Total size: ${size}"
+    fi
+
+    # Create latest symlink
+    local latest_link="${output_dir}/latest"
+    rm -f "$latest_link"
+    ln -s "$timestamp" "$latest_link"
+    echo "Latest link: ${latest_link} -> ${timestamp}"
+}
+
+main "$@"

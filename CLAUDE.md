@@ -26,6 +26,9 @@ After completing major work, checking in code, or making significant discoveries
 1. Read `docs/WORKLOG.md` for current status and next steps
 2. Check the "Current Task Context" section for what to work on
 3. Review relevant GitHub issues for acceptance criteria
+4. **Before starting work on an issue:**
+   - Assign yourself: `gh issue edit <number> --add-assignee @me --repo Gater-Robot/gater-robot`
+   - Update status to "In Progress": `.agents/bin/gh_project_status --issue <number> --status "In Progress"`
 
 ## Key Documentation Files
 
@@ -118,7 +121,7 @@ Use this tool to update issue/PR status in the GitHub Project board.
 
 **Workflow:**
 ```
-No Status (Backlog) → Todo → In Progress → Waiting for Merge → Done
+Backlog → Todo → In Progress → In Review → Approved → Done
 ```
 
 **Commands:**
@@ -126,8 +129,11 @@ No Status (Backlog) → Todo → In Progress → Waiting for Merge → Done
 # Start working on an issue
 .agents/bin/gh_project_status --issue 3 --status "In Progress"
 
-# PR created, waiting for review
-.agents/bin/gh_project_status --issue 3 --status "Waiting for Merge"
+# PR created, needs review
+.agents/bin/gh_project_status --issue 3 --status "In Review"
+
+# PR approved, ready to merge
+.agents/bin/gh_project_status --issue 3 --status "Approved"
 
 # List available statuses
 .agents/bin/gh_project_status --list-statuses
@@ -136,19 +142,57 @@ No Status (Backlog) → Todo → In Progress → Waiting for Merge → Done
 **Agent Checklist:**
 
 Before starting work:
+- [ ] **Assign yourself to the issue** using `gh issue edit <number> --add-assignee @me`
 - [ ] Update issue status to "In Progress"
 - [ ] Comment on issue with approach/plan
 
 After creating PR:
-- [ ] Link PR to issue with "Closes #X" or "Part of #X"
-- [ ] Update issue status to "Waiting for Merge"
+- [ ] Link PR to issue with "Closes #X" or "Part of #X" in PR body
+- [ ] Update issue status to "In Review"
 - [ ] ntfy_send notification with PR link
+
+After PR approved:
+- [ ] Update issue status to "Approved"
 
 After PR merged:
 - [ ] Status auto-updates to "Done" (built-in workflow)
 - [ ] Verify issue was closed
 
+**Issue Assignment Commands:**
+```bash
+# Assign yourself to an issue
+gh issue edit 123 --add-assignee @me --repo Gater-Robot/gater-robot
+
+# View current assignees
+gh issue view 123 --json assignees --repo Gater-Robot/gater-robot
+
+# Remove yourself from an issue (when handing off)
+gh issue edit 123 --remove-assignee @me --repo Gater-Robot/gater-robot
+```
+
 **View Project Board:** https://github.com/orgs/Gater-Robot/projects/1
+
+## Project Board Automation
+
+Issues and PRs are automatically added to the project board via GitHub Actions.
+
+**Automatic Tracking (`.github/workflows/auto-add-to-project.yml`):**
+- Triggers on: issue opened/transferred/reopened, PR opened/reopened
+- Requires: `PROJECT_TOKEN` secret with `repo` and `project` scopes
+
+**Backfill Script (`scripts/backfill-project-board.sh`):**
+```bash
+# Dry run - see what would be added
+./scripts/backfill-project-board.sh --dry-run
+
+# Add all open issues and PRs to project
+./scripts/backfill-project-board.sh
+```
+
+**Manual Backfill Workflow (`.github/workflows/backfill-project.yml`):**
+- Trigger manually from Actions tab
+- Useful after setting up automation or if items were missed
+- Requires same `PROJECT_TOKEN` secret as automatic tracking
 
 ## Notifications (ntfy_send)
 
@@ -178,3 +222,22 @@ See `docs/notes.md` for full documentation and examples.
 - Always use gh cli to check for issues matching the work we are doing. Use gh cli to manage PRs, link to issues, and post comments on issues updating work statuses. Close issues when PRs get merged. Follow software development lifecycle and project management best practices.
 - After completing a task, notify the user using `.agents/bin/ntfy_send` with a clickable link to the relevant GitHub resource.
 - When creating GitHub issues, always assign a priority label (`P0: Critical`, `P1: High`, `P2: Medium`, `P3: Low`). If priority is unclear, ask the user for clarification via ntfy_send before creating the issue.
+
+## Issue Management Workflow
+
+**Complete lifecycle for working on an issue:**
+
+| Stage | Actions |
+|-------|---------|
+| **Pick up issue** | 1. Assign yourself: `gh issue edit <N> --add-assignee @me`<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "In Progress"` |
+| **Create PR** | 1. Include `Closes #N` or `Part of #N` in PR body<br>2. Update status: `.agents/bin/gh_project_status --issue <N> --status "In Review"` |
+| **PR approved** | Update status: `.agents/bin/gh_project_status --issue <N> --status "Approved"` |
+| **PR merged** | Status auto-updates to "Done"; verify issue closed |
+| **Hand off work** | Remove yourself: `gh issue edit <N> --remove-assignee @me` |
+
+**Status Workflow:**
+```
+Backlog → Todo → In Progress → In Review → Approved → Done
+   ↑        ↑         ↑            ↑           ↑        ↑
+ Ideas   Planned   Working    PR open    PR approved  Merged
+```
