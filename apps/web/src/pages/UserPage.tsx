@@ -19,14 +19,18 @@ import {
   Badge,
   Skeleton,
 } from '@/components/ui'
-import { ConnectWallet } from '@/components/wallet'
+import { ConnectWallet, SIWEButton } from '@/components/wallet'
 import { ENSIdentityCard } from '@/components/ens'
+import { AddressList } from '@/components/addresses'
+import { useAddresses } from '@/hooks/useAddresses'
 import { User, Wallet as WalletIcon, Settings } from 'lucide-react'
 import { useAccount } from 'wagmi'
 
 export function UserPage() {
   const { user, isLoading, isInTelegram } = useTelegram()
   const { address, isConnected } = useAccount()
+  const { addresses } = useAddresses()
+  const hasLinkedAddresses = addresses.length > 0
 
   if (isLoading) {
     return (
@@ -132,17 +136,48 @@ export function UserPage() {
           </div>
         </CardHeader>
         <CardContent>
+          {/* Show linked addresses if any exist */}
+          {hasLinkedAddresses && (
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground mb-3">
+                Select a default address for eligibility checks:
+              </p>
+              <AddressList />
+            </div>
+          )}
+
+          {/* Wallet connection and verification section */}
           {isConnected && address ? (
             <div className="space-y-4">
+              {hasLinkedAddresses && (
+                <div className="border-t pt-4">
+                  <p className="text-sm font-medium mb-2">Add another wallet</p>
+                </div>
+              )}
               <ConnectWallet />
-              <p className="text-sm text-muted-foreground">
-                Connected wallet will be linked after verification
-              </p>
+              <div className="pt-2 border-t">
+                <p className="text-sm text-muted-foreground mb-3">
+                  Sign a message to verify wallet ownership and link it to your Telegram account.
+                </p>
+                <SIWEButton
+                  onSuccess={() => {
+                    console.log('Wallet verified successfully!')
+                  }}
+                  onError={(error) => {
+                    console.error('Wallet verification failed:', error)
+                  }}
+                />
+              </div>
             </div>
-          ) : (
+          ) : !hasLinkedAddresses ? (
             <div className="text-center py-8 text-muted-foreground">
               <WalletIcon className="h-8 w-8 mx-auto mb-3 opacity-50" />
               <p className="mb-4">No wallets linked yet</p>
+              <ConnectWallet />
+            </div>
+          ) : (
+            <div className="border-t pt-4">
+              <p className="text-sm font-medium mb-2">Add another wallet</p>
               <ConnectWallet />
             </div>
           )}
