@@ -2,85 +2,60 @@
 
 ## Current Status
 
-**Sprint:** 3 - Admin + Gates
-**Branch:** `claude/sprint-3-planning-SYnT7`
+**Sprint:** 4 - Eligibility + LiFi
+**Branch:** `claude/plan-sprint-4-klpOj`
 
 ---
 
 ## Previous Sprints Summary
 
 ### Sprint 1 (Complete)
-Issues #3-11: Monorepo setup, bot commands (/start, /admin), Convex schema + auth, web app shell, ENS components, $BEST token contracts.
+Issues #3-11: Monorepo setup, bot commands, Convex schema + auth, web app shell, ENS components.
 
-### Sprint 2 (Complete - Needs GH Cleanup)
+### Sprint 2 (Complete)
 Issues #12-19: ConnectWallet UI, SIWE auth flow, ENS resolution + identity card, FaucetPage, multi-address support.
 
-**Note:** PR #134 still open. Issues #12,15,16,17 have code complete but GH issues not closed.
+### Sprint 3 (Complete)
+Issues #20-26: Admin UI toggle, org list/creation, bot admin verification, gate config form, token metadata, gate storage.
 
 ---
 
-## Sprint 3 Progress
+## Sprint 4 Progress
 
 | # | Issue | Status | Phase | Depends On |
 |---|-------|--------|-------|------------|
-| 20 | Show admin UI when /admin toggled | Pending | 1 | - |
-| 21 | Create org list view with add button | Pending | 1 | #20 |
-| 22 | Org creation flow | Pending | 2 | #21, #23 |
-| 23 | Verify bot admin rights in channel | Pending | 2 | - |
-| 24 | Gate configuration form UI | Pending | 3 | #22, #25 |
-| 25 | Fetch token metadata from chain | Pending | 3 | - |
-| 26 | Save gate config to Convex | Pending | 3 | #24, #25 |
+| 27 | Fetch token balance for verified wallets | Pending | 1 | - |
+| 30 | Install and configure LiFi Widget SDK | Pending | 1 | - |
+| 28 | Create eligibility check mutation | Pending | 2 | #27 |
+| 29 | Check Eligibility button and result UI | Pending | 2 | #28 |
+| 31 | Create /get-eligible page with LiFi widget | Pending | 3 | #27, #28, #30 |
+| 32 | Re-check eligibility after swap | Pending | 3 | #28, #31 |
+| 33 | Support deep link params for get-eligible | Pending | 4 | #31 |
 
 ---
 
-## Sprint 3 Execution Plan
+## Execution Plan
 
-### Phase 1: Admin Detection & Org Infrastructure
-**Parallel tasks:**
-- **1A.** Admin state detection in TelegramContext
-- **1B.** Create `convex/orgs.ts` module
+### Phase 1: Foundation (Parallel)
+- #27: Balance fetching with viem
+- #30: LiFi Widget SDK installation
 
-### Phase 2: Org Creation & Bot Verification
-**Sequential:** #21 → #22 | **Parallel:** #23 (bot work)
-- **2A.** Org list UI (OrgsPage.tsx)
-- **2B.** Org creation flow (OrgCreatePage.tsx)
-- **2C.** Bot permission verification
+### Phase 2: Eligibility Engine (Sequential)
+- #28: Core eligibility check mutation
+- #29: Check Eligibility UI
 
-### Phase 3: Gate Configuration (Core Feature)
-**Parallel:** #25, #26 backend | **Sequential:** #24 UI depends on #25
-- **3A.** Token metadata fetching (viem)
-- **3B.** Gate Convex module (`convex/gates.ts`)
-- **3C.** Gate configuration UI (GateConfigPage.tsx)
+### Phase 3: Get Eligible Flow (Parallel)
+- #31: Full LiFi widget page
+- #32: Re-check after swap
 
----
-
-## Files to Create
-
-| File | Purpose |
-|------|---------|
-| `convex/orgs.ts` | Org CRUD operations |
-| `convex/channels.ts` | Channel management + bot verification |
-| `convex/gates.ts` | Gate config + token metadata |
-| `apps/web/src/pages/OrgCreatePage.tsx` | Org creation form |
-| `apps/web/src/pages/GateConfigPage.tsx` | Gate configuration form |
-
-## Files to Modify
-
-| File | Changes |
-|------|---------|
-| `TelegramContext.tsx` | Add `adminMode` state |
-| `App.tsx` | Add routes for org/gate pages |
-| `OrgsPage.tsx` | Wire up Convex queries |
-| `AdminPage.tsx` | Wire up org list |
-| `apps/bot/src/index.js` | Enhance /admin command |
+### Phase 4: Deep Linking
+- #33: URL param support for bot links
 
 ---
 
 ## Session Notes
 
-### 2026-02-04 - Sprint 3 Planning
-
-- Verified Sprint 2 code exists (SIWE, ENS, ConnectWallet, FaucetPage)
-- Identified Sprint 2 GH housekeeping needed (PR #134 open, issues not closed)
-- Created Sprint 3 dependency graph with 3 execution phases
-- Mapped all 7 Sprint 3 issues with dependencies
+### 2026-02-04 - Sprint 4 Start
+- Closed Sprint 3 issues #20-26
+- Created Sprint 4 execution plan with 4 phases
+- Beginning Phase 1 implementation

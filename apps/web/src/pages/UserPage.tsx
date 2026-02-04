@@ -6,6 +6,7 @@
  * - Linked wallet addresses
  * - ENS resolution for linked addresses
  * - Default address selection
+ * - Eligibility checking for gated channels
  */
 
 import { useTelegram } from '@/contexts/TelegramContext'
@@ -22,15 +23,27 @@ import {
 import { ConnectWallet, SIWEButton } from '@/components/wallet'
 import { ENSIdentityCard } from '@/components/ens'
 import { AddressList } from '@/components/addresses'
+import { EligibilityChecker } from '@/components/eligibility'
 import { useAddresses } from '@/hooks/useAddresses'
-import { User, Wallet as WalletIcon, Settings } from 'lucide-react'
+import { User, Wallet as WalletIcon, Settings, Shield, ExternalLink } from 'lucide-react'
 import { useAccount } from 'wagmi'
+import { useSearchParams, Link } from 'react-router-dom'
+import { Id } from '../../../../convex/_generated/dataModel'
 
 export function UserPage() {
-  const { user, isLoading, isInTelegram } = useTelegram()
+  const { user, isLoading, isInTelegram, startParam } = useTelegram()
   const { address, isConnected } = useAccount()
   const { addresses } = useAddresses()
   const hasLinkedAddresses = addresses.length > 0
+  const [searchParams] = useSearchParams()
+
+  // Get channelId from URL params or Telegram startParam
+  // startParam format could be "channel_<channelId>" or just the channelId
+  const urlChannelId = searchParams.get('channelId')
+  const channelIdFromStartParam = startParam?.startsWith('channel_')
+    ? startParam.replace('channel_', '')
+    : startParam
+  const channelId = urlChannelId || channelIdFromStartParam
 
   if (isLoading) {
     return (
@@ -198,6 +211,43 @@ export function UserPage() {
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <p>Connect a wallet to view your ENS identity</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Eligibility Check Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Shield className="h-5 w-5" />
+            Channel Eligibility
+          </CardTitle>
+          <CardDescription>
+            Check your eligibility for token-gated channels
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {channelId ? (
+            // Show eligibility checker if we have a channelId
+            <EligibilityChecker
+              channelId={channelId as Id<'channels'>}
+              compact
+            />
+          ) : (
+            // Show guidance when no channelId is provided
+            <div className="text-center py-8">
+              <Shield className="h-12 w-12 mx-auto text-muted-foreground mb-4 opacity-50" />
+              <h3 className="text-lg font-medium mb-2">Check Eligibility</h3>
+              <p className="text-muted-foreground mb-4 max-w-md mx-auto">
+                Visit a token-gated channel to check if your wallet balances meet the requirements.
+              </p>
+              <Link to="/get-eligible">
+                <Button variant="outline">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Eligibility Requirements
+                </Button>
+              </Link>
             </div>
           )}
         </CardContent>
