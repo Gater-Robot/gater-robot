@@ -10,7 +10,7 @@
 #   gh_project_status --list-statuses
 #   gh_project_status --refresh-cache
 #
-# Statuses: "Todo", "In Progress", "In Review", "Approved", "Done"
+# Statuses: "Backlog", "Todo", "In Progress", "In Review", "Approved", "Done"
 #
 # Examples:
 #   gh_project_status --issue 3 --status "In Progress"
@@ -29,6 +29,7 @@ REPO="Gater-Robot/gater-robot"
 # Status Field ID and Option IDs (cached values)
 STATUS_FIELD_ID="PVTSSF_lADOD29KIs4BOKlhzg88nVM"
 declare -A STATUS_OPTIONS=(
+    ["Backlog"]="988c1075"
     ["Todo"]="f75ad846"
     ["In Progress"]="47fc9ee4"
     ["In Review"]="2438a9a8"
@@ -75,6 +76,7 @@ OPTIONS:
     -h, --help               Show this help message
 
 AVAILABLE STATUSES:
+    Backlog             Ideas, stretch goals, not yet planned
     Todo                Work is planned but not started
     In Progress         Currently being worked on
     In Review           PR open, awaiting code review
@@ -82,6 +84,9 @@ AVAILABLE STATUSES:
     Done                Completed and merged
 
 EXAMPLES:
+    # Move issue to backlog
+    gh_project_status --issue 3 --status "Backlog"
+
     # Start working on an issue
     gh_project_status --issue 3 --status "In Progress"
 
@@ -102,7 +107,7 @@ WORKFLOW:
 
 NOTE:
     - "Done" status is usually set automatically when issues are closed
-    - Use "No Status" (by clearing) for backlog/ideas
+    - Use "Backlog" for ideas and stretch goals not yet planned
 EOF
     exit 0
 }
@@ -114,7 +119,7 @@ list_statuses() {
         echo "  - $status"
     done
     echo ""
-    echo "To clear status (move to backlog), use: --status clear"
+    echo "To clear status entirely, use: --status clear"
 }
 
 # Get item ID for an issue or PR
