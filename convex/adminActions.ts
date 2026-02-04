@@ -7,6 +7,18 @@ import { anyApi } from "convex/server"
 const api = anyApi as any
 const internal = anyApi as any
 
+let didWarnAdminIdsEnforced = false
+
+function parseAdminIdsEnv(raw: string | undefined): string[] {
+  if (!raw) return []
+  const ids = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  // Treat an empty/invalid string as "not set" to avoid surprise lockouts.
+  return ids.length > 0 ? ids : []
+}
+
 function parseInitDataUserId(initDataRaw: string): string | null {
   try {
     const params = new URLSearchParams(initDataRaw)
@@ -26,6 +38,18 @@ async function requireValidatedTelegramUserId(ctx: any, initDataRaw: string): Pr
   if (allowMock && hash === "mock") {
     const userId = parseInitDataUserId(initDataRaw)
     if (!userId) throw new Error("Unauthorized: Could not parse user from initData")
+    const adminIds = parseAdminIdsEnv(process.env.ADMIN_IDS)
+    if (adminIds.length > 0) {
+      if (!didWarnAdminIdsEnforced) {
+        didWarnAdminIdsEnforced = true
+        console.warn(
+          `[gater] ADMIN_IDS is set; admin actions are restricted to ${adminIds.length} configured Telegram user ID(s).`,
+        )
+      }
+      if (!adminIds.includes(userId)) {
+        throw new Error("Not authorized: ADMIN_IDS enforced")
+      }
+    }
     return userId
   }
 
@@ -37,8 +61,33 @@ async function requireValidatedTelegramUserId(ctx: any, initDataRaw: string): Pr
     throw new Error(`Unauthorized: ${result?.ok === false ? result.reason : "validation failed"}`)
   }
 
-  return String(result.user.id)
+  const userId = String(result.user.id)
+  const adminIds = parseAdminIdsEnv(process.env.ADMIN_IDS)
+  if (adminIds.length > 0) {
+    if (!didWarnAdminIdsEnforced) {
+      didWarnAdminIdsEnforced = true
+      console.warn(
+        `[gater] ADMIN_IDS is set; admin actions are restricted to ${adminIds.length} configured Telegram user ID(s).`,
+      )
+    }
+    if (!adminIds.includes(userId)) {
+      throw new Error("Not authorized: ADMIN_IDS enforced")
+    }
+  }
+
+  return userId
 }
+
+export const getAdminIdsPolicy = action({
+  args: {},
+  handler: async () => {
+    const adminIds = parseAdminIdsEnv(process.env.ADMIN_IDS)
+    return {
+      enforced: adminIds.length > 0,
+      count: adminIds.length,
+    }
+  },
+})
 
 export const createOrgSecure = action({
   args: {
@@ -135,4 +184,3 @@ export const setGateActiveSecure = action({
     })
   },
 })
-
