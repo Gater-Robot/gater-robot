@@ -49,7 +49,12 @@ export function AdminPage() {
   const [txState, setTxState] = React.useState<TransactionState>("pending")
 
   const gateSchema = z.object({
-    threshold: z.string().min(1, "Enter a threshold"),
+    threshold: z
+      .string()
+      .trim()
+      .min(1, "Enter a threshold")
+      .refine((val) => /^\d+(?:\.\d+)?$/.test(val), "Enter a number")
+      .refine((val) => Number(val) > 0, "Must be greater than 0"),
   })
 
   const gateForm = useForm<z.infer<typeof gateSchema>>({
@@ -76,7 +81,15 @@ export function AdminPage() {
     }
 
     try {
-      const thresholdBigInt = parseUnits(values.threshold, resolvedToken.decimals)
+      let thresholdBigInt: bigint
+      try {
+        thresholdBigInt = parseUnits(values.threshold, resolvedToken.decimals)
+      } catch {
+        throw new Error(
+          `Invalid threshold for ${resolvedToken.symbol || "token"} (max ${resolvedToken.decimals} decimals)`,
+        )
+      }
+
       await createGate({
         orgId,
         channelId,
@@ -244,7 +257,14 @@ export function AdminPage() {
                   )}
 
                   <div className="flex justify-end">
-                    <Button type="submit" disabled={gateForm.formState.isSubmitting}>
+                    <Button
+                      type="submit"
+                      disabled={
+                        gateForm.formState.isSubmitting ||
+                        chainId == null ||
+                        !resolvedToken
+                      }
+                    >
                       <PlusIcon className="size-4" />
                       Create gate
                     </Button>
