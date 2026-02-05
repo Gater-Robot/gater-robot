@@ -8,7 +8,15 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Force browser-compatible polyfill instead of Node builtin.
+      buffer: 'buffer/',
     },
+  },
+  define: {
+    global: 'globalThis',
+  },
+  optimizeDeps: {
+    include: ['buffer'],
   },
   server: {
     allowedHosts: [

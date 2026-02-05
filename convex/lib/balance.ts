@@ -5,38 +5,32 @@
  * from various EVM chains via public RPC endpoints.
  */
 
-import { createPublicClient, http, type PublicClient, type Chain } from 'viem'
-import { mainnet, base, arbitrum, sepolia, optimism, polygon } from 'viem/chains'
+import {
+  SUPPORTED_CHAINS,
+  getAlchemyHttpUrl,
+  getChainKey,
+  getChainLabel,
+  getDefaultRpcUrl,
+  getViemChain,
+  isSupportedChainId,
+} from '@gater/chain-registry'
+import { createPublicClient, http, type PublicClient } from 'viem'
 
-// Chain RPC mapping - using public RPCs with fallbacks
-// In production, replace with dedicated RPC providers
-const RPC_URLS: Record<number, string> = {
-  1: process.env.MAINNET_RPC_URL || 'https://cloudflare-eth.com',
-  10: process.env.OPTIMISM_RPC_URL || 'https://mainnet.optimism.io',
-  137: process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
-  8453: process.env.BASE_RPC_URL || 'https://mainnet.base.org',
-  42161: process.env.ARBITRUM_RPC_URL || 'https://arb1.arbitrum.io/rpc',
-  11155111: process.env.SEPOLIA_RPC_URL || 'https://rpc.sepolia.org',
-}
+function getRpcUrl(chainId: number): string | undefined {
+  const chainKey = getChainKey(chainId)
+  if (chainKey) {
+    const envKey = `${chainKey.toUpperCase()}_RPC_URL`
+    const configured = (process.env as Record<string, string | undefined>)[envKey]
+    if (configured && configured.length > 0) return configured
+  }
 
-// Chain objects from viem - using Chain type for flexibility
-const CHAIN_OBJECTS: Record<number, Chain> = {
-  1: mainnet,
-  10: optimism,
-  137: polygon,
-  8453: base,
-  42161: arbitrum,
-  11155111: sepolia,
-}
+  const alchemyKey = process.env.ALCHEMY_API_KEY
+  if (alchemyKey) {
+    const url = getAlchemyHttpUrl(chainId, alchemyKey)
+    if (url) return url
+  }
 
-// Human-readable chain names
-export const CHAIN_NAMES: Record<number, string> = {
-  1: 'Ethereum',
-  10: 'Optimism',
-  137: 'Polygon',
-  8453: 'Base',
-  42161: 'Arbitrum',
-  11155111: 'Sepolia',
+  return getDefaultRpcUrl(chainId)
 }
 
 /**
@@ -87,11 +81,12 @@ export function getChainClient(chainId: number): PublicClient {
   const cached = clientCache.get(chainId)
   if (cached) return cached
 
-  const chain = CHAIN_OBJECTS[chainId]
-  const rpcUrl = RPC_URLS[chainId]
+  const chain = getViemChain(chainId)
+  const rpcUrl = getRpcUrl(chainId)
 
   if (!chain || !rpcUrl) {
-    throw new Error(`Unsupported chain: ${chainId}. Supported chains: ${Object.keys(CHAIN_NAMES).join(', ')}`)
+    const supported = SUPPORTED_CHAINS.map((c) => c.chainId).join(', ')
+    throw new Error(`Unsupported chain: ${chainId}. Supported chains: ${supported}`)
   }
 
   const client = createPublicClient({
@@ -100,7 +95,7 @@ export function getChainClient(chainId: number): PublicClient {
       timeout: 10_000, // 10 second timeout
       retryCount: 2,
     }),
-  })
+  }) as unknown as PublicClient
 
   clientCache.set(chainId, client)
   return client
@@ -222,7 +217,7 @@ export async function fetchTokenMetadata(
  * @returns True if the chain is supported
  */
 export function isSupportedChain(chainId: number): boolean {
-  return chainId in CHAIN_OBJECTS
+  return isSupportedChainId(chainId)
 }
 
 /**
@@ -230,8 +225,17 @@ export function isSupportedChain(chainId: number): boolean {
  * @returns Array of supported chain IDs
  */
 export function getSupportedChains(): number[] {
-  return Object.keys(CHAIN_OBJECTS).map(Number)
+  return SUPPORTED_CHAINS.map((c) => c.chainId)
 }
+
+/**
+ * Human-readable chain names (for legacy call-sites).
+ *
+ * Prefer `getChainLabel(chainId)` from `@gater/chain-registry` for new usage.
+ */
+export const CHAIN_NAMES: Record<number, string> = Object.fromEntries(
+  SUPPORTED_CHAINS.map((c) => [c.chainId, getChainLabel(c.chainId)]),
+)
 
 /**
  * Format a raw balance to human-readable format

@@ -152,3 +152,4 @@ airdrop-admin-ui-paytiers-opus.zip
 # Backups
 backups/github/
 backups/
+.turbo/

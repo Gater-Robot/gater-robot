@@ -14,7 +14,7 @@ import { useState, useCallback } from 'react'
 import { useAccount, useChainId, useSignMessage } from 'wagmi'
 import { useMutation } from 'convex/react'
 import { createSiweMessage } from 'viem/siwe'
-import { api } from '../../../../convex/_generated/api'
+import { api } from '@/convex/api'
 import { useTelegram } from '@/contexts/TelegramContext'
 
 /**
