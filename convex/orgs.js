@@ -2,6 +2,12 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
 
+function requireInsecureMutationsAllowed() {
+  if (process.env.DISABLE_INSECURE_MUTATIONS === "true") {
+    throw new Error("This mutation is disabled in production. Use the secure admin actions.");
+  }
+}
+
 export const listOrgsForOwner = query({
   args: { initDataRaw: v.string() },
   handler: async (ctx, args) => {
@@ -33,6 +39,7 @@ export const createOrg = mutation({
     name: v.string(),
   },
   handler: async (ctx, args) => {
+    requireInsecureMutationsAllowed();
     const user = await requireAuth(ctx, args.initDataRaw);
     const now = Date.now();
     return ctx.db.insert("orgs", {

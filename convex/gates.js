@@ -3,6 +3,12 @@ import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
 import { isSupportedChain } from "./lib/balance";
 
+function requireInsecureMutationsAllowed() {
+  if (process.env.DISABLE_INSECURE_MUTATIONS === "true") {
+    throw new Error("This mutation is disabled in production. Use the secure admin actions.");
+  }
+}
+
 export const listGatesForOrg = query({
   args: {
     orgId: v.id("orgs"),
@@ -59,6 +65,7 @@ export const createGate = mutation({
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    requireInsecureMutationsAllowed();
     const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org
     const org = await ctx.db.get(args.orgId);
@@ -108,6 +115,7 @@ export const setGateActive = mutation({
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    requireInsecureMutationsAllowed();
     const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org that owns this gate
     const gate = await ctx.db.get(args.gateId);

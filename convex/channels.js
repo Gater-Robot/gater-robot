@@ -2,6 +2,12 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
 
+function requireInsecureMutationsAllowed() {
+  if (process.env.DISABLE_INSECURE_MUTATIONS === "true") {
+    throw new Error("This mutation is disabled in production. Use the secure admin actions.");
+  }
+}
+
 export const listChannelsForOrg = query({
   args: {
     orgId: v.id("orgs"),
@@ -44,6 +50,7 @@ export const createChannel = mutation({
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    requireInsecureMutationsAllowed();
     const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org
     const org = await ctx.db.get(args.orgId);
@@ -81,6 +88,7 @@ export const setChannelBotAdminStatus = mutation({
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    requireInsecureMutationsAllowed();
     const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org that owns this channel
     const channel = await ctx.db.get(args.channelId);
