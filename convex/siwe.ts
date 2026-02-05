@@ -14,6 +14,12 @@ import { verifyMessage, getAddress, isAddress } from 'viem'
 import { parseSiweMessage } from 'viem/siwe'
 import { requireAuth } from './lib/auth'
 
+function deprecatedInsecureSiweMutation() {
+  throw new Error(
+    "Deprecated: SIWE mutations are insecure without Telegram HMAC validation. Use `siweActions.generateNonceSecure` / `siweActions.verifySignatureSecure` instead."
+  )
+}
+
 // Nonce TTL: 15 minutes
 const NONCE_TTL_MS = 15 * 60 * 1000
 
@@ -37,6 +43,7 @@ export const generateNonce = mutation({
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    deprecatedInsecureSiweMutation()
     const authUser = await requireAuth(ctx, args.initDataRaw)
 
     // Validate address format
@@ -132,6 +139,7 @@ export const verifySignature = mutation({
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
+    deprecatedInsecureSiweMutation()
     const authUser = await requireAuth(ctx, args.initDataRaw)
 
     // Validate address format
