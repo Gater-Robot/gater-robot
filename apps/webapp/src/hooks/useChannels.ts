@@ -33,6 +33,7 @@ export function useChannels(orgId: string | null) {
 
   const setBotAdminMutation = useMutation(api.channels.setChannelBotAdminStatus)
   const setBotAdminSecureAction = useAction(api.adminActions.setChannelBotAdminStatusSecure)
+  const verifyBotAdminSecureAction = useAction(api.adminActions.verifyChannelBotAdminSecure)
 
   const createChannel = React.useCallback(
     async (args: {
@@ -124,6 +125,24 @@ export function useChannels(orgId: string | null) {
     isLoading: telegram.isLoading || (orgId != null && channels === undefined),
     createChannel,
     setChannelBotAdminStatus,
+    verifyChannelBotAdmin: React.useCallback(
+      async (args: { channelId: string }) => {
+        const currentInitData = telegram.getInitData()
+        if (!currentInitData) throw new Error("Not authenticated with Telegram")
+
+        try {
+          return await verifyBotAdminSecureAction({
+            initDataRaw: currentInitData,
+            channelId: args.channelId as any,
+          })
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            throw error
+          }
+          throw error
+        }
+      },
+      [telegram, verifyBotAdminSecureAction],
+    ),
   }
 }
-
