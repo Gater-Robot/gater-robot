@@ -20,8 +20,8 @@ cp .env.example .env
 Required variables:
 - `DEPLOYER_PRIVATE_KEY`
 - `BASE_RPC_URL`
-- `ARC_RPC_URL`
 - `ARC_CHAIN_ID`
+- `ARC_TESTNET_RPC_URL`
 
 ## Deployments (Hardhat Ignition)
 
