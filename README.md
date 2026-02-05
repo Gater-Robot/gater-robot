@@ -5,7 +5,7 @@ Run 4 terminals (outside vscode to avoid port forwarding fights with remote-ssh)
 cloudflared tunnel run gater
 pnpm convex dev
 pnpm --filter @gater/webapp dev
-pnpm -F @gater/bot
+pnpm -F @gater/bot dev
 ```
 
 >**Elevator pitch**
