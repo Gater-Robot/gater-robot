@@ -14,7 +14,7 @@ import { useAddresses, type UserAddress } from '@/hooks/useAddresses'
 import { RadioGroup, RadioGroupItem, Badge, Skeleton } from '@/components/ui'
 import { truncateAddress } from '@/lib/utils'
 import { Check, Clock, Loader2, Star } from 'lucide-react'
-import { Id } from '../../../../../convex/_generated/dataModel'
+type Id<TableName extends string> = string & { __tableName?: TableName }
 
 export interface AddressListProps {
   /** Optional className for styling */
