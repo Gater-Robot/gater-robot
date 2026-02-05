@@ -12,7 +12,7 @@
 
 import { useState, useCallback } from 'react'
 import { useAccount, useChainId, useSignMessage } from 'wagmi'
-import { useMutation } from 'convex/react'
+import { useAction } from 'convex/react'
 import { createSiweMessage } from 'viem/siwe'
 import { api } from '@/convex/api'
 import { useTelegram } from '@/contexts/TelegramContext'
@@ -81,8 +81,8 @@ export function useSIWE(): UseSIWEReturn {
   const { getInitData } = useTelegram()
 
   // Convex mutations
-  const generateNonce = useMutation(api.siwe.generateNonce)
-  const verifySignature = useMutation(api.siwe.verifySignature)
+  const generateNonce = useAction(api.siweActions.generateNonceSecure)
+  const verifySignature = useAction(api.siweActions.verifySignatureSecure)
 
   /**
    * Reset the hook to idle state

@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { useMutation } from "convex/react"
+import { useAction } from "convex/react"
 import { createSiweMessage } from "viem/siwe"
 import { useAccount, useChainId, useSignMessage } from "wagmi"
 
@@ -24,8 +24,8 @@ export function useSIWE() {
 
   const { getInitData } = useTelegram()
 
-  const generateNonce = useMutation(api.siwe.generateNonce)
-  const verifySignature = useMutation(api.siwe.verifySignature)
+  const generateNonce = useAction(api.siweActions.generateNonceSecure)
+  const verifySignature = useAction(api.siweActions.verifySignatureSecure)
 
   const reset = useCallback(() => {
     setStatus("idle")
