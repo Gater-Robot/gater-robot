@@ -48,7 +48,12 @@ const createChannelSchema = z.object({
 type CreateChannelValues = z.infer<typeof createChannelSchema>
 
 const createGateSchema = z.object({
-  threshold: z.string().min(1, "Enter a threshold"),
+  threshold: z
+    .string()
+    .trim()
+    .min(1, "Enter a threshold")
+    .refine((val) => /^\d+(?:\.\d+)?$/.test(val), "Enter a number")
+    .refine((val) => Number(val) > 0, "Must be greater than 0"),
 })
 
 type CreateGateValues = z.infer<typeof createGateSchema>
@@ -149,7 +154,15 @@ export function OrgPage() {
     }
 
     try {
-      const thresholdBigInt = parseUnits(values.threshold, resolvedToken.decimals)
+      let thresholdBigInt: bigint
+      try {
+        thresholdBigInt = parseUnits(values.threshold, resolvedToken.decimals)
+      } catch {
+        throw new Error(
+          `Invalid threshold for ${resolvedToken.symbol || "token"} (max ${resolvedToken.decimals} decimals)`,
+        )
+      }
+
       await createGate({
         orgId,
         channelId: selectedChannelId,
@@ -644,7 +657,14 @@ export function OrgPage() {
                       <Button type="button" variant="outline" onClick={() => setIsCreateGateOpen(false)}>
                         Cancel
                       </Button>
-                      <Button type="submit" disabled={createGateForm.formState.isSubmitting}>
+                      <Button
+                        type="submit"
+                        disabled={
+                          createGateForm.formState.isSubmitting ||
+                          gateChainId == null ||
+                          !resolvedToken
+                        }
+                      >
                         Create
                       </Button>
                     </DialogFooter>

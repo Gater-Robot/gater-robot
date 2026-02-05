@@ -83,6 +83,7 @@ export function useGatesForChannel(channelId: string | null) {
           tokenName: args.tokenName,
           tokenDecimals: args.tokenDecimals,
           threshold: args.threshold,
+          thresholdFormatted: args.thresholdFormatted,
         })
       }
 
@@ -111,6 +112,7 @@ export function useGatesForChannel(channelId: string | null) {
             tokenName: args.tokenName,
             tokenDecimals: args.tokenDecimals,
             threshold: args.threshold,
+            thresholdFormatted: args.thresholdFormatted,
           })
         }
         throw error
@@ -164,4 +166,3 @@ export function useGatesForChannel(channelId: string | null) {
     setGateActive,
   }
 }
-

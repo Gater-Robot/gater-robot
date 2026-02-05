@@ -26,7 +26,18 @@ export const listGatesForOrg = query({
 export const listGatesForChannel = query({
   args: { channelId: v.id("channels"), initDataRaw: v.string() },
   handler: async (ctx, args) => {
-    await requireAuth(ctx, args.initDataRaw);
+    const user = await requireAuth(ctx, args.initDataRaw);
+
+    const channel = await ctx.db.get(args.channelId);
+    if (!channel) {
+      throw new Error("Channel not found");
+    }
+
+    const org = await ctx.db.get(channel.orgId);
+    if (!org || org.ownerTelegramUserId !== user.id) {
+      throw new Error("Not authorized to view gates for this channel");
+    }
+
     return ctx.db
       .query("gates")
       .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
@@ -44,6 +55,7 @@ export const createGate = mutation({
     tokenName: v.optional(v.string()),
     tokenDecimals: v.optional(v.number()),
     threshold: v.string(),
+    thresholdFormatted: v.optional(v.string()),
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
@@ -81,6 +93,7 @@ export const createGate = mutation({
       tokenName: args.tokenName,
       tokenDecimals: args.tokenDecimals,
       threshold: args.threshold,
+      thresholdFormatted: args.thresholdFormatted,
       active: true,
       createdAt: now,
       updatedAt: now,
