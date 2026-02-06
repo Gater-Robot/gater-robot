@@ -1,0 +1,3 @@
+# notify = ["/workspace/gater-robot/.agents/bin/ntfy_send", "--codex", "-t", "Codex Local", "Codex needs your attention."]
+# notify = ["python3", "/workspace/.codex/notify-kde.py", "--source", "codex", "--tts", "Codex is done working"]
+

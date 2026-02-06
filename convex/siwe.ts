@@ -18,7 +18,14 @@ import { requireAuth } from './lib/auth'
 const NONCE_TTL_MS = 15 * 60 * 1000
 
 // Allowed domains for SIWE verification
-const ALLOWED_DOMAINS = ['localhost', 'localhost:5173', 'gater.bot', 'app.gater.bot']
+const ALLOWED_DOMAINS = [
+  'localhost',
+  'localhost:5173',
+  'gater.bot',
+  'app.gater.bot',
+  'gater-dev.agentix.bot',
+  'gater-app.agentix.bot',
+]
 
 /**
  * Generate a cryptographically secure nonce for SIWE

@@ -10,8 +10,8 @@
  */
 
 import { useAction } from 'convex/react'
-import { api } from '../../../../convex/_generated/api'
-import { Id } from '../../../../convex/_generated/dataModel'
+import { api } from '@/convex/api'
+type Id<TableName extends string> = string & { __tableName?: TableName }
 import { useTelegram } from '@/contexts/TelegramContext'
 import { useState, useCallback } from 'react'
 
