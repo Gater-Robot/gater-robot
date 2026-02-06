@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "convex dev",
-    "deploy": "convex deploy",
+    "dev": "cd .. && pnpm convex dev",
+    "deploy": "cd .. && pnpm convex deploy",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "pnpm --filter @gater/chain-registry build && tsc -p tsconfig.test.json && node --test"
