@@ -27,12 +27,9 @@ function boolBadge(value: boolean) {
 
 export function HealthPage() {
   const telegram = useTelegram()
-  const urlParams = new URLSearchParams(window.location.search)
-  const hasAccessParam = urlParams.get("access") === "admin"
   const canView =
     import.meta.env.DEV ||
-    (telegram.isInTelegram && telegram.startParam === "admin") ||
-    hasAccessParam
+    (telegram.isInTelegram && telegram.startParam === "admin")
 
   const getPolicy = useAction(api.policyActions.getPolicy)
   const [policy, setPolicy] = React.useState<PolicyResult | null>(null)

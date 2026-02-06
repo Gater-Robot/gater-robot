@@ -56,7 +56,7 @@ const BEST_TOKEN_ABI = [
 type ClaimState = "idle" | "claiming" | "success" | "error"
 
 function formatBalance(value: bigint | undefined): string {
-  if (!value) return "0"
+  if (value === undefined) return "0"
   return parseFloat(formatUnits(value, BEST_TOKEN_DECIMALS)).toLocaleString(
     undefined,
     { maximumFractionDigits: 2 },
@@ -195,7 +195,7 @@ export function FaucetPage() {
       })
       setAddedToWallet(true)
     } catch {
-      // best-effort
+      setErrorMessage("Could not add token to wallet")
     }
   }
 
