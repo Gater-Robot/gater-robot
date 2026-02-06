@@ -13,6 +13,7 @@ function getPageKey(pathname: string) {
   if (pathname.startsWith("/faucet")) return "faucet"
   if (pathname.startsWith("/orgs")) return "orgs"
   if (pathname.startsWith("/admin")) return "admin"
+  if (pathname.startsWith("/health")) return "health"
   if (pathname.startsWith("/ens-eth-id")) return "ens-eth-id"
   return "not-found"
 }

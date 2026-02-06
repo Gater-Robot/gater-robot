@@ -8,10 +8,10 @@
  * Queries and mutations are in eligibilityQueries.ts (non-Node.js runtime).
  */
 
-import { action } from "./_generated/server";
-import { api, internal } from "./_generated/api";
-import { v } from "convex/values";
-import { Doc } from "./_generated/dataModel";
+import { action } from "./_generated/server"
+import { v } from "convex/values"
+import { anyApi } from "convex/server"
+import { Doc } from "./_generated/dataModel"
 import {
   fetchTokenBalance,
   fetchTokenMetadata,
@@ -21,6 +21,11 @@ import {
   getSupportedChains,
 } from "./lib/balance";
 import { getChainLabel } from "@gater/chain-registry";
+
+// Avoid importing the generated API in Convex server code to prevent circular type
+// inference issues in `tsc --noEmit` under strict settings.
+const api = anyApi as any
+const internal = anyApi as any
 
 // Re-check interval: 1 hour
 const RECHECK_INTERVAL_MS = 60 * 60 * 1000;

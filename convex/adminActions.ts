@@ -235,10 +235,11 @@ export const verifyChannelBotAdminSecure = action({
   handler: async (ctx, args) => {
     const telegramUserId = await requireValidatedTelegramUserId(ctx, args.initDataRaw)
 
-    const channel = await ctx.db.get(args.channelId)
+    const { channel, org } = await ctx.runQuery(internal.adminQueries.getChannelAndOrg, {
+      channelId: args.channelId,
+    })
     if (!channel) throw new Error("Channel not found")
 
-    const org = await ctx.db.get(channel.orgId)
     if (!org || org.ownerTelegramUserId !== telegramUserId) {
       throw new Error("Not authorized to verify this channel")
     }
