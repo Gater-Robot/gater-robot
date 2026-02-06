@@ -12,6 +12,10 @@ Telegram Mini Apps **require HTTPS URLs**. During development, your app runs on 
 | Staging | Named Cloudflare Tunnel | Persistent subdomain |
 | Production | Vercel | Custom domain or `*.vercel.app` |
 
+**Project defaults**
+- Dev Mini App URL: `https://gater-dev.agentix.bot` (run: `cloudflared tunnel run gater`)
+- Prod Mini App URL: `https://gater-app.agentix.bot`
+
 ---
 
 ## 1. Quick Tunnel (Development)
@@ -73,7 +77,7 @@ cloudflared tunnel login
 # This opens a browser - select your Cloudflare account
 
 # Create a named tunnel
-cloudflared tunnel create gater-robot-dev
+cloudflared tunnel create gater
 # Note the tunnel ID (e.g., a1b2c3d4-...)
 
 # Create config file
@@ -86,7 +90,7 @@ tunnel: a1b2c3d4-your-tunnel-id
 credentials-file: /Users/yourname/.cloudflared/a1b2c3d4.json
 
 ingress:
-  - hostname: gater-dev.yourdomain.com
+  - hostname: gater-dev.agentix.bot
     service: http://localhost:5173
   - service: http_status:404
 ```
@@ -110,7 +114,7 @@ pnpm dev
 cloudflared tunnel run gater-robot-dev
 ```
 
-Now your app is always at `https://gater-dev.yourdomain.com`
+Now your app is always at `https://gater-dev.agentix.bot`
 
 ---
 

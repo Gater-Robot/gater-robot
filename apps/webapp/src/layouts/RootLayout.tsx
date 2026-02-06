@@ -1,0 +1,78 @@
+import * as React from "react"
+import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-dom"
+
+import { AppNav } from "@/components/AppNav"
+import { TelegramThemeSync } from "@/components/TelegramThemeSync"
+import { Toaster } from "@/components/ui/sonner"
+import { useTelegram } from "@/contexts/TelegramContext"
+import { getAdminStartParamRedirect } from "@/lib/adminMode"
+
+function getPageKey(pathname: string) {
+  if (pathname.startsWith("/user")) return "user"
+  if (pathname.startsWith("/get-eligible")) return "get-eligible"
+  if (pathname.startsWith("/faucet")) return "faucet"
+  if (pathname.startsWith("/orgs")) return "orgs"
+  if (pathname.startsWith("/admin")) return "admin"
+  if (pathname.startsWith("/health")) return "health"
+  if (pathname.startsWith("/ens-eth-id")) return "ens-eth-id"
+  return "not-found"
+}
+
+export function RootLayout() {
+  const location = useLocation()
+  const pageKey = getPageKey(location.pathname)
+  const navigate = useNavigate()
+  const telegram = useTelegram()
+  const [searchParams] = useSearchParams()
+
+  // Telegram native back button: show on sub-pages, hide on root pages
+  React.useEffect(() => {
+    if (!telegram.isInitialized || !telegram.isInTelegram) return
+
+    const isRootPage =
+      location.pathname === "/" || location.pathname === "/user"
+
+    if (isRootPage) {
+      telegram.setBackButton({ isVisible: false })
+      return
+    }
+
+    const removeClickListener = telegram.setBackButton({
+      isVisible: true,
+      onClick: () => navigate(-1),
+    })
+
+    return () => {
+      removeClickListener?.()
+      telegram.setBackButton({ isVisible: false })
+    }
+  }, [location.pathname, navigate, telegram])
+
+  React.useEffect(() => {
+    // Redirect only from the default landing pages; avoid clobbering explicit deep-links.
+    if (location.pathname !== "/" && location.pathname !== "/user") return
+
+    // Preserve user-channel deep-links like /user?channelId=...
+    if (searchParams.get("channelId")) return
+
+    const redirectTo = getAdminStartParamRedirect(telegram.startParam)
+    if (!redirectTo) return
+
+    navigate(redirectTo, { replace: true })
+  }, [location.pathname, navigate, searchParams, telegram.startParam])
+
+  return (
+    <div
+      data-page={pageKey}
+      className="flex min-h-[100svh] flex-col bg-flux-gradient bg-dots text-foreground"
+    >
+      <main className="w-full flex-1 px-2 pt-2 sm:pr-16">
+        <Outlet />
+      </main>
+
+      <AppNav />
+      <Toaster />
+      <TelegramThemeSync />
+    </div>
+  )
+}

@@ -21,7 +21,7 @@ import {
   Badge,
 } from '@/components/ui'
 import { useCheckEligibility } from '@/hooks/useCheckEligibility'
-import { Id } from '../../../../../convex/_generated/dataModel'
+type Id<TableName extends string> = string & { __tableName?: TableName }
 import {
   CheckCircle2,
   XCircle,
