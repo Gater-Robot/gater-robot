@@ -6,12 +6,12 @@ import { parseEther } from "viem";
 const TOKEN_NAME = "Best Token";
 const TOKEN_SYMBOL = "BEST";
 
-describe("BestToken", () => {
+describe("BestEthGlobal2026Token", () => {
   it("allows a one-time faucet claim", async () => {
     const [deployer, alice] = await hre.viem.getWalletClients();
 
     const contract = await hre.viem.deployContract(
-      "BestToken",
+      "BestEthGlobal2026Token",
       [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
       { account: deployer.account }
     );
@@ -26,7 +26,7 @@ describe("BestToken", () => {
     const [deployer, alice] = await hre.viem.getWalletClients();
 
     const contract = await hre.viem.deployContract(
-      "BestToken",
+      "BestEthGlobal2026Token",
       [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
       { account: deployer.account }
     );

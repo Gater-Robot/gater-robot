@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract BestToken is ERC20, Ownable {
+contract BestEthGlobal2026Token is ERC20, Ownable {
     uint256 public constant FAUCET_AMOUNT = 2026 * 10 ** 18;
 
     mapping(address => bool) public hasClaimed;

@@ -7,6 +7,7 @@ pnpm convex dev
 pnpm --filter @gater/webapp dev
 pnpm -F @gater/bot
 ```
+BEST Token: https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
 
 >**Elevator pitch**
 >
