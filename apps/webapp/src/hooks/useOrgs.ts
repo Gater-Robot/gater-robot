@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useAction, useMutation, useQuery } from "convex/react"
+import { useAction, useQuery } from "convex/react"
 
 import { api } from "@/convex/api"
 import { useTelegram } from "@/contexts/TelegramContext"
@@ -11,10 +11,6 @@ export type OrgDoc = {
   createdAt: number
 }
 
-function isMockInitData(initDataRaw: string) {
-  return new URLSearchParams(initDataRaw).get("hash") === "mock"
-}
-
 export function useOrgs() {
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
@@ -24,7 +20,6 @@ export function useOrgs() {
     initDataRaw ? { initDataRaw } : "skip",
   ) as OrgDoc[] | undefined
 
-  const createOrgMutation = useMutation(api.orgs.createOrg)
   const createOrgSecureAction = useAction(api.adminActions.createOrgSecure)
 
   const createOrg = React.useCallback(
@@ -32,32 +27,12 @@ export function useOrgs() {
       const currentInitData = telegram.getInitData()
       if (!currentInitData) throw new Error("Not authenticated with Telegram")
 
-      const shouldUseInsecure =
-        import.meta.env.DEV && isMockInitData(currentInitData)
-
-      if (shouldUseInsecure) {
-        return await createOrgMutation({
-          initDataRaw: currentInitData,
-          name: args.name,
-        })
-      }
-
-      try {
-        return await createOrgSecureAction({
-          initDataRaw: currentInitData,
-          name: args.name,
-        })
-      } catch (error) {
-        if (import.meta.env.DEV) {
-          return await createOrgMutation({
-            initDataRaw: currentInitData,
-            name: args.name,
-          })
-        }
-        throw error
-      }
+      return await createOrgSecureAction({
+        initDataRaw: currentInitData,
+        name: args.name,
+      })
     },
-    [createOrgMutation, createOrgSecureAction, telegram],
+    [createOrgSecureAction, telegram],
   )
 
   return {
@@ -66,4 +41,3 @@ export function useOrgs() {
     createOrg,
   }
 }
-

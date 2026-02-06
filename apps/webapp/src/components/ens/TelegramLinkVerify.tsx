@@ -48,6 +48,7 @@ export function TelegramLinkVerify({
       })
       onVerified?.()
     } catch (err) {
+      console.error('[gater] ENS auto-verify failed:', err)
       setError(err instanceof Error ? err.message : "Verification failed")
       setVerifyTriggered(false)
     }

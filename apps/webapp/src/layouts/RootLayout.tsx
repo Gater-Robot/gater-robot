@@ -22,31 +22,30 @@ export function RootLayout() {
   const location = useLocation()
   const pageKey = getPageKey(location.pathname)
   const navigate = useNavigate()
-  const telegram = useTelegram()
+  const { isInitialized, isInTelegram, setBackButton, startParam } = useTelegram()
   const [searchParams] = useSearchParams()
 
   // Telegram native back button: show on sub-pages, hide on root pages
   React.useEffect(() => {
-    if (!telegram.isInitialized || !telegram.isInTelegram) return
+    if (!isInitialized || !isInTelegram) return
 
     const isRootPage =
       location.pathname === "/" || location.pathname === "/user"
 
     if (isRootPage) {
-      telegram.setBackButton({ isVisible: false })
+      setBackButton({ isVisible: false })
       return
     }
 
-    const removeClickListener = telegram.setBackButton({
+    const removeClickListener = setBackButton({
       isVisible: true,
       onClick: () => navigate(-1),
     })
 
     return () => {
       removeClickListener?.()
-      telegram.setBackButton({ isVisible: false })
     }
-  }, [location.pathname, navigate, telegram])
+  }, [location.pathname, navigate, isInitialized, isInTelegram, setBackButton])
 
   React.useEffect(() => {
     // Redirect only from the default landing pages; avoid clobbering explicit deep-links.
@@ -55,11 +54,11 @@ export function RootLayout() {
     // Preserve user-channel deep-links like /user?channelId=...
     if (searchParams.get("channelId")) return
 
-    const redirectTo = getAdminStartParamRedirect(telegram.startParam)
+    const redirectTo = getAdminStartParamRedirect(startParam)
     if (!redirectTo) return
 
     navigate(redirectTo, { replace: true })
-  }, [location.pathname, navigate, searchParams, telegram.startParam])
+  }, [location.pathname, navigate, searchParams, startParam])
 
   return (
     <div

@@ -82,17 +82,16 @@ export function useSIWE() {
         initDataRaw,
       })
 
-      if (verifyResult.success) setStatus("success")
-      else {
+      if (verifyResult.success) {
+        setStatus("success")
+      } else {
         setError("Verification failed")
         setStatus("error")
       }
     } catch (err) {
+      console.error('[gater] SIWE verification failed:', err)
       if (err instanceof Error) {
-        if (
-          err.message.includes("User rejected") ||
-          err.message.toLowerCase().includes("user rejected")
-        ) {
+        if (err.message.toLowerCase().includes("user rejected")) {
           setError("Signature request was cancelled")
         } else {
           setError(err.message)

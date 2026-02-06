@@ -1,11 +1,11 @@
 /**
  * Auth utilities for Convex functions
  *
- * For QUERIES: Use requireAuth() which parses initData without cryptographic validation
- * For MUTATIONS/ACTIONS: Use requireAuthSecure() which validates the HMAC signature
- *
- * This pattern is common in Telegram Mini Apps where reads are allowed with
- * parsed identity, but writes require full validation.
+ * requireAuth()       - Used by ALL queries and mutations. Parses the Telegram
+ *                       user from initData without cryptographic validation and
+ *                       rejects expired auth_date values.
+ * requireAuthSecure() - Currently has zero callers. Delegates to a Convex action
+ *                       that validates the HMAC signature (requires action context).
  */
 
 import { api } from '../_generated/api'
@@ -27,8 +27,7 @@ type ValidationResult =
 type ConvexCtx = any
 
 /**
- * Parse user from initData without cryptographic validation
- * Use for QUERIES where you need user identity but full validation isn't possible
+ * Parse user from initData without cryptographic validation.
  */
 function parseInitDataUser(initDataRaw: string): TelegramUser | null {
   try {
@@ -47,7 +46,8 @@ function parseInitDataUser(initDataRaw: string): TelegramUser | null {
       language_code: user.language_code,
       is_premium: user.is_premium,
     }
-  } catch {
+  } catch (e) {
+    console.error('[gater] parseInitDataUser failed:', e)
     return null
   }
 }
@@ -55,15 +55,15 @@ function parseInitDataUser(initDataRaw: string): TelegramUser | null {
 const MAX_AUTH_AGE_SECONDS = 86400 // 24 hours
 
 /**
- * Get user identity from initData (for QUERIES)
- * Parses the user without cryptographic validation.
- * Validates auth_date is recent to reject stale/replayed data.
- * Safe for read operations where user identity is needed.
+ * Parse and return the Telegram user from initData.
+ * No cryptographic (HMAC) validation -- used by every query and mutation.
+ * Rejects requests whose auth_date is older than MAX_AUTH_AGE_SECONDS,
+ * or that are missing / have an invalid auth_date (unless hash === 'mock').
  */
-export const requireAuth = async (
+export async function requireAuth(
   _ctx: ConvexCtx,
   initDataRaw: string
-): Promise<TelegramUser> => {
+): Promise<TelegramUser> {
   const user = parseInitDataUser(initDataRaw)
 
   if (!user) {
@@ -71,36 +71,34 @@ export const requireAuth = async (
   }
 
   // Validate auth_date to reject stale initData (skip for mock data in dev)
-  try {
-    const params = new URLSearchParams(initDataRaw)
-    const hash = params.get('hash')
-    if (hash !== 'mock') {
-      const authDateStr = params.get('auth_date')
-      if (authDateStr) {
-        const authDate = Number(authDateStr)
-        const now = Math.floor(Date.now() / 1000)
-        if (now - authDate > MAX_AUTH_AGE_SECONDS) {
-          throw new Error('Unauthorized: initData has expired')
-        }
-      }
+  const params = new URLSearchParams(initDataRaw)
+  const hash = params.get('hash')
+  if (hash !== 'mock') {
+    const authDateStr = params.get('auth_date')
+    if (!authDateStr) {
+      throw new Error('Unauthorized: initData missing auth_date')
     }
-  } catch (e) {
-    if (e instanceof Error && e.message.includes('expired')) throw e
+    const authDate = Number(authDateStr)
+    if (Number.isNaN(authDate)) {
+      throw new Error('Unauthorized: initData has invalid auth_date')
+    }
+    const now = Math.floor(Date.now() / 1000)
+    if (now - authDate > MAX_AUTH_AGE_SECONDS) {
+      throw new Error('Unauthorized: initData has expired')
+    }
   }
 
   return user
 }
 
 /**
- * Validate initData with full HMAC verification (for MUTATIONS/ACTIONS)
- * Use this for any operation that modifies data.
+ * Validate initData with full HMAC verification via a Convex action.
+ * Currently has zero callers. Requires action-capable context (ctx.runAction).
  */
-export const requireAuthSecure = async (
+export async function requireAuthSecure(
   ctx: ConvexCtx,
   initDataRaw: string
-): Promise<TelegramUser> => {
-  // This requires the context to support runAction (actions only)
-  // For mutations, call the validation action first
+): Promise<TelegramUser> {
   const result: ValidationResult = await ctx.runAction(
     api.telegram.validateTelegramInitData,
     { initData: initDataRaw }

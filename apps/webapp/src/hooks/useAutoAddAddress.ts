@@ -10,7 +10,7 @@ import { useAddresses } from "@/hooks/useAddresses"
 export function useAutoAddAddress() {
   const { address, isConnected } = useAccount()
   const { initDataRaw, isInitialized, user } = useTelegram()
-  const { addresses } = useAddresses()
+  const { addresses, isLoading: addressesLoading } = useAddresses()
   const addAddress = useMutation(api.ens.addAddress)
   const lastAddedRef = useRef<string | null>(null)
   const wasConnectedRef = useRef(false)
@@ -31,6 +31,9 @@ export function useAutoAddAddress() {
   useEffect(() => {
     if (!isInitialized || !isConnected || !address || !initDataRaw || !user) return
 
+    // Wait for addresses query to load before checking duplicates
+    if (addressesLoading) return
+
     // Don't re-add if we already added this address in this session
     if (lastAddedRef.current === address) return
 
@@ -49,5 +52,5 @@ export function useAutoAddAddress() {
       console.error("[gater] Failed to auto-add address:", err)
       lastAddedRef.current = null // Allow retry
     })
-  }, [isInitialized, isConnected, address, initDataRaw, user, addresses, addAddress])
+  }, [isInitialized, isConnected, address, initDataRaw, user, addressesLoading, addresses, addAddress])
 }
