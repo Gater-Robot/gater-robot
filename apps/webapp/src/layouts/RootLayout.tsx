@@ -43,8 +43,8 @@ export function RootLayout() {
       data-page={pageKey}
       className="flex min-h-[100svh] flex-col bg-background text-foreground"
     >
-      {/* Main content area - mobile-first, centered, with bottom padding for tab bar */}
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 pb-20 pt-6">
+      {/* Main content area - mobile-first centered; sm:pr-20 avoids side nav icon strip overlap */}
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-6 sm:pr-20">
         <Outlet />
       </main>
 

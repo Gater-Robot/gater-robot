@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 interface SplashScreenProps {
   /** Minimum display time in ms */
@@ -15,27 +15,30 @@ export function SplashScreen({
   onReady,
 }: SplashScreenProps) {
   const [isFadingOut, setIsFadingOut] = useState(false)
+  const dismissedRef = useRef(false)
+  const fadeTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  const dismiss = useCallback(() => {
+    if (dismissedRef.current) return
+    dismissedRef.current = true
+    setIsFadingOut(true)
+    fadeTimerRef.current = setTimeout(() => onReady?.(), 300)
+  }, [onReady])
 
   useEffect(() => {
     const minTimer = setTimeout(() => {
-      // After minimum time, check if fonts are loaded
-      document.fonts.ready.then(() => {
-        setIsFadingOut(true)
-        setTimeout(() => onReady?.(), 300) // wait for fade animation
-      })
+      document.fonts.ready.then(() => dismiss())
     }, minDuration)
 
     // Safety valve: force dismiss after maxDuration
-    const maxTimer = setTimeout(() => {
-      setIsFadingOut(true)
-      setTimeout(() => onReady?.(), 300)
-    }, maxDuration)
+    const maxTimer = setTimeout(() => dismiss(), maxDuration)
 
     return () => {
       clearTimeout(minTimer)
       clearTimeout(maxTimer)
+      clearTimeout(fadeTimerRef.current)
     }
-  }, [minDuration, maxDuration, onReady])
+  }, [minDuration, maxDuration, dismiss])
 
   return (
     <div
