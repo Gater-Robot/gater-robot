@@ -10,7 +10,7 @@ interface SectionHeaderProps {
 export function SectionHeader({ children, count, className }: SectionHeaderProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <span className="text-xs font-medium uppercase tracking-[0.06em] text-muted-foreground">
+      <span className="shrink-0 font-sans text-xs font-medium uppercase tracking-[0.05em] text-muted-foreground">
         {children}
       </span>
       {count !== undefined && (

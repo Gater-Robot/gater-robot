@@ -15,7 +15,6 @@ import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { TelegramLinkVerify } from "@/components/ens/TelegramLinkVerify"
 import { SIWEButton } from "@/components/wallet/SIWEButton"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PulseDot } from "@/components/ui/pulse-dot"
 import { SectionHeader } from "@/components/ui/section-header"
@@ -104,7 +103,7 @@ export function UserPage() {
     <div className="space-y-3">
       {/* Page header */}
       <div className="flex items-center gap-3 fade-up stagger-1">
-        <PulseDot color="var(--color-primary)" size={6} />
+        <PulseDot color="bg-primary" size="sm" />
         <h1 className="text-xl font-bold tracking-tight">
           Hey, <span className="text-primary">{user.firstName}</span>
         </h1>
@@ -122,45 +121,41 @@ export function UserPage() {
       </div>
 
       {/* Identity card - compact */}
-      <Card className="card-glow overflow-hidden py-0 fade-up stagger-3">
-        <CardContent className="px-3 py-2">
-          <div className="flex items-center gap-2">
-            <div className={cn(
-              "flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-sm font-bold text-primary-foreground",
-              hasVerifiedAddress && "ring-2 ring-primary/30 shadow-[0_0_12px_var(--color-glow)]"
-            )}>
-              {user.firstName.charAt(0)}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium">
-                {user.firstName}
-                {user.lastName ? ` ${user.lastName}` : ""}
-              </p>
-              {user.username && (
-                <p className="truncate text-sm text-muted-foreground">
-                  @{user.username}
-                </p>
-              )}
-            </div>
-            <div className="flex shrink-0 gap-1.5">
-              <Badge variant="flux" size="sm">
-                {user.id}
-              </Badge>
-              {user.isPremium && <Badge variant="ens" size="sm">PRO</Badge>}
-            </div>
+      <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-4 fade-up stagger-2">
+        <div className="flex items-center gap-2">
+          <div className={cn(
+            "flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-sm font-bold text-primary-foreground",
+            hasVerifiedAddress && "ring-2 ring-primary/20 shadow-[0_0_12px_var(--color-glow)]"
+          )}>
+            {user.firstName.charAt(0)}
           </div>
-        </CardContent>
-      </Card>
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-medium">
+              {user.firstName}
+              {user.lastName ? ` ${user.lastName}` : ""}
+            </p>
+            {user.username && (
+              <p className="truncate text-sm text-muted-foreground">
+                @{user.username}
+              </p>
+            )}
+          </div>
+          <div className="flex shrink-0 gap-1.5">
+            <Badge variant="flux" size="sm">{user.id}</Badge>
+            {user.isPremium && <Badge variant="ens" size="sm">PRO</Badge>}
+          </div>
+        </div>
+      </div>
 
       {/* Primary action - contextual */}
       {!isConnected ? (
-        <section className="space-y-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 fade-up stagger-4">
+        <section className="space-y-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 fade-up stagger-3">
           <SectionHeader>Get Started</SectionHeader>
           <p className="text-sm text-muted-foreground">Connect your wallet to unlock token-gated channels.</p>
           <ConnectWallet />
         </section>
       ) : !hasVerifiedAddress && address ? (
-        <section className="space-y-1.5 fade-up stagger-4">
+        <section className="space-y-1.5 fade-up stagger-3">
           <SectionHeader>Verify Wallet</SectionHeader>
           <TelegramLinkVerify
             address={address}
@@ -175,18 +170,16 @@ export function UserPage() {
 
       {/* Wallets section */}
       {hasLinkedAddresses && (
-        <section className="space-y-1.5 fade-up stagger-4">
+        <section className="space-y-1.5 fade-up stagger-3">
           <div className="flex items-center justify-between">
             <SectionHeader count={addresses.length}>Wallets</SectionHeader>
             {isConnected && (
               <ConnectWallet />
             )}
           </div>
-          <Card className="card-glow py-0">
-            <CardContent className="px-3 py-2">
-              <AddressList />
-            </CardContent>
-          </Card>
+          <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-3">
+            <AddressList />
+          </div>
         </section>
       )}
 
@@ -194,25 +187,21 @@ export function UserPage() {
       {isConnected && address && (
         <section className="space-y-1.5 fade-up stagger-4">
           <SectionHeader>ENS Identity</SectionHeader>
-          <Card className="card-glow py-0">
-            <CardContent className="px-3 py-2">
-              <ENSIdentityCard address={address} compact />
-            </CardContent>
-          </Card>
+          <ENSIdentityCard address={address} compact />
         </section>
       )}
 
       {/* Channel eligibility */}
       {urlChannelId ? (
-        <section className="space-y-1.5 fade-up stagger-4">
+        <section className="space-y-1.5 fade-up stagger-5">
           <SectionHeader>Channel Eligibility</SectionHeader>
           <EligibilityChecker channelId={urlChannelId as Id<"channels">} compact />
         </section>
       ) : (
-        <section className="fade-up stagger-4">
+        <section className="fade-up stagger-5">
           <Link
             to="/get-eligible"
-            className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-[0_0_20px_var(--color-glow)]"
+            className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-[0_0_16px_var(--color-glow)]"
           >
             <div className="flex items-center gap-3">
               <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">

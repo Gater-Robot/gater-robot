@@ -19,15 +19,7 @@ import {
 import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { TransactionStatus } from "@/components/web3/TransactionStatus"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { SectionHeader } from "@/components/ui/section-header"
 import { StatPill } from "@/components/ui/stat-pill"
 
 const BEST_TOKEN_SYMBOL = "BEST"
@@ -69,6 +61,10 @@ function formatBalance(value: bigint | undefined): string {
     undefined,
     { maximumFractionDigits: 2 },
   )
+}
+
+function truncateAddress(addr: string): string {
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
 export function FaucetPage() {
@@ -206,88 +202,103 @@ export function FaucetPage() {
   const txUrl =
     txHash && chainId ? getExplorerTxUrl(chainId, txHash) : undefined
 
+  const formattedBalance = formatBalance(balance)
+
   return (
     <div className="space-y-6">
+      {/* Page header */}
       <div className="flex items-center gap-3 fade-up stagger-1">
         <h1 className="text-xl font-bold tracking-tight">
-          $<span className="text-primary">BEST</span> Faucet
+          <span className="text-primary">$BEST</span> Faucet
         </h1>
         <Badge variant="flux" size="sm">ERC-20</Badge>
       </div>
 
-      <Card className="card-glow py-0 fade-up stagger-2">
-        <CardHeader className="text-center">
-          <div className="mb-4 flex flex-col items-center gap-2">
-            <span className="font-mono text-5xl font-bold text-primary" style={{ textShadow: "0 0 20px var(--color-glow)" }}>
-              {FAUCET_AMOUNT}
-            </span>
-            <span className="font-mono text-lg text-muted-foreground">$BEST</span>
-          </div>
-          <CardDescription>
+      {/* Hero + claim section */}
+      <div className="rounded-xl border border-border bg-[var(--color-surface)] p-6 card-glow fade-up stagger-2">
+        {/* Hero amount display */}
+        <div className="text-center py-6">
+          <span className="font-mono text-5xl font-bold text-primary drop-shadow-[0_0_12px_var(--color-glow)]">
+            {FAUCET_AMOUNT}
+          </span>
+          <div className="font-mono text-lg text-muted-foreground mt-1">$BEST</div>
+          <p className="text-sm text-muted-foreground mt-2">
             Each address can claim once. Connect a wallet to get started.
-          </CardDescription>
-        </CardHeader>
+          </p>
+        </div>
 
-        <CardContent className="space-y-6">
-          {!isContractConfigured && (
-            <div className="rounded-lg border-l-4 border-l-warning bg-warning-dim p-4 text-sm text-foreground">
-              <strong>Note:</strong> Token contract not yet deployed. Set{" "}
-              <code className="rounded bg-warning/10 px-1 font-mono">VITE_BEST_TOKEN_ADDRESS</code>.
+        {/* Contract not configured warning */}
+        {!isContractConfigured && (
+          <div className="rounded-lg border-l-4 border-l-warning bg-warning-dim p-4 text-sm text-foreground">
+            <strong>Note:</strong> Token contract not yet deployed. Set{" "}
+            <code className="rounded bg-warning/10 px-1 font-mono">VITE_BEST_TOKEN_ADDRESS</code>.
+          </div>
+        )}
+
+        {/* Connect wallet prompt */}
+        {!isConnected && (
+          <div className="py-8 text-center">
+            <p className="mb-4 text-muted-foreground">
+              Connect your wallet to claim tokens.
+            </p>
+            <div className="flex justify-center">
+              <ConnectWallet />
             </div>
-          )}
+          </div>
+        )}
 
-          {!isConnected && (
-            <div className="py-8 text-center">
-              <p className="mb-4 text-muted-foreground">
-                Connect your wallet to claim tokens.
-              </p>
-              <div className="flex justify-center">
-                <ConnectWallet />
+        {isConnected && isContractConfigured && (
+          <div className="space-y-6">
+            {/* Already claimed state */}
+            {hasClaimed && claimState !== "success" && (
+              <div className="space-y-4 py-6 text-center fade-up">
+                <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
+                  <CheckCircle2Icon className="size-8 text-success" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Already Claimed</h3>
+                  <p className="text-muted-foreground">You have already claimed your tokens.</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 fade-up stagger-3">
+                  <StatPill label="Balance" value={`${formattedBalance} $BEST`} color="text-primary" />
+                  <StatPill label="Status" value="Claimed" color="text-success" />
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {isConnected && isContractConfigured && (
-            <>
-              {hasClaimed && claimState !== "success" && (
-                <div className="space-y-4 py-6 text-center fade-up">
-                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
-                    <CheckCircle2Icon className="size-8 text-success" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold">Already Claimed</h3>
-                    <p className="text-muted-foreground">You have already claimed your tokens.</p>
-                  </div>
-                  <div className="flex justify-center">
-                    <StatPill label="Balance" value={`${formatBalance(balance)} $BEST`} color="var(--color-primary)" />
-                  </div>
+            {/* Eligible to claim state */}
+            {hasClaimed === false &&
+              !isLoadingHasClaimed &&
+              claimState === "idle" && (
+                <div className="space-y-4 text-center fade-up stagger-3">
+                  <p className="text-muted-foreground">
+                    You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong>{" "}
+                    tokens.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleClaim}
+                    className="w-full rounded-xl bg-primary text-primary-foreground px-6 py-4 font-sans text-base font-semibold hover:shadow-[0_0_30px_var(--color-glow)] active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <DropletsIcon className="size-5" />
+                      Claim Tokens
+                    </span>
+                  </button>
                 </div>
               )}
 
-              {hasClaimed === false &&
-                !isLoadingHasClaimed &&
-                claimState === "idle" && (
-                  <div className="space-y-4 py-6 text-center">
-                    <p className="text-muted-foreground">
-                      You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong>{" "}
-                      tokens.
-                    </p>
-                    <Button type="button" size="lg" onClick={handleClaim} className="w-full hover:shadow-[0_0_30px_var(--color-glow)]">
-                      <DropletsIcon className="size-5" />
-                      Claim Tokens
-                    </Button>
-                  </div>
-                )}
-
-              {claimState === "claiming" && (
+            {/* Claiming / transaction in progress */}
+            {claimState === "claiming" && (
+              <div className="fade-up">
                 <TransactionStatus
                   state={isConfirming ? "pending" : "loading"}
                   hash={txHash}
                   chainId={chainId}
                   title={
                     isConfirming
-                      ? "Confirming transaction…"
-                      : "Awaiting wallet signature…"
+                      ? "Confirming transaction..."
+                      : "Awaiting wallet signature..."
                   }
                   description={
                     isConfirming
@@ -295,75 +306,89 @@ export function FaucetPage() {
                       : "Confirm the transaction in your wallet."
                   }
                 />
-              )}
+              </div>
+            )}
 
-              {claimState === "success" && (
-                <div className="space-y-4 py-6 text-center">
-                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
-                    <CheckCircle2Icon className="size-8 text-success" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-success">
-                      Tokens Claimed!
-                    </h3>
-                    <p className="text-muted-foreground">
-                      You received {FAUCET_AMOUNT} $BEST tokens.
-                    </p>
-                  </div>
-                  <Badge variant="ens" size="lg">
-                    Balance: {formatBalance(balance)} $BEST
-                  </Badge>
+            {/* Success state */}
+            {claimState === "success" && (
+              <div className="space-y-4 py-6 text-center fade-up">
+                <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
+                  <CheckCircle2Icon className="size-8 text-success" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-success">
+                    Tokens Claimed!
+                  </h3>
+                  <p className="text-muted-foreground">
+                    You received {FAUCET_AMOUNT} $BEST tokens.
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3 fade-up stagger-3">
+                  <StatPill label="Balance" value={`${formattedBalance} $BEST`} color="text-primary" />
+                  <StatPill label="Status" value="Claimed" color="text-success" />
+                </div>
 
-                  {!addedToWallet ? (
-                    <Button type="button" variant="outline" onClick={handleAddToWallet}>
-                      <PlusIcon className="size-4" />
+                {!addedToWallet ? (
+                  <button
+                    type="button"
+                    onClick={handleAddToWallet}
+                    className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <span className="inline-flex items-center gap-1.5">
+                      <PlusIcon className="size-3.5" />
                       Add $BEST to Wallet
-                    </Button>
-                  ) : (
-                    <p className="flex items-center justify-center gap-1 text-sm text-success">
-                      <CheckCircle2Icon className="size-4" />
-                      Token added to wallet
-                    </p>
-                  )}
+                    </span>
+                  </button>
+                ) : (
+                  <p className="flex items-center justify-center gap-1 text-sm text-success">
+                    <CheckCircle2Icon className="size-4" />
+                    Token added to wallet
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Error state */}
+            {claimState === "error" && (
+              <div className="space-y-4 py-6 text-center fade-up">
+                <div className="inline-flex size-16 items-center justify-center rounded-full bg-destructive/10">
+                  <XCircleIcon className="size-8 text-destructive" />
                 </div>
-              )}
-
-              {claimState === "error" && (
-                <div className="space-y-4 py-6 text-center">
-                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-destructive/10">
-                    <XCircleIcon className="size-8 text-destructive" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-destructive">
-                      Claim Failed
-                    </h3>
-                    <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                      {errorMessage || "Something went wrong. Please try again."}
-                    </p>
-                  </div>
-                  <Button type="button" onClick={handleReset} variant="outline">
-                    Try Again
-                  </Button>
+                <div>
+                  <h3 className="text-lg font-semibold text-destructive">
+                    Claim Failed
+                  </h3>
+                  <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                    {errorMessage || "Something went wrong. Please try again."}
+                  </p>
                 </div>
-              )}
-            </>
-          )}
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  Try Again
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
-          {isConnected && !isContractConfigured && (
-            <div className="py-6 text-center">
-              <p className="text-muted-foreground">
-                Faucet is not available on this network yet.
-              </p>
-            </div>
-          )}
-        </CardContent>
+        {isConnected && !isContractConfigured && (
+          <div className="py-6 text-center">
+            <p className="text-muted-foreground">
+              Faucet is not available on this network yet.
+            </p>
+          </div>
+        )}
 
-        <CardFooter className="flex-col gap-4 border-t py-4 text-center text-sm text-muted-foreground">
+        {/* Footer: chain info + explorer link */}
+        <div className="mt-6 flex flex-col items-center gap-3 border-t border-border/30 pt-4 text-center text-sm text-muted-foreground">
           <div className="flex flex-wrap items-center justify-center gap-2">
-            <Badge variant="outline">Chain ID: {chainId}</Badge>
+            <Badge variant="flux" size="sm">Chain {chainId}</Badge>
             {address && (
-              <Badge variant="outline" className="font-mono">
-                {address.slice(0, 6)}...{address.slice(-4)}
+              <Badge variant="flux" size="sm">
+                {truncateAddress(address)}
               </Badge>
             )}
           </div>
@@ -379,34 +404,41 @@ export function FaucetPage() {
               <ExternalLinkIcon className="size-3" />
             </a>
           )}
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="card-glow py-0 fade-up stagger-3">
-        <CardHeader>
-          <CardTitle className="text-lg">About $BEST</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <p className="text-muted-foreground">
+      {/* About section */}
+      <div className="space-y-3 fade-up stagger-4">
+        <SectionHeader>About $BEST</SectionHeader>
+
+        <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-4">
+          <p className="text-sm text-muted-foreground mb-4">
             <strong className="text-foreground">$BEST</strong> (Best Token) is the utility token for Gater Robot,
             used for token-gating Telegram groups and premium features.
           </p>
-          <div className="space-y-2 rounded-lg border border-border bg-surface-alt p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Faucet amount</span>
-              <span className="font-mono text-foreground">{FAUCET_AMOUNT} tokens</span>
+
+          <div className="space-y-0">
+            <div className="flex justify-between py-2 border-b border-border/30">
+              <span className="text-sm text-muted-foreground">Faucet amount</span>
+              <span className="font-mono text-sm text-foreground">{FAUCET_AMOUNT} tokens</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Standard</span>
-              <span className="font-mono text-foreground">ERC-20</span>
+            <div className="flex justify-between py-2 border-b border-border/30">
+              <span className="text-sm text-muted-foreground">Standard</span>
+              <span className="font-mono text-sm text-foreground">ERC-20</span>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Network</span>
-              <span className="font-mono text-foreground">Base / Base Sepolia</span>
+            <div className="flex justify-between py-2 border-b border-border/30">
+              <span className="text-sm text-muted-foreground">Network</span>
+              <span className="font-mono text-sm text-foreground">Base / Base Sepolia</span>
+            </div>
+            <div className="flex justify-between py-2 last:border-0">
+              <span className="text-sm text-muted-foreground">Contract</span>
+              <span className="font-mono text-sm text-foreground">
+                {isContractConfigured ? truncateAddress(BEST_TOKEN_ADDRESS) : "Not deployed"}
+              </span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

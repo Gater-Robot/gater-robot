@@ -7,28 +7,11 @@ interface StatPillProps {
   className?: string;
 }
 
-export function StatPill({ label, value, color, className }: StatPillProps) {
-  const pillColor = color || "var(--color-primary)";
+export function StatPill({ label, value, color = "text-primary", className }: StatPillProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-1 rounded-lg border px-4 py-3",
-        className,
-      )}
-      style={{
-        backgroundColor: `color-mix(in srgb, ${pillColor} 10%, transparent)`,
-        borderColor: `color-mix(in srgb, ${pillColor} 20%, transparent)`,
-      }}
-    >
-      <span
-        className="font-mono text-xl font-semibold"
-        style={{ color: pillColor }}
-      >
-        {value}
-      </span>
-      <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">
-        {label}
-      </span>
+    <div className={cn("flex flex-col gap-1 rounded-lg border border-border/50 bg-card px-4 py-3", className)}>
+      <span className={cn("font-mono text-xl font-semibold", color)}>{value}</span>
+      <span className="font-sans text-[11px] font-medium uppercase tracking-[0.05em] text-muted-foreground">{label}</span>
     </div>
   );
 }

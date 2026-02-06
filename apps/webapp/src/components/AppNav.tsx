@@ -13,6 +13,7 @@ import { Link, useLocation, useSearchParams } from "react-router-dom"
 import { cn } from "@/lib/utils"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { getIsAdminMode } from "@/lib/adminMode"
+import { Badge } from "@/components/ui/badge"
 
 type NavItem = {
   to: string
@@ -98,19 +99,24 @@ export function AppNav() {
     }
   }, [])
 
-  // Close drawer on scroll/touch
+  // Close drawer on scroll/touch/escape
   React.useEffect(() => {
     if (!isOpen) return
 
     const close = () => setIsOpen(false)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false)
+    }
     window.addEventListener("scroll", close, { passive: true, capture: true })
     window.addEventListener("wheel", close, { passive: true, capture: true })
     window.addEventListener("touchmove", close, { passive: true, capture: true })
+    document.addEventListener("keydown", handleKeyDown)
 
     return () => {
       window.removeEventListener("scroll", close, true)
       window.removeEventListener("wheel", close, true)
       window.removeEventListener("touchmove", close, true)
+      document.removeEventListener("keydown", handleKeyDown)
     }
   }, [isOpen])
 
@@ -119,10 +125,10 @@ export function AppNav() {
     return (
       <nav
         aria-label="Primary"
-        className="fixed right-3 top-3 z-50 flex w-[3.75rem] flex-col gap-1.5 rounded-2xl border border-border/60 bg-card/95 p-1.5 shadow-lg shadow-glow/5 supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
+        className="fixed right-3 top-3 z-50 flex w-[3.75rem] flex-col gap-1.5 rounded-2xl border border-border/60 bg-[color:var(--color-surface)]/95 p-1.5 shadow-lg shadow-glow/5 supports-[backdrop-filter]:bg-[color:var(--color-surface)]/80 supports-[backdrop-filter]:backdrop-blur-xl"
       >
         {/* Brand mark */}
-        <div className="flex h-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-[0_0_12px_var(--color-glow)]">
+        <div className="flex h-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-[0_0_12px_var(--color-glow)] transition-shadow hover:shadow-[0_0_20px_var(--color-glow)]">
           G
         </div>
 
@@ -165,8 +171,8 @@ export function AppNav() {
         aria-label="Menu"
         aria-expanded={isOpen}
         className={cn(
-          "fixed right-3 top-3 z-50 flex size-12 items-center justify-center rounded-2xl border border-border/60 bg-card/95 text-foreground shadow-lg transition-colors",
-          "supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl",
+          "fixed right-3 top-3 z-50 flex size-12 items-center justify-center rounded-2xl border border-border/60 bg-[color:var(--color-surface)]/95 text-foreground shadow-lg transition-colors",
+          "supports-[backdrop-filter]:bg-[color:var(--color-surface)]/80 supports-[backdrop-filter]:backdrop-blur-xl",
           isOpen && "bg-primary/10 text-primary shadow-[0_0_12px_var(--color-glow)]",
         )}
         onClick={() => setIsOpen((v) => !v)}
@@ -180,23 +186,29 @@ export function AppNav() {
           onPointerDown={() => setIsOpen(false)}
         >
           <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Navigation menu"
             className="fixed bottom-3 right-3 top-3 z-50 flex w-[min(16rem,75vw)] flex-col rounded-2xl border border-border/60 bg-[var(--color-surface)] bg-dots p-2 shadow-2xl supports-[backdrop-filter]:backdrop-blur-xl"
             onPointerDown={(e) => e.stopPropagation()}
           >
             {/* Drawer header */}
-            <div className="flex h-14 items-center gap-3 rounded-xl bg-primary/10 px-3">
+            <div className="flex items-center gap-3 rounded-xl bg-primary/10 px-3 py-3">
               <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-[0_0_12px_var(--color-glow)]">
                 G
               </div>
-              <div className="flex-1">
-                <div className="font-sans text-lg font-bold">
-                  <span className="text-foreground">Gater</span>{" "}
-                  <span className="text-primary">Robot</span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-sans text-lg font-bold">
+                    <span className="text-foreground">Gater</span>{" "}
+                    <span className="text-primary">Robot</span>
+                  </span>
+                  <Badge variant="flux">MINI APP</Badge>
+                </div>
+                <div className="text-muted-foreground text-xs">
+                  Token-gated communities
                 </div>
               </div>
-              <span className="font-mono text-[10px] uppercase tracking-[0.06em] bg-primary/10 text-primary rounded px-1.5 py-0.5">
-                MINI APP
-              </span>
             </div>
 
             {/* Nav items */}
@@ -215,7 +227,7 @@ export function AppNav() {
                     className={cn(
                       "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all",
                       isActive
-                        ? "bg-primary/10 border-l-2 border-primary text-foreground"
+                        ? "bg-primary/10 border-l-2 border-primary text-primary shadow-[inset_0_0_12px_var(--color-glow)] rounded-lg"
                         : "text-muted-foreground hover:bg-primary/5 hover:text-foreground",
                       "fade-up",
                       index === 0 && "stagger-1",
@@ -240,9 +252,13 @@ export function AppNav() {
 
             {/* Spacer + bottom info */}
             <div className="flex-1" />
-            <div className="border border-border rounded-lg p-3 text-center font-mono text-[10px] text-muted-foreground">
-              <span className="block">Token-gated access for Telegram</span>
-              <span className="block mt-1 text-muted-foreground/60">v0.1.0</span>
+            <div className="rounded-lg border border-border p-3 text-center">
+              <span className="block text-xs text-muted-foreground">
+                Token-gated access for Telegram
+              </span>
+              <span className="block mt-1 font-mono text-[10px] text-muted-foreground/60">
+                v0.1.0
+              </span>
             </div>
           </div>
         </div>

@@ -23,7 +23,7 @@ const badgeVariants = cva(
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         link: "text-primary underline-offset-4 [a&]:hover:underline",
-        flux: "bg-primary/10 text-primary font-mono text-[10px] uppercase tracking-[0.06em] border-primary/20",
+        flux: "bg-primary/10 text-primary border-primary/20 font-mono text-[10px] uppercase tracking-[0.05em]",
       },
       size: {
         default: "px-2 py-0.5 text-xs gap-1 [&>svg]:size-3",
