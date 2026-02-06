@@ -17,8 +17,11 @@ import { SIWEButton } from "@/components/wallet/SIWEButton"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { PulseDot } from "@/components/ui/pulse-dot"
+import { SectionHeader } from "@/components/ui/section-header"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { useAddresses } from "@/hooks/useAddresses"
+import { cn } from "@/lib/utils"
 
 type Id<TableName extends string> = string & { __tableName?: TableName }
 
@@ -73,7 +76,7 @@ export function UserPage() {
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 fade-up">
         <Skeleton className="h-10 w-48" />
         <Skeleton className="h-20 w-full rounded-xl" />
         <Skeleton className="h-32 w-full rounded-xl" />
@@ -100,26 +103,32 @@ export function UserPage() {
   return (
     <div className="space-y-3">
       {/* Page header */}
-      <div>
-        <h1 className="text-xl font-semibold">
-          Hey, {user.firstName}
+      <div className="flex items-center gap-3 fade-up stagger-1">
+        <PulseDot color="var(--color-primary)" size={6} />
+        <h1 className="text-xl font-bold tracking-tight">
+          Hey, <span className="text-primary">{user.firstName}</span>
         </h1>
-        <p className="text-sm text-muted-foreground">
-          Manage your identity and wallets
-        </p>
+        <Badge variant="flux" size="sm">
+          {hasVerifiedAddress ? "VERIFIED" : "SETUP"}
+        </Badge>
       </div>
 
       {/* Status banner */}
-      <UserStatusBanner
-        hasWallet={hasLinkedAddresses}
-        isVerified={hasVerifiedAddress}
-      />
+      <div className="fade-up stagger-2">
+        <UserStatusBanner
+          hasWallet={hasLinkedAddresses}
+          isVerified={hasVerifiedAddress}
+        />
+      </div>
 
       {/* Identity card - compact */}
-      <Card className="card-glow overflow-hidden py-0">
+      <Card className="card-glow overflow-hidden py-0 fade-up stagger-3">
         <CardContent className="px-3 py-2">
           <div className="flex items-center gap-2">
-            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-sm font-bold text-primary-foreground">
+            <div className={cn(
+              "flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-sm font-bold text-primary-foreground",
+              hasVerifiedAddress && "ring-2 ring-primary/30 shadow-[0_0_12px_var(--color-glow)]"
+            )}>
               {user.firstName.charAt(0)}
             </div>
             <div className="min-w-0 flex-1">
@@ -134,7 +143,7 @@ export function UserPage() {
               )}
             </div>
             <div className="flex shrink-0 gap-1.5">
-              <Badge variant="outline" size="sm">
+              <Badge variant="flux" size="sm">
                 {user.id}
               </Badge>
               {user.isPremium && <Badge variant="ens" size="sm">PRO</Badge>}
@@ -145,17 +154,14 @@ export function UserPage() {
 
       {/* Primary action - contextual */}
       {!isConnected ? (
-        <section className="space-y-1.5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Get Started
-          </h2>
+        <section className="space-y-2 rounded-xl border border-dashed border-primary/30 bg-primary/5 p-4 fade-up stagger-4">
+          <SectionHeader>Get Started</SectionHeader>
+          <p className="text-sm text-muted-foreground">Connect your wallet to unlock token-gated channels.</p>
           <ConnectWallet />
         </section>
       ) : !hasVerifiedAddress && address ? (
-        <section className="space-y-1.5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Verify Wallet
-          </h2>
+        <section className="space-y-1.5 fade-up stagger-4">
+          <SectionHeader>Verify Wallet</SectionHeader>
           <TelegramLinkVerify
             address={address}
             telegramUsername={user?.username ?? null}
@@ -169,11 +175,9 @@ export function UserPage() {
 
       {/* Wallets section */}
       {hasLinkedAddresses && (
-        <section className="space-y-1.5">
+        <section className="space-y-1.5 fade-up stagger-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Wallets ({addresses.length})
-            </h2>
+            <SectionHeader count={addresses.length}>Wallets</SectionHeader>
             {isConnected && (
               <ConnectWallet />
             )}
@@ -188,10 +192,8 @@ export function UserPage() {
 
       {/* ENS Identity - expandable section */}
       {isConnected && address && (
-        <section className="space-y-1.5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            ENS Identity
-          </h2>
+        <section className="space-y-1.5 fade-up stagger-4">
+          <SectionHeader>ENS Identity</SectionHeader>
           <Card className="card-glow py-0">
             <CardContent className="px-3 py-2">
               <ENSIdentityCard address={address} compact />
@@ -202,28 +204,26 @@ export function UserPage() {
 
       {/* Channel eligibility */}
       {urlChannelId ? (
-        <section className="space-y-1.5">
-          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Channel Eligibility
-          </h2>
+        <section className="space-y-1.5 fade-up stagger-4">
+          <SectionHeader>Channel Eligibility</SectionHeader>
           <EligibilityChecker channelId={urlChannelId as Id<"channels">} compact />
         </section>
       ) : (
-        <section>
+        <section className="fade-up stagger-4">
           <Link
             to="/get-eligible"
-            className="card-glow flex items-center justify-between rounded-lg border bg-card px-3 py-2 transition-colors hover:bg-accent"
+            className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-[0_0_20px_var(--color-glow)]"
           >
-            <div className="flex items-center gap-2">
-              <ShieldCheckIcon className="size-4 text-muted-foreground" />
+            <div className="flex items-center gap-3">
+              <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
+                <ShieldCheckIcon className="size-5 text-primary" />
+              </div>
               <div>
-                <p className="text-sm font-medium">Check Eligibility</p>
-                <p className="text-xs text-muted-foreground">
-                  See if you qualify for gated channels
-                </p>
+                <p className="text-sm font-semibold">Check Eligibility</p>
+                <p className="text-xs text-muted-foreground">See if you qualify for gated channels</p>
               </div>
             </div>
-            <ChevronRightIcon className="size-4 text-muted-foreground" />
+            <ChevronRightIcon className="size-5 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
           </Link>
         </section>
       )}

@@ -6,6 +6,7 @@ import { CopyButton } from "@/components/CopyButton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { PulseDot } from "@/components/ui/pulse-dot"
 import { Skeleton } from "@/components/ui/skeleton"
 import { api } from "@/convex/api"
 import { useTelegram } from "@/contexts/TelegramContext"
@@ -18,7 +19,11 @@ type PolicyResult = {
 }
 
 function boolBadge(value: boolean) {
-  return <Badge variant={value ? "default" : "secondary"}>{value ? "ON" : "OFF"}</Badge>
+  return (
+    <Badge variant={value ? "success" : "secondary"} size="sm">
+      <span className="font-mono">{value ? "ON" : "OFF"}</span>
+    </Badge>
+  )
 }
 
 export function HealthPage() {
@@ -98,9 +103,13 @@ export function HealthPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 fade-up stagger-1">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold">Health & Diagnostics</h1>
+          <div className="flex items-center gap-3">
+            <PulseDot color={error ? "var(--color-destructive)" : "var(--color-success)"} size={6} />
+            <h1 className="text-xl font-bold tracking-tight">Health & Diagnostics</h1>
+            <Badge variant="flux" size="sm">{error ? "ERROR" : isLoading ? "LOADING" : "SYSTEMS OK"}</Badge>
+          </div>
           <p className="text-sm text-muted-foreground">
             Quick visibility into policy flags and runtime context (no secrets).
           </p>
@@ -113,6 +122,7 @@ export function HealthPage() {
             variant="secondary"
             onClick={() => void refresh()}
             disabled={isLoading}
+            className="bg-primary/10 text-primary hover:bg-primary/20 hover:shadow-[0_0_12px_var(--color-glow)]"
           >
             <RefreshCwIcon className="mr-2 size-4" />
             Refresh
@@ -130,7 +140,7 @@ export function HealthPage() {
       )}
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="py-0">
+        <Card className="py-0 card-glow fade-up stagger-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <ShieldCheckIcon className="size-4" />
@@ -153,7 +163,7 @@ export function HealthPage() {
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-muted-foreground">ADMIN_IDS count</div>
-                  <div className="font-mono">{policy.adminIds.count}</div>
+                  <div className="font-mono text-foreground">{policy.adminIds.count}</div>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <div className="text-muted-foreground">ALLOW_MOCK_INITDATA</div>
@@ -178,7 +188,7 @@ export function HealthPage() {
           </CardContent>
         </Card>
 
-        <Card className="py-0">
+        <Card className="py-0 card-glow fade-up stagger-2">
           <CardHeader>
             <CardTitle className="text-base">Telegram Context</CardTitle>
             <CardDescription>Client-side view.</CardDescription>
@@ -190,31 +200,31 @@ export function HealthPage() {
             </div>
             <div className="flex items-center justify-between gap-3">
               <div className="text-muted-foreground">startParam</div>
-              <div className="font-mono">{telegram.startParam ?? "—"}</div>
+              <div className="font-mono text-foreground">{telegram.startParam ?? "—"}</div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <div className="text-muted-foreground">platform</div>
-              <div className="font-mono">{telegram.platform ?? "—"}</div>
+              <div className="font-mono text-foreground">{telegram.platform ?? "—"}</div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <div className="text-muted-foreground">version</div>
-              <div className="font-mono">{telegram.version ?? "—"}</div>
+              <div className="font-mono text-foreground">{telegram.version ?? "—"}</div>
             </div>
             <div className="flex items-center justify-between gap-3">
               <div className="text-muted-foreground">user id</div>
-              <div className="font-mono">{telegram.user?.id ?? "—"}</div>
+              <div className="font-mono text-foreground">{telegram.user?.id ?? "—"}</div>
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="py-0">
+      <Card className="py-0 fade-up stagger-3">
         <CardHeader>
           <CardTitle className="text-base">Raw JSON</CardTitle>
           <CardDescription>Safe to paste into PRs/issues (no secrets).</CardDescription>
         </CardHeader>
         <CardContent>
-          <pre className="max-h-96 overflow-auto rounded-lg border bg-muted p-3 text-xs leading-relaxed">
+          <pre className="flux-scrollbar max-h-96 overflow-auto rounded-lg border border-border bg-surface-alt p-3 font-mono text-xs leading-relaxed">
             {json}
           </pre>
         </CardContent>

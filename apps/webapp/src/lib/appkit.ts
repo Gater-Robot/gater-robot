@@ -28,8 +28,11 @@ createAppKit({
   allWallets: "HIDE",
   themeMode: document.documentElement.classList.contains("dark") ? "dark" : "light",
   themeVariables: {
-    "--w3m-accent": "#14b8a6",
-    "--w3m-border-radius-master": "10px",
-    "--w3m-font-family": "Outfit, system-ui, sans-serif",
+    "--w3m-accent": "#2dd4bf",
+    "--w3m-color-mix": "#0d1420",
+    "--w3m-color-mix-strength": 40,
+    "--w3m-border-radius-master": "12px",
+    "--w3m-font-family": "'Outfit', system-ui, sans-serif",
+    "--w3m-z-index": 100,
   },
 })

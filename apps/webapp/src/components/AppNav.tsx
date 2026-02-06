@@ -119,10 +119,10 @@ export function AppNav() {
     return (
       <nav
         aria-label="Primary"
-        className="fixed right-3 top-3 z-50 flex w-14 flex-col gap-1.5 rounded-2xl border border-border/60 bg-card/95 p-2 shadow-lg shadow-glow/5 supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
+        className="fixed right-3 top-3 z-50 flex w-[3.75rem] flex-col gap-1.5 rounded-2xl border border-border/60 bg-card/95 p-1.5 shadow-lg shadow-glow/5 supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
       >
         {/* Brand mark */}
-        <div className="flex h-10 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
+        <div className="flex h-11 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground shadow-[0_0_12px_var(--color-glow)]">
           G
         </div>
 
@@ -142,10 +142,10 @@ export function AppNav() {
                 aria-current={isActive ? "page" : undefined}
                 aria-label={label}
                 className={cn(
-                  "flex size-10 items-center justify-center rounded-xl transition-all",
+                  "flex size-11 items-center justify-center rounded-xl transition-all",
                   isActive
-                    ? "bg-primary/15 text-primary shadow-[0_0_12px_rgba(45,212,191,0.15)] dark:shadow-[0_0_12px_rgba(45,212,191,0.25)]"
-                    : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                    ? "bg-primary/15 text-primary glow-pulse"
+                    : "text-muted-foreground hover:bg-accent hover:text-foreground hover:shadow-[0_0_8px_var(--color-glow)]",
                 )}
               >
                 <Icon className={cn("size-5", isActive && "stroke-[2.5]")} />
@@ -167,7 +167,7 @@ export function AppNav() {
         className={cn(
           "fixed right-3 top-3 z-50 flex size-12 items-center justify-center rounded-2xl border border-border/60 bg-card/95 text-foreground shadow-lg transition-colors",
           "supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl",
-          isOpen && "bg-primary/10 text-primary",
+          isOpen && "bg-primary/10 text-primary shadow-[0_0_12px_var(--color-glow)]",
         )}
         onClick={() => setIsOpen((v) => !v)}
       >
@@ -180,23 +180,28 @@ export function AppNav() {
           onPointerDown={() => setIsOpen(false)}
         >
           <div
-            className="fixed bottom-3 right-3 top-3 z-50 flex w-[min(16rem,75vw)] flex-col rounded-2xl border border-border/60 bg-card/95 bg-dots p-2 shadow-2xl supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
+            className="fixed bottom-3 right-3 top-3 z-50 flex w-[min(16rem,75vw)] flex-col rounded-2xl border border-border/60 bg-[var(--color-surface)] bg-dots p-2 shadow-2xl supports-[backdrop-filter]:backdrop-blur-xl"
             onPointerDown={(e) => e.stopPropagation()}
           >
             {/* Drawer header */}
-            <div className="flex h-12 items-center gap-3 rounded-xl bg-primary/10 px-3">
-              <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
+            <div className="flex h-14 items-center gap-3 rounded-xl bg-primary/10 px-3">
+              <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground shadow-[0_0_12px_var(--color-glow)]">
                 G
               </div>
               <div className="flex-1">
-                <div className="text-sm font-semibold">Gater Robot</div>
-                <div className="text-[10px] text-muted-foreground">Token-gated communities</div>
+                <div className="font-sans text-lg font-bold">
+                  <span className="text-foreground">Gater</span>{" "}
+                  <span className="text-primary">Robot</span>
+                </div>
               </div>
+              <span className="font-mono text-[10px] uppercase tracking-[0.06em] bg-primary/10 text-primary rounded px-1.5 py-0.5">
+                MINI APP
+              </span>
             </div>
 
             {/* Nav items */}
             <div className="mt-2 flex flex-col gap-0.5">
-              {items.map(({ to, label, Icon }) => {
+              {items.map(({ to, label, Icon }, index) => {
                 const isActive =
                   location.pathname === to ||
                   (to === "/user" && location.pathname === "/") ||
@@ -208,14 +213,25 @@ export function AppNav() {
                     to={to}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all",
+                      "flex w-full items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-all",
                       isActive
-                        ? "bg-primary/15 text-primary shadow-[0_0_12px_rgba(45,212,191,0.1)]"
-                        : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                        ? "bg-primary/10 border-l-2 border-primary text-foreground"
+                        : "text-muted-foreground hover:bg-primary/5 hover:text-foreground",
+                      "fade-up",
+                      index === 0 && "stagger-1",
+                      index === 1 && "stagger-2",
+                      index === 2 && "stagger-3",
+                      index === 3 && "stagger-4",
+                      index === 4 && "stagger-5",
                     )}
                     onClick={() => setIsOpen(false)}
                   >
-                    <Icon className={cn("size-5", isActive && "stroke-[2.5]")} />
+                    <Icon
+                      className={cn(
+                        "size-5",
+                        isActive ? "text-primary stroke-[2.5]" : "",
+                      )}
+                    />
                     <span className="truncate">{label}</span>
                   </Link>
                 )
@@ -224,8 +240,9 @@ export function AppNav() {
 
             {/* Spacer + bottom info */}
             <div className="flex-1" />
-            <div className="rounded-xl border border-border/40 p-2.5 text-center text-[10px] text-muted-foreground">
-              Token-gated access for Telegram
+            <div className="border border-border rounded-lg p-3 text-center font-mono text-[10px] text-muted-foreground">
+              <span className="block">Token-gated access for Telegram</span>
+              <span className="block mt-1 text-muted-foreground/60">v0.1.0</span>
             </div>
           </div>
         </div>

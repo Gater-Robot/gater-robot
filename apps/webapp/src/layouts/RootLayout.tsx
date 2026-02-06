@@ -66,8 +66,10 @@ export function RootLayout() {
       data-page={pageKey}
       className="flex min-h-[100svh] flex-col bg-flux-gradient bg-dots text-foreground"
     >
-      <main className="w-full flex-1 px-2 pt-2 sm:pr-16">
-        <Outlet />
+      <main className="w-full flex-1 px-4 pt-4 pb-6 sm:px-6 sm:pr-20">
+        <div className="mx-auto max-w-2xl sm:max-w-4xl">
+          <Outlet />
+        </div>
       </main>
 
       <AppNav />

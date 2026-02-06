@@ -16,7 +16,6 @@ import {
   useWriteContract,
 } from "wagmi"
 
-import { GoldMedalIcon } from "@/components/icons/GoldMedalIcon"
 import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { TransactionStatus } from "@/components/web3/TransactionStatus"
 import { Badge } from "@/components/ui/badge"
@@ -29,6 +28,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { StatPill } from "@/components/ui/stat-pill"
 
 const BEST_TOKEN_SYMBOL = "BEST"
 const BEST_TOKEN_DECIMALS = 18
@@ -208,17 +208,21 @@ export function FaucetPage() {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold">$BEST Faucet</h1>
-        <p className="text-sm text-muted-foreground">Claim your free tokens.</p>
+      <div className="flex items-center gap-3 fade-up stagger-1">
+        <h1 className="text-xl font-bold tracking-tight">
+          $<span className="text-primary">BEST</span> Faucet
+        </h1>
+        <Badge variant="flux" size="sm">ERC-20</Badge>
       </div>
 
-      <Card className="py-0">
+      <Card className="card-glow py-0 fade-up stagger-2">
         <CardHeader className="text-center">
-          <div className="mb-4 flex justify-center">
-            <GoldMedalIcon size={80} />
+          <div className="mb-4 flex flex-col items-center gap-2">
+            <span className="font-mono text-5xl font-bold text-primary" style={{ textShadow: "0 0 20px var(--color-glow)" }}>
+              {FAUCET_AMOUNT}
+            </span>
+            <span className="font-mono text-lg text-muted-foreground">$BEST</span>
           </div>
-          <CardTitle className="text-2xl">Claim {FAUCET_AMOUNT} $BEST</CardTitle>
           <CardDescription>
             Each address can claim once. Connect a wallet to get started.
           </CardDescription>
@@ -226,12 +230,9 @@ export function FaucetPage() {
 
         <CardContent className="space-y-6">
           {!isContractConfigured && (
-            <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-700 dark:bg-yellow-950/30 dark:text-yellow-300">
+            <div className="rounded-lg border-l-4 border-l-warning bg-warning-dim p-4 text-sm text-foreground">
               <strong>Note:</strong> Token contract not yet deployed. Set{" "}
-              <code className="rounded bg-yellow-100 px-1 dark:bg-yellow-900">
-                VITE_BEST_TOKEN_ADDRESS
-              </code>
-              .
+              <code className="rounded bg-warning/10 px-1 font-mono">VITE_BEST_TOKEN_ADDRESS</code>.
             </div>
           )}
 
@@ -249,19 +250,17 @@ export function FaucetPage() {
           {isConnected && isContractConfigured && (
             <>
               {hasClaimed && claimState !== "success" && (
-                <div className="space-y-4 py-6 text-center">
-                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                    <CheckCircle2Icon className="size-8 text-emerald-600" />
+                <div className="space-y-4 py-6 text-center fade-up">
+                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
+                    <CheckCircle2Icon className="size-8 text-success" />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold">Already Claimed</h3>
-                    <p className="text-muted-foreground">
-                      You have already claimed your tokens.
-                    </p>
+                    <p className="text-muted-foreground">You have already claimed your tokens.</p>
                   </div>
-                  <Badge variant="outline" size="lg">
-                    Balance: {formatBalance(balance)} $BEST
-                  </Badge>
+                  <div className="flex justify-center">
+                    <StatPill label="Balance" value={`${formatBalance(balance)} $BEST`} color="var(--color-primary)" />
+                  </div>
                 </div>
               )}
 
@@ -273,7 +272,7 @@ export function FaucetPage() {
                       You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong>{" "}
                       tokens.
                     </p>
-                    <Button type="button" size="lg" onClick={handleClaim} className="w-full sm:w-auto">
+                    <Button type="button" size="lg" onClick={handleClaim} className="w-full hover:shadow-[0_0_30px_var(--color-glow)]">
                       <DropletsIcon className="size-5" />
                       Claim Tokens
                     </Button>
@@ -300,11 +299,11 @@ export function FaucetPage() {
 
               {claimState === "success" && (
                 <div className="space-y-4 py-6 text-center">
-                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
-                    <CheckCircle2Icon className="size-8 text-emerald-600" />
+                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
+                    <CheckCircle2Icon className="size-8 text-success" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-emerald-700 dark:text-emerald-400">
+                    <h3 className="text-lg font-semibold text-success">
                       Tokens Claimed!
                     </h3>
                     <p className="text-muted-foreground">
@@ -321,7 +320,7 @@ export function FaucetPage() {
                       Add $BEST to Wallet
                     </Button>
                   ) : (
-                    <p className="flex items-center justify-center gap-1 text-sm text-emerald-600 dark:text-emerald-400">
+                    <p className="flex items-center justify-center gap-1 text-sm text-success">
                       <CheckCircle2Icon className="size-4" />
                       Token added to wallet
                     </p>
@@ -331,11 +330,11 @@ export function FaucetPage() {
 
               {claimState === "error" && (
                 <div className="space-y-4 py-6 text-center">
-                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
-                    <XCircleIcon className="size-8 text-red-600" />
+                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-destructive/10">
+                    <XCircleIcon className="size-8 text-destructive" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-red-700 dark:text-red-400">
+                    <h3 className="text-lg font-semibold text-destructive">
                       Claim Failed
                     </h3>
                     <p className="mx-auto max-w-sm text-sm text-muted-foreground">
@@ -383,20 +382,29 @@ export function FaucetPage() {
         </CardFooter>
       </Card>
 
-      <Card className="py-0">
+      <Card className="card-glow py-0 fade-up stagger-3">
         <CardHeader>
           <CardTitle className="text-lg">About $BEST</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2 text-sm text-muted-foreground">
-          <p>
-            <strong>$BEST</strong> (Best Token) is the utility token for Gater Robot,
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground">
+            <strong className="text-foreground">$BEST</strong> (Best Token) is the utility token for Gater Robot,
             used for token-gating Telegram groups and premium features.
           </p>
-          <ul className="list-inside list-disc space-y-1">
-            <li>Faucet amount: {FAUCET_AMOUNT} tokens per address</li>
-            <li>Token standard: ERC-20</li>
-            <li>Network: Base / Base Sepolia</li>
-          </ul>
+          <div className="space-y-2 rounded-lg border border-border bg-surface-alt p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Faucet amount</span>
+              <span className="font-mono text-foreground">{FAUCET_AMOUNT} tokens</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Standard</span>
+              <span className="font-mono text-foreground">ERC-20</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Network</span>
+              <span className="font-mono text-foreground">Base / Base Sepolia</span>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

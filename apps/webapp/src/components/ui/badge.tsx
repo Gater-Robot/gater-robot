@@ -13,9 +13,9 @@ const badgeVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90",
         success:
-          "bg-emerald-600 text-white [a&]:hover:bg-emerald-600/90 dark:bg-emerald-600/80 dark:[a&]:hover:bg-emerald-600/70",
+          "bg-success text-success-foreground [a&]:hover:bg-success/90",
         warning:
-          "bg-amber-500 text-white [a&]:hover:bg-amber-500/90 dark:bg-amber-500/80 dark:[a&]:hover:bg-amber-500/70",
+          "bg-warning text-warning-foreground [a&]:hover:bg-warning/90",
         ens: "bg-purple-600 text-white [a&]:hover:bg-purple-600/90 dark:bg-purple-600/80 dark:[a&]:hover:bg-purple-600/70",
         destructive:
           "bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
@@ -23,6 +23,7 @@ const badgeVariants = cva(
           "border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         ghost: "[a&]:hover:bg-accent [a&]:hover:text-accent-foreground",
         link: "text-primary underline-offset-4 [a&]:hover:underline",
+        flux: "bg-primary/10 text-primary font-mono text-[10px] uppercase tracking-[0.06em] border-primary/20",
       },
       size: {
         default: "px-2 py-0.5 text-xs gap-1 [&>svg]:size-3",
