@@ -46,7 +46,7 @@ artifacts/
 cache/
 
 # Hardhat Ignition deployment state (chain-specific, contains build info & journal)
-ignition/deployments/
+**/ignition/deployments/
 
 # Foundry build artifacts
 out/
