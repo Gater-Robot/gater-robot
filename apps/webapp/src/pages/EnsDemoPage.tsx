@@ -1,12 +1,11 @@
 import * as React from "react"
 import { ProfileCard } from "ethereum-identity-kit"
 import {
-  ChevronRightIcon,
+  FlaskConicalIcon,
   GlobeIcon,
   LayersIcon,
   Loader2Icon,
   ShieldIcon,
-  SparklesIcon,
   WalletIcon,
 } from "lucide-react"
 import {
@@ -34,6 +33,18 @@ const DEMO_TELEGRAM_USER = {
   username: "nick",
 }
 
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-3 py-2">
+      <div className="h-px flex-1 bg-border" />
+      <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+        {label}
+      </span>
+      <div className="h-px flex-1 bg-border" />
+    </div>
+  )
+}
+
 function ENSDemo() {
   const { address, isConnected } = useAccount()
   const { connect, connectors, isPending } = useConnect()
@@ -59,271 +70,265 @@ function ENSDemo() {
     chains.find((c) => c.id === chainId)?.name ?? `Chain ${chainId}`
 
   return (
-    <div className="space-y-10">
-      <section className="space-y-4 text-center">
-        <Badge variant="ens" className="mx-auto w-fit">
-          <SparklesIcon className="size-3" />
-          EthGlobal HackMoney 2026 — ENS Track
-        </Badge>
-        <h1 className="text-4xl font-bold">ENS Identity Integration PoC</h1>
-        <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-          Demonstrating ENS identity for token-gated Telegram groups — profile
-          resolution, org.telegram auto-verification, and cross-chain ENS from L2.
+    <div className="space-y-6">
+      {/* Workshop header */}
+      <div>
+        <div className="mb-2 flex items-center gap-2">
+          <FlaskConicalIcon className="size-5 text-primary" />
+          <Badge variant="outline" size="sm">Workshop</Badge>
+        </div>
+        <h1 className="text-xl font-semibold">Component Workshop</h1>
+        <p className="text-sm text-muted-foreground">
+          ENS identity components &amp; integration demos. Live data, real
+          resolution.
         </p>
+      </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          {isConnected && (
-            <div
-              className="flex items-center gap-1 rounded-md border bg-muted p-1"
-              role="group"
-              aria-label="Select network"
-            >
-              {chains.map((chain) => (
+      {/* Wallet connection */}
+      <Card className="py-0">
+        <CardContent className="p-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {isConnected ? (
+              <>
+                <div className="flex flex-wrap gap-1">
+                  {chains.map((chain) => (
+                    <Button
+                      key={chain.id}
+                      type="button"
+                      variant={chainId === chain.id ? "default" : "outline"}
+                      size="xs"
+                      onClick={() => {
+                        try {
+                          switchChain({ chainId: chain.id })
+                        } catch (error) {
+                          console.error("Failed to switch chain:", error)
+                        }
+                      }}
+                      aria-label={`Switch to ${chain.name}`}
+                      aria-pressed={chainId === chain.id}
+                    >
+                      {chain.name.split(" ")[0]}
+                    </Button>
+                  ))}
+                </div>
                 <Button
-                  key={chain.id}
                   type="button"
-                  variant={chainId === chain.id ? "default" : "ghost"}
+                  variant="ghost"
                   size="sm"
                   onClick={() => {
                     try {
-                      switchChain({ chainId: chain.id })
+                      disconnect()
                     } catch (error) {
-                      console.error("Failed to switch chain:", error)
+                      console.error("Failed to disconnect:", error)
                     }
                   }}
-                  className="text-xs"
-                  aria-label={`Switch to ${chain.name}`}
-                  aria-pressed={chainId === chain.id}
+                  className="ml-auto"
                 >
-                  {chain.name.split(" ")[0]}
+                  Disconnect
                 </Button>
-              ))}
-            </div>
-          )}
-
-          {isConnected ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                try {
-                  disconnect()
-                } catch (error) {
-                  console.error("Failed to disconnect:", error)
-                }
-              }}
-            >
-              Disconnect
-            </Button>
-          ) : (
-            <div className="flex flex-wrap justify-center gap-2">
-              {connectors.slice(0, 2).map((connector) => (
-                <Button
-                  key={connector.uid}
-                  type="button"
-                  onClick={() => {
-                    try {
-                      connect({ connector })
-                    } catch (error) {
-                      console.error("Failed to connect:", error)
-                    }
-                  }}
-                  disabled={isPending}
-                >
-                  {isPending ? (
-                    <Loader2Icon className="size-4 animate-spin" />
-                  ) : (
-                    <WalletIcon className="size-4" />
-                  )}
-                  {connector.name}
-                </Button>
-              ))}
-            </div>
-          )}
-        </div>
-      </section>
-
-      <section className="grid gap-4 md:grid-cols-3">
-        <Card className="border-blue-200 bg-blue-50/50 py-0 dark:bg-blue-950/20">
-          <CardContent className="pt-6">
-            <GlobeIcon className="mb-3 size-8 text-blue-600" aria-hidden="true" />
-            <h3 className="mb-1 font-semibold">Real ENS Resolution</h3>
-            <p className="text-sm text-muted-foreground">
-              Live resolution of names, avatars, and text records from mainnet.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200 bg-green-50/50 py-0 dark:bg-green-950/20">
-          <CardContent className="pt-6">
-            <ShieldIcon className="mb-3 size-8 text-green-600" aria-hidden="true" />
-            <h3 className="mb-1 font-semibold">Telegram Auto-Verify</h3>
-            <p className="text-sm text-muted-foreground">
-              Creative use of org.telegram for signature-free identity verification.
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-purple-200 bg-purple-50/50 py-0 dark:bg-purple-950/20">
-          <CardContent className="pt-6">
-            <LayersIcon className="mb-3 size-8 text-purple-600" aria-hidden="true" />
-            <h3 className="mb-1 font-semibold">Cross-Chain Support</h3>
-            <p className="text-sm text-muted-foreground">
-              Resolve ENS while connected to Base, Arbitrum, or any L2.
-            </p>
-          </CardContent>
-        </Card>
-      </section>
-
-      <div className="grid gap-8 lg:grid-cols-2">
-        <div className="space-y-8">
-          {isConnected && address && (
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <WalletIcon className="size-5" />
-                <h3 className="text-lg font-semibold">Your ENS Identity</h3>
-                <Badge variant="outline" className="ml-auto">
-                  {currentChainName}
-                </Badge>
+              </>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {connectors.slice(0, 2).map((connector) => (
+                  <Button
+                    key={connector.uid}
+                    type="button"
+                    onClick={() => {
+                      try {
+                        connect({ connector })
+                      } catch (error) {
+                        console.error("Failed to connect:", error)
+                      }
+                    }}
+                    disabled={isPending}
+                    size="sm"
+                  >
+                    {isPending ? (
+                      <Loader2Icon className="size-4 animate-spin" />
+                    ) : (
+                      <WalletIcon className="size-4" />
+                    )}
+                    {connector.name}
+                  </Button>
+                ))}
               </div>
-              <ENSIdentityCard address={address} isVerified />
-              <p className="text-xs text-muted-foreground">
-                * ENS resolved from mainnet while connected to {currentChainName}
-              </p>
-            </section>
-          )}
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-          <section className="space-y-4">
-            <div>
-              <h3 className="flex items-center gap-2 text-lg font-semibold">
-                <SparklesIcon className="size-5 text-green-600" />
-                Telegram Auto-Verify (Demo)
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                If your ENS org.telegram matches your Telegram username, verify without signing.
-              </p>
-            </div>
-            <TelegramLinkVerify
-              address="0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5"
-              telegramUsername={DEMO_TELEGRAM_USER.username}
-              onVerified={() => alert("Auto-verified via ENS!")}
-            />
-          </section>
-
-          <section>
-            <ENSLookup />
-          </section>
-        </div>
-
-        <div className="space-y-8">
-          <section className="space-y-3">
-            <h3 className="flex items-center gap-2 text-lg font-semibold">
-              <ChevronRightIcon className="size-5" />
-              Multi-Address Demo
-            </h3>
-            <AddressTableWithENS
-              addresses={DEMO_ADDRESSES}
-              telegramUsername={DEMO_TELEGRAM_USER.username}
-              onSetDefault={(id) => console.log("Set default:", id)}
-              onVerify={(id) => console.log("Verify:", id)}
-            />
-          </section>
-
-          <section className="space-y-4">
-            <h3 className="text-lg font-semibold">Example ENS Profiles</h3>
-            <div className="space-y-4">
-              <ENSIdentityCard
-                address="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-                isVerified
-                isDefault
-              />
-              <ENSIdentityCard
-                address="0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5"
-                isVerified
-                telegramMatched
-              />
-            </div>
-          </section>
-
-          <section className="space-y-4">
-            <div>
-              <h3 className="flex items-center gap-2 text-lg font-semibold">
-                <SparklesIcon className="size-5 text-purple-600" />
-                EthIdentityKit ProfileCard
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Full-featured profile component from Ethereum Identity Kit.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <ErrorBoundary
-                fallback={
-                  <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:bg-yellow-950/20">
-                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                      Failed to load ProfileCard for vitalik.eth
-                    </p>
-                  </div>
-                }
-              >
-                <ProfileCard addressOrName="vitalik.eth" darkMode={isDarkMode} />
-              </ErrorBoundary>
-              <ErrorBoundary
-                fallback={
-                  <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:bg-yellow-950/20">
-                    <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                      Failed to load ProfileCard for nick.eth
-                    </p>
-                  </div>
-                }
-              >
-                <ProfileCard
-                  addressOrName="nick.eth"
-                  darkMode={isDarkMode}
-                  showFollowButton={false}
-                />
-              </ErrorBoundary>
-            </div>
-          </section>
-        </div>
+      {/* Feature highlights - horizontal scroll on mobile */}
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        <Card className="min-w-[200px] flex-shrink-0 border-primary/20 bg-primary/5 py-0 dark:bg-primary/10">
+          <CardContent className="p-3">
+            <GlobeIcon className="mb-2 size-5 text-primary" aria-hidden="true" />
+            <p className="text-sm font-medium">Real ENS Resolution</p>
+            <p className="text-xs text-muted-foreground">Live from mainnet</p>
+          </CardContent>
+        </Card>
+        <Card className="min-w-[200px] flex-shrink-0 border-emerald-500/20 bg-emerald-500/5 py-0 dark:bg-emerald-500/10">
+          <CardContent className="p-3">
+            <ShieldIcon className="mb-2 size-5 text-emerald-600" aria-hidden="true" />
+            <p className="text-sm font-medium">Telegram Auto-Verify</p>
+            <p className="text-xs text-muted-foreground">Via org.telegram</p>
+          </CardContent>
+        </Card>
+        <Card className="min-w-[200px] flex-shrink-0 border-purple-500/20 bg-purple-500/5 py-0 dark:bg-purple-500/10">
+          <CardContent className="p-3">
+            <LayersIcon className="mb-2 size-5 text-purple-600" aria-hidden="true" />
+            <p className="text-sm font-medium">Cross-Chain</p>
+            <p className="text-xs text-muted-foreground">Base, Arbitrum, L2</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <section>
-        <Card className="py-0">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Badge variant="ens">ENS Bounty</Badge>
-              Compliance Checklist
-            </CardTitle>
-            <CardDescription>
-              Key requirements for the ENS prize track.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              {[
-                "Real ENS code (wagmi hooks + viem actions)",
-                "No hard-coded values — dynamic RPC resolution",
-                "Functional demo — profile display + auto-link",
-                "Multi-chain support — resolve from Base/Arbitrum",
-                "Creative use — org.telegram auto-verification",
-                "Version control — incremental commits",
-              ].map((item, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm">
-                  <span
-                    className="flex size-5 items-center justify-center rounded-full bg-green-100 text-xs text-green-700"
-                    role="img"
-                    aria-label="Completed"
-                  >
-                    ✓
-                  </span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+      <SectionDivider label="Your Identity" />
+
+      {/* Connected wallet ENS */}
+      {isConnected && address ? (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Connected Wallet
+            </h2>
+            <Badge variant="outline" size="sm">{currentChainName}</Badge>
+          </div>
+          <ENSIdentityCard address={address} isVerified />
+          <p className="text-xs text-muted-foreground">
+            ENS resolved from mainnet while connected to {currentChainName}
+          </p>
+        </section>
+      ) : (
+        <p className="text-center text-sm text-muted-foreground">
+          Connect a wallet above to see your ENS identity
+        </p>
+      )}
+
+      <SectionDivider label="Telegram Verify" />
+
+      {/* Telegram auto-verify demo */}
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          Auto-Verify via org.telegram
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          If your ENS org.telegram matches your Telegram username, verify without signing.
+        </p>
+        <TelegramLinkVerify
+          address="0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5"
+          telegramUsername={DEMO_TELEGRAM_USER.username}
+          onVerified={() => alert("Auto-verified via ENS!")}
+        />
       </section>
+
+      <SectionDivider label="ENS Lookup" />
+
+      <ENSLookup />
+
+      <SectionDivider label="Example Profiles" />
+
+      {/* Example profiles */}
+      <section className="space-y-4">
+        <ENSIdentityCard
+          address="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+          isVerified
+          isDefault
+        />
+        <ENSIdentityCard
+          address="0xb8c2C29ee19D8307cb7255e1Cd9CbDE883A267d5"
+          isVerified
+          telegramMatched
+        />
+      </section>
+
+      <SectionDivider label="Multi-Address Table" />
+
+      {/* Multi-address demo */}
+      <section className="space-y-3">
+        <AddressTableWithENS
+          addresses={DEMO_ADDRESSES}
+          telegramUsername={DEMO_TELEGRAM_USER.username}
+          onSetDefault={(id) => console.log("Set default:", id)}
+          onVerify={(id) => console.log("Verify:", id)}
+        />
+      </section>
+
+      <SectionDivider label="Ethereum Identity Kit" />
+
+      {/* ProfileCard showcase */}
+      <section className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Full ProfileCard from ethereum-identity-kit
+        </p>
+        <ErrorBoundary
+          fallback={
+            <Card className="border-amber-200 bg-amber-50 py-0 dark:bg-amber-950/20">
+              <CardContent className="p-4">
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  Failed to load ProfileCard for vitalik.eth
+                </p>
+              </CardContent>
+            </Card>
+          }
+        >
+          <ProfileCard addressOrName="vitalik.eth" darkMode={isDarkMode} />
+        </ErrorBoundary>
+        <ErrorBoundary
+          fallback={
+            <Card className="border-amber-200 bg-amber-50 py-0 dark:bg-amber-950/20">
+              <CardContent className="p-4">
+                <p className="text-sm text-amber-600 dark:text-amber-400">
+                  Failed to load ProfileCard for nick.eth
+                </p>
+              </CardContent>
+            </Card>
+          }
+        >
+          <ProfileCard
+            addressOrName="nick.eth"
+            darkMode={isDarkMode}
+            showFollowButton={false}
+          />
+        </ErrorBoundary>
+      </section>
+
+      <SectionDivider label="Hackathon Compliance" />
+
+      {/* Compliance checklist */}
+      <Card className="py-0">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Badge variant="ens" size="sm">ENS Bounty</Badge>
+            Compliance Checklist
+          </CardTitle>
+          <CardDescription className="text-xs">
+            Key requirements for the ENS prize track
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2">
+            {[
+              "Real ENS code (wagmi hooks + viem actions)",
+              "No hard-coded values — dynamic RPC resolution",
+              "Functional demo — profile display + auto-link",
+              "Multi-chain support — resolve from Base/Arbitrum",
+              "Creative use — org.telegram auto-verification",
+              "Version control — incremental commits",
+            ].map((item, i) => (
+              <li key={i} className="flex items-center gap-2 text-sm">
+                <span
+                  className="flex size-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-xs text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300"
+                  role="img"
+                  aria-label="Completed"
+                >
+                  ✓
+                </span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </CardContent>
+      </Card>
     </div>
   )
 }

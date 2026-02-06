@@ -1,5 +1,10 @@
 import { Link, useSearchParams } from "react-router-dom"
-import { ExternalLinkIcon, SettingsIcon, ShieldIcon, UserIcon, WalletIcon } from "lucide-react"
+import {
+  ChevronRightIcon,
+  ShieldCheckIcon,
+  UserIcon,
+  WalletIcon,
+} from "lucide-react"
 import { useAccount } from "wagmi"
 
 import { AddressList } from "@/components/addresses/AddressList"
@@ -8,218 +13,241 @@ import { ENSIdentityCard } from "@/components/ens"
 import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { SIWEButton } from "@/components/wallet/SIWEButton"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { useAddresses } from "@/hooks/useAddresses"
 
 type Id<TableName extends string> = string & { __tableName?: TableName }
 
+function StatusBanner({
+  hasWallet,
+  isVerified,
+}: {
+  hasWallet: boolean
+  isVerified: boolean
+}) {
+  if (!hasWallet) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50">
+            <WalletIcon className="size-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <p className="font-semibold text-amber-900 dark:text-amber-100">
+              Connect a wallet
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Link a wallet to check channel eligibility
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!isVerified) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50">
+            <ShieldCheckIcon className="size-5 text-amber-600 dark:text-amber-400" />
+          </div>
+          <div>
+            <p className="font-semibold text-amber-900 dark:text-amber-100">
+              Verify your wallet
+            </p>
+            <p className="text-sm text-amber-700 dark:text-amber-300">
+              Sign a message to prove ownership
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
+      <div className="flex items-center gap-3">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
+          <ShieldCheckIcon className="size-5 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <div>
+          <p className="font-semibold text-emerald-900 dark:text-emerald-100">
+            You&apos;re all set
+          </p>
+          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+            Wallet linked and verified
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function UserPage() {
-  const { user, isLoading, isInTelegram, startParam } = useTelegram()
+  const { user, isLoading, isInTelegram } = useTelegram()
   const { address, isConnected } = useAccount()
   const { addresses } = useAddresses()
   const hasLinkedAddresses = addresses.length > 0
+  const hasVerifiedAddress = addresses.some((a: any) => a.verifiedAt)
   const [searchParams] = useSearchParams()
 
   const urlChannelId = searchParams.get("channelId")
-  const channelIdFromStartParam = (() => {
-    if (!startParam) return null
-    if (startParam === "admin" || startParam.startsWith("org_")) return null
-
-    if (startParam.startsWith("channel_")) {
-      const id = startParam.slice("channel_".length).trim()
-      return id.length > 0 ? id : null
-    }
-
-    // Back-compat: some flows use a raw Telegram chat id as startParam.
-    if (/^-?\d{5,}$/.test(startParam)) return startParam
-    return null
-  })()
-
-  const channelId = urlChannelId || channelIdFromStartParam || null
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-48 w-full" />
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-20 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
       </div>
     )
   }
 
   if (!user) {
     return (
-      <Card className="py-0">
-        <CardContent className="pt-6">
-          <div className="py-8 text-center">
-            <UserIcon className="mx-auto mb-4 size-12 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">Not Authenticated</h2>
-            <p className="text-muted-foreground">
-              {isInTelegram
-                ? "Unable to load user data from Telegram."
-                : "Please open this app in Telegram to authenticate."}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="mb-4 flex size-16 items-center justify-center rounded-2xl bg-muted">
+          <UserIcon className="size-8 text-muted-foreground" />
+        </div>
+        <h2 className="mb-2 text-xl font-semibold">Not Authenticated</h2>
+        <p className="max-w-xs text-sm text-muted-foreground">
+          {isInTelegram
+            ? "Unable to load user data from Telegram."
+            : "Please open this app in Telegram to authenticate."}
+        </p>
+      </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Profile</h1>
-          <p className="text-muted-foreground">
-            Manage your identity and linked wallets.
-          </p>
-        </div>
-        <Button variant="outline" size="sm" disabled>
-          <SettingsIcon className="size-4" />
-          Settings
-        </Button>
+      {/* Page header */}
+      <div>
+        <h1 className="text-xl font-semibold">
+          Hey, {user.firstName}
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          Manage your identity and wallets
+        </p>
       </div>
 
-      <Card className="py-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserIcon className="size-5" />
-            Telegram Identity
-          </CardTitle>
-          <CardDescription>Your Telegram account information.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-start gap-4">
-            <div className="flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-2xl font-bold text-white">
+      {/* Status banner */}
+      <StatusBanner
+        hasWallet={hasLinkedAddresses}
+        isVerified={hasVerifiedAddress}
+      />
+
+      {/* Identity card - compact */}
+      <Card className="overflow-hidden py-0">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-lg font-bold text-primary-foreground">
               {user.firstName.charAt(0)}
             </div>
-
-            <div className="flex-1 space-y-2">
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {user.firstName}
-                  {user.lastName ? ` ${user.lastName}` : ""}
-                </h3>
-                {user.username && (
-                  <p className="text-muted-foreground">@{user.username}</p>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="outline">ID: {user.id}</Badge>
-                {user.isPremium && <Badge variant="ens">Premium</Badge>}
-                {user.languageCode && (
-                  <Badge variant="secondary">
-                    {user.languageCode.toUpperCase()}
-                  </Badge>
-                )}
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-medium">
+                {user.firstName}
+                {user.lastName ? ` ${user.lastName}` : ""}
+              </p>
+              {user.username && (
+                <p className="truncate text-sm text-muted-foreground">
+                  @{user.username}
+                </p>
+              )}
+            </div>
+            <div className="flex shrink-0 gap-1.5">
+              <Badge variant="outline" size="sm">
+                {user.id}
+              </Badge>
+              {user.isPremium && <Badge variant="ens" size="sm">PRO</Badge>}
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="py-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <WalletIcon className="size-5" />
-            Linked Wallets
-          </CardTitle>
-          <CardDescription>
-            Wallet addresses linked to your account.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {hasLinkedAddresses && (
-            <div className="mb-6">
-              <p className="mb-3 text-sm text-muted-foreground">
-                Select a default address for eligibility checks:
-              </p>
-              <AddressList />
-            </div>
-          )}
+      {/* Primary action - contextual */}
+      {!isConnected ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Get Started
+          </h2>
+          <ConnectWallet />
+        </section>
+      ) : !hasVerifiedAddress && address ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Verify Wallet
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Sign a message to prove you own this address and link it to your account.
+          </p>
+          <SIWEButton />
+        </section>
+      ) : null}
 
-          {isConnected && address ? (
-            <div className="space-y-4">
-              {hasLinkedAddresses && (
-                <div className="border-t pt-4">
-                  <p className="mb-2 text-sm font-medium">Add another wallet</p>
-                </div>
-              )}
+      {/* Wallets section */}
+      {hasLinkedAddresses && (
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              Wallets ({addresses.length})
+            </h2>
+            {isConnected && (
               <ConnectWallet />
-              <div className="border-t pt-4">
-                <p className="mb-3 text-sm text-muted-foreground">
-                  Sign a message to verify wallet ownership and link it to your
-                  Telegram account.
+            )}
+          </div>
+          <Card className="py-0">
+            <CardContent className="p-3">
+              <AddressList />
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* ENS Identity - expandable section */}
+      {isConnected && address && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            ENS Identity
+          </h2>
+          <Card className="py-0">
+            <CardContent className="p-4">
+              <ENSIdentityCard address={address} compact />
+            </CardContent>
+          </Card>
+        </section>
+      )}
+
+      {/* Channel eligibility */}
+      {urlChannelId ? (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Channel Eligibility
+          </h2>
+          <EligibilityChecker channelId={urlChannelId as Id<"channels">} compact />
+        </section>
+      ) : (
+        <section>
+          <Link
+            to="/get-eligible"
+            className="flex items-center justify-between rounded-xl border bg-card p-4 transition-colors hover:bg-accent"
+          >
+            <div className="flex items-center gap-3">
+              <ShieldCheckIcon className="size-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Check Eligibility</p>
+                <p className="text-sm text-muted-foreground">
+                  See if you qualify for gated channels
                 </p>
-                <SIWEButton />
               </div>
             </div>
-          ) : !hasLinkedAddresses ? (
-            <div className="py-8 text-center text-muted-foreground">
-              <WalletIcon className="mx-auto mb-3 size-8 opacity-50" />
-              <p className="mb-4">No wallets linked yet.</p>
-              <ConnectWallet />
-            </div>
-          ) : (
-            <div className="border-t pt-4">
-              <p className="mb-2 text-sm font-medium">Add another wallet</p>
-              <ConnectWallet />
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="py-0">
-        <CardHeader>
-          <CardTitle>ENS Identity</CardTitle>
-          <CardDescription>Your Ethereum Name Service identity.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isConnected && address ? (
-            <ENSIdentityCard address={address} />
-          ) : (
-            <div className="py-8 text-center text-muted-foreground">
-              <p>Connect a wallet to view your ENS identity.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card className="py-0">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ShieldIcon className="size-5" />
-            Channel Eligibility
-          </CardTitle>
-          <CardDescription>
-            Check your eligibility for token-gated channels.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {channelId ? (
-            <EligibilityChecker channelId={channelId as Id<"channels">} compact />
-          ) : (
-            <div className="py-8 text-center">
-              <ShieldIcon className="mx-auto mb-4 size-12 text-muted-foreground/60" />
-              <h3 className="mb-2 text-lg font-medium">Check Eligibility</h3>
-              <p className="mx-auto mb-4 max-w-md text-muted-foreground">
-                Visit a token-gated channel to check if your wallet balances
-                meet the requirements.
-              </p>
-              <Link to="/get-eligible">
-                <Button variant="outline">
-                  <ExternalLinkIcon className="size-4" />
-                  View Eligibility Requirements
-                </Button>
-              </Link>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            <ChevronRightIcon className="size-5 text-muted-foreground" />
+          </Link>
+        </section>
+      )}
     </div>
   )
 }

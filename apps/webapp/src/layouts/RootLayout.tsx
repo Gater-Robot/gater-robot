@@ -41,9 +41,10 @@ export function RootLayout() {
   return (
     <div
       data-page={pageKey}
-      className="min-h-[100svh] bg-[var(--app-page-bg)] font-mono text-foreground"
+      className="flex min-h-[100svh] flex-col bg-background text-foreground"
     >
-      <main className="mx-auto max-w-5xl px-4 py-6 pr-4 sm:pr-20">
+      {/* Main content area - mobile-first, centered, with bottom padding for tab bar */}
+      <main className="mx-auto w-full max-w-lg flex-1 px-4 pb-20 pt-6">
         <Outlet />
       </main>
 
