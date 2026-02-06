@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useTheme } from "next-themes"
+import { useAppKitTheme } from "@reown/appkit/react"
 
 type TelegramWebApp = {
   colorScheme?: "light" | "dark"
@@ -20,6 +21,7 @@ function getTelegramWebApp(): TelegramWebApp | undefined {
  */
 export function TelegramThemeSync() {
   const { setTheme } = useTheme()
+  const { setThemeMode } = useAppKitTheme()
 
   React.useEffect(() => {
     const tg = getTelegramWebApp()
@@ -28,13 +30,14 @@ export function TelegramThemeSync() {
     const apply = () => {
       const scheme = tg.colorScheme === "dark" ? "dark" : "light"
       setTheme(scheme)
+      setThemeMode(scheme)
     }
 
     apply()
 
     tg.onEvent?.("themeChanged", apply)
     return () => tg.offEvent?.("themeChanged", apply)
-  }, [setTheme])
+  }, [setTheme, setThemeMode])
 
   return null
 }

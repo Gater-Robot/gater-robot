@@ -52,9 +52,12 @@ function parseInitDataUser(initDataRaw: string): TelegramUser | null {
   }
 }
 
+const MAX_AUTH_AGE_SECONDS = 86400 // 24 hours
+
 /**
  * Get user identity from initData (for QUERIES)
  * Parses the user without cryptographic validation.
+ * Validates auth_date is recent to reject stale/replayed data.
  * Safe for read operations where user identity is needed.
  */
 export const requireAuth = async (
@@ -65,6 +68,24 @@ export const requireAuth = async (
 
   if (!user) {
     throw new Error('Unauthorized: Could not parse user from initData')
+  }
+
+  // Validate auth_date to reject stale initData (skip for mock data in dev)
+  try {
+    const params = new URLSearchParams(initDataRaw)
+    const hash = params.get('hash')
+    if (hash !== 'mock') {
+      const authDateStr = params.get('auth_date')
+      if (authDateStr) {
+        const authDate = Number(authDateStr)
+        const now = Math.floor(Date.now() / 1000)
+        if (now - authDate > MAX_AUTH_AGE_SECONDS) {
+          throw new Error('Unauthorized: initData has expired')
+        }
+      }
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message.includes('expired')) throw e
   }
 
   return user

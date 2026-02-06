@@ -119,7 +119,7 @@ export function AppNav() {
     return (
       <nav
         aria-label="Primary"
-        className="fixed right-3 top-3 z-50 flex w-14 flex-col gap-1.5 rounded-2xl border border-border/60 bg-card/95 p-2 shadow-lg supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
+        className="fixed right-3 top-3 z-50 flex w-14 flex-col gap-1.5 rounded-2xl border border-border/60 bg-card/95 p-2 shadow-lg shadow-glow/5 supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
       >
         {/* Brand mark */}
         <div className="flex h-10 items-center justify-center rounded-xl bg-primary text-sm font-bold text-primary-foreground">
@@ -180,7 +180,7 @@ export function AppNav() {
           onPointerDown={() => setIsOpen(false)}
         >
           <div
-            className="fixed bottom-3 right-3 top-3 z-50 flex w-[min(16rem,75vw)] flex-col rounded-2xl border border-border/60 bg-card/95 p-2 shadow-2xl supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
+            className="fixed bottom-3 right-3 top-3 z-50 flex w-[min(16rem,75vw)] flex-col rounded-2xl border border-border/60 bg-card/95 bg-dots p-2 shadow-2xl supports-[backdrop-filter]:bg-card/80 supports-[backdrop-filter]:backdrop-blur-xl"
             onPointerDown={(e) => e.stopPropagation()}
           >
             {/* Drawer header */}

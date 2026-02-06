@@ -1,5 +1,8 @@
 /**
- * Wagmi Configuration
+ * Wagmi Configuration via Reown AppKit WagmiAdapter
+ *
+ * Uses WagmiAdapter instead of bare createConfig so that AppKit
+ * can manage WalletConnect deep-linking (critical for Telegram WebView).
  */
 
 import {
@@ -8,22 +11,21 @@ import {
   getChainKey,
   getViemChain,
 } from "@gater/chain-registry"
-import { createConfig, http } from "wagmi"
-import { injected, walletConnect } from "wagmi/connectors"
+import { http } from "wagmi"
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi"
+import type { AppKitNetwork } from "@reown/appkit/networks"
 
-const WALLET_CONNECT_PROJECT_ID =
+export const WALLET_CONNECT_PROJECT_ID =
   import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID || "demo"
 
 const configuredChains = SUPPORTED_CHAINS.map((c) => getViemChain(c.chainId)).filter(
   Boolean,
-)
+) as AppKitNetwork[]
 
-export const enabledChains = (configuredChains.length
-  ? configuredChains
-  : [getViemChain(1)].filter(Boolean)) as unknown as readonly [
-  any,
-  ...any[],
-]
+export const enabledChains: [AppKitNetwork, ...AppKitNetwork[]] =
+  configuredChains.length > 0
+    ? (configuredChains as [AppKitNetwork, ...AppKitNetwork[]])
+    : ([getViemChain(1)].filter(Boolean) as [AppKitNetwork, ...AppKitNetwork[]])
 
 function getRpcUrl(chainId: number): string | undefined {
   const chainKey = getChainKey(chainId)
@@ -41,27 +43,18 @@ function getRpcUrl(chainId: number): string | undefined {
   return undefined
 }
 
-export const wagmiConfig = createConfig({
-  chains: enabledChains as any,
-  connectors: [
-    injected(),
-    walletConnect({
-      projectId: WALLET_CONNECT_PROJECT_ID,
-      metadata: {
-        name: "Gater Robot",
-        description: "Token-gated Telegram groups with ENS identity",
-        url: "https://gater-app.agentix.bot",
-        icons: ["https://gater-app.agentix.bot/icon.png"],
-      },
-    }),
-  ],
+export const wagmiAdapter = new WagmiAdapter({
+  networks: enabledChains,
+  projectId: WALLET_CONNECT_PROJECT_ID,
   transports: Object.fromEntries(
-    enabledChains.map((chain: any) => [
+    enabledChains.map((chain) => [
       chain.id,
-      http(getRpcUrl(chain.id)),
+      http(getRpcUrl(chain.id as number)),
     ]),
   ) as any,
 })
+
+export const wagmiConfig = wagmiAdapter.wagmiConfig
 
 declare module "wagmi" {
   interface Register {

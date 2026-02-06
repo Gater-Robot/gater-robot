@@ -6,7 +6,7 @@
  * actions in eligibility.ts.
  */
 
-import { internalMutation, internalQuery, query } from "./_generated/server";
+import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { Doc } from "./_generated/dataModel";
 
@@ -156,7 +156,7 @@ export const updateMembershipEligibility = internalMutation({
 /**
  * Get memberships that need eligibility re-check
  */
-export const getMembershipsNeedingCheck = query({
+export const getMembershipsNeedingCheck = internalQuery({
   args: {
     limit: v.optional(v.number()),
   },

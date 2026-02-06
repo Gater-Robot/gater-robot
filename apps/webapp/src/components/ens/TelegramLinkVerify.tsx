@@ -6,7 +6,10 @@ import {
   Loader2Icon,
   SparklesIcon,
 } from "lucide-react"
+import { useMutation } from "convex/react"
 
+import { api } from "@/convex/api"
+import { useTelegram } from "@/contexts/TelegramContext"
 import { useEnsProfile, useEnsTelegramMatch } from "@/hooks/ens"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -25,14 +28,29 @@ export function TelegramLinkVerify({
   onVerified,
   isVerifying = false,
 }: TelegramLinkVerifyProps) {
+  const { initDataRaw } = useTelegram()
+  const autoVerify = useMutation(api.ens.autoVerifyTelegramLink)
   const profile = useEnsProfile(address)
   const match = useEnsTelegramMatch(profile.name, telegramUsername)
   const [verifyTriggered, setVerifyTriggered] = React.useState(false)
+  const [error, setError] = React.useState<string | null>(null)
 
   const handleAutoVerify = async () => {
+    if (!initDataRaw || !profile.name || !match.ensTelegram) return
     setVerifyTriggered(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    onVerified?.()
+    setError(null)
+    try {
+      await autoVerify({
+        initDataRaw,
+        address,
+        ensName: profile.name,
+        ensTelegram: match.ensTelegram,
+      })
+      onVerified?.()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Verification failed")
+      setVerifyTriggered(false)
+    }
   }
 
   if (match.isLoading || profile.isLoading) {
@@ -133,6 +151,11 @@ export function TelegramLinkVerify({
               </>
             )}
           </Button>
+          {error && (
+            <p className="mt-2 text-center text-xs text-red-600 dark:text-red-400">
+              {error}
+            </p>
+          )}
           <p className="mt-2 text-center text-xs text-green-600/70 dark:text-green-400/60">
             No signature required — your ENS proves ownership!
           </p>

@@ -1,4 +1,5 @@
 import "./polyfills"
+import "./lib/appkit"
 import { StrictMode, useCallback, useState } from "react"
 import { createRoot } from "react-dom/client"
 import "ethereum-identity-kit/css"

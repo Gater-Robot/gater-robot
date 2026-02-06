@@ -48,6 +48,14 @@
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
+  --color-surface: var(--surface);
+  --color-surface-alt: var(--surface-alt);
+  --color-glow: var(--glow);
+  --color-glow-strong: var(--glow-strong);
+  --color-warning-dim: var(--warning-dim);
+  --color-success-dim: var(--success-dim);
+  --color-destructive-dim: var(--destructive-dim);
+  --color-primary-dim: var(--primary-dim);
 }
 
 /* ─── Light Mode (Default) ─── */
@@ -104,6 +112,18 @@
   --chart-3: oklch(0.55 0.22 25);
   --chart-4: oklch(0.65 0.18 85);
   --chart-5: oklch(0.55 0.20 280);
+
+  /* Flux surfaces */
+  --surface: oklch(0.965 0.003 240);
+  --surface-alt: oklch(0.945 0.005 240);
+  --glow: oklch(0.55 0.15 175 / 15%);
+  --glow-strong: oklch(0.55 0.15 175 / 25%);
+
+  /* Semantic dim backgrounds */
+  --warning-dim: oklch(0.72 0.17 70 / 8%);
+  --success-dim: oklch(0.55 0.17 160 / 8%);
+  --destructive-dim: oklch(0.55 0.22 25 / 8%);
+  --primary-dim: oklch(0.55 0.15 175 / 8%);
 
   /* Sidebar (kept for shadcn compat) */
   --sidebar: oklch(0.955 0.005 240);
@@ -164,6 +184,18 @@
   --chart-3: oklch(0.65 0.22 25);
   --chart-4: oklch(0.75 0.18 85);
   --chart-5: oklch(0.65 0.20 280);
+
+  /* Flux surfaces */
+  --surface: oklch(0.14 0.02 260);
+  --surface-alt: oklch(0.18 0.02 260);
+  --glow: oklch(0.75 0.15 175 / 25%);
+  --glow-strong: oklch(0.75 0.15 175 / 40%);
+
+  /* Semantic dim backgrounds */
+  --warning-dim: oklch(0.72 0.17 70 / 12%);
+  --success-dim: oklch(0.65 0.17 160 / 12%);
+  --destructive-dim: oklch(0.65 0.22 25 / 12%);
+  --primary-dim: oklch(0.75 0.15 175 / 15%);
 
   /* Sidebar */
   --sidebar: oklch(0.18 0.02 260);
@@ -256,4 +288,44 @@
 
 .splash-fade-out {
   animation: splash-fade-out 300ms ease-out forwards;
+}
+
+/* ─── Flux effects ─── */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+@layer components {
+  .bg-dots {
+    background-image: radial-gradient(
+      oklch(1 0 0 / 6%) 1px,
+      transparent 1px
+    );
+    background-size: 24px 24px;
+  }
+
+  .bg-flux-gradient {
+    background:
+      radial-gradient(ellipse 80% 50% at 50% -20%, var(--glow, oklch(0.75 0.15 175 / 8%)), transparent),
+      var(--background);
+  }
+
+  .card-glow {
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .card-glow:hover {
+    box-shadow: 0 0 20px var(--glow, oklch(0.75 0.15 175 / 10%));
+    border-color: oklch(0.75 0.15 175 / 30%);
+  }
+
+  .pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse-glow {
+      animation: none;
+    }
+  }
 }

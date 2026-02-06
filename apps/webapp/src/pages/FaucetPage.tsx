@@ -186,7 +186,7 @@ export function FaucetPage() {
     }
 
     try {
-      await window.ethereum.request({
+      await (window.ethereum as { request: (args: any) => Promise<any> }).request({
         method: "wallet_watchAsset",
         params: {
           type: "ERC20",

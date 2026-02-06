@@ -89,6 +89,7 @@ export async function initTelegramSdk(): Promise<TelegramInitResult> {
     if (backButton.mount.isAvailable()) backButton.mount()
     if (themeParams.mount.isAvailable()) themeParams.mount()
     if (viewport.mount.isAvailable()) viewport.mount()
+    if (viewport.expand.isAvailable()) viewport.expand()
 
     const launchParams = retrieveLaunchParams()
     const user = extractUser(launchParams.tgWebAppData?.user)
@@ -171,8 +172,8 @@ export function configureMainButton(config: {
 export function configureBackButton(config: {
   isVisible?: boolean
   onClick?: () => void
-}): void {
-  if (!backButton.mount.isAvailable()) return
+}): VoidFunction | undefined {
+  if (!backButton.mount.isAvailable()) return undefined
   backButton.mount()
 
   if (config.isVisible !== undefined) {
@@ -181,8 +182,10 @@ export function configureBackButton(config: {
   }
 
   if (config.onClick) {
-    backButton.onClick(config.onClick)
+    return backButton.onClick(config.onClick)
   }
+
+  return undefined
 }
 
 export function closeMiniApp(): void {

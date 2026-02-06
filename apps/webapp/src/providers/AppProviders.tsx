@@ -3,6 +3,8 @@ import { ConvexProvider, useAction } from "convex/react"
 import { TransactionProvider } from "ethereum-identity-kit"
 import { WagmiProvider } from "wagmi"
 
+import { AutoAddAddress } from "@/components/AutoAddAddress"
+import { TelegramAutoRegister } from "@/components/TelegramAutoRegister"
 import { ThemeProvider } from "@/components/theme-provider"
 import { api } from "@/convex/api"
 import { TelegramProvider } from "@/contexts/TelegramContext"
@@ -54,8 +56,12 @@ export function AppProviders({ children }: { children: React.ReactNode }) {
         <ConvexProvider client={convex}>
           <AdminIdsStartupWarning />
           <TelegramProvider mockUser={MOCK_USER}>
+            <TelegramAutoRegister />
             <WagmiProvider config={wagmiConfig}>
-              <TransactionProvider>{children}</TransactionProvider>
+              <TransactionProvider>
+                <AutoAddAddress />
+                {children}
+              </TransactionProvider>
             </WagmiProvider>
           </TelegramProvider>
         </ConvexProvider>

@@ -25,6 +25,29 @@ export function RootLayout() {
   const telegram = useTelegram()
   const [searchParams] = useSearchParams()
 
+  // Telegram native back button: show on sub-pages, hide on root pages
+  React.useEffect(() => {
+    if (!telegram.isInitialized || !telegram.isInTelegram) return
+
+    const isRootPage =
+      location.pathname === "/" || location.pathname === "/user"
+
+    if (isRootPage) {
+      telegram.setBackButton({ isVisible: false })
+      return
+    }
+
+    const removeClickListener = telegram.setBackButton({
+      isVisible: true,
+      onClick: () => navigate(-1),
+    })
+
+    return () => {
+      removeClickListener?.()
+      telegram.setBackButton({ isVisible: false })
+    }
+  }, [location.pathname, navigate, telegram])
+
   React.useEffect(() => {
     // Redirect only from the default landing pages; avoid clobbering explicit deep-links.
     if (location.pathname !== "/" && location.pathname !== "/user") return
@@ -41,10 +64,9 @@ export function RootLayout() {
   return (
     <div
       data-page={pageKey}
-      className="flex min-h-[100svh] flex-col bg-background text-foreground"
+      className="flex min-h-[100svh] flex-col bg-flux-gradient bg-dots text-foreground"
     >
-      {/* Main content area - mobile-first centered; sm:pr-20 avoids side nav icon strip overlap */}
-      <main className="mx-auto w-full max-w-lg flex-1 px-4 pt-6 sm:pr-20">
+      <main className="w-full flex-1 px-2 pt-2 sm:pr-16">
         <Outlet />
       </main>
 

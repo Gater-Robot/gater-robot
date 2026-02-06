@@ -5,12 +5,14 @@ import {
   UserIcon,
   WalletIcon,
 } from "lucide-react"
+import { StatusBanner } from "@/components/ui/status-banner"
 import { useAccount } from "wagmi"
 
 import { AddressList } from "@/components/addresses/AddressList"
 import { EligibilityChecker } from "@/components/eligibility/EligibilityChecker"
 import { ENSIdentityCard } from "@/components/ens"
 import { ConnectWallet } from "@/components/wallet/ConnectWallet"
+import { TelegramLinkVerify } from "@/components/ens/TelegramLinkVerify"
 import { SIWEButton } from "@/components/wallet/SIWEButton"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,7 +22,7 @@ import { useAddresses } from "@/hooks/useAddresses"
 
 type Id<TableName extends string> = string & { __tableName?: TableName }
 
-function StatusBanner({
+function UserStatusBanner({
   hasWallet,
   isVerified,
 }: {
@@ -29,60 +31,33 @@ function StatusBanner({
 }) {
   if (!hasWallet) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50">
-            <WalletIcon className="size-5 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-amber-900 dark:text-amber-100">
-              Connect a wallet
-            </p>
-            <p className="text-sm text-amber-700 dark:text-amber-300">
-              Link a wallet to check channel eligibility
-            </p>
-          </div>
-        </div>
-      </div>
+      <StatusBanner
+        variant="warning"
+        icon={<WalletIcon className="size-4" />}
+        title="Connect a wallet"
+        description="Link a wallet to check channel eligibility"
+      />
     )
   }
 
   if (!isVerified) {
     return (
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-950/30">
-        <div className="flex items-center gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900/50">
-            <ShieldCheckIcon className="size-5 text-amber-600 dark:text-amber-400" />
-          </div>
-          <div>
-            <p className="font-semibold text-amber-900 dark:text-amber-100">
-              Verify your wallet
-            </p>
-            <p className="text-sm text-amber-700 dark:text-amber-300">
-              Sign a message to prove ownership
-            </p>
-          </div>
-        </div>
-      </div>
+      <StatusBanner
+        variant="warning"
+        icon={<ShieldCheckIcon className="size-4" />}
+        title="Verify your wallet"
+        description="Sign a message to prove ownership"
+      />
     )
   }
 
   return (
-    <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 dark:border-emerald-800 dark:bg-emerald-950/30">
-      <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 dark:bg-emerald-900/50">
-          <ShieldCheckIcon className="size-5 text-emerald-600 dark:text-emerald-400" />
-        </div>
-        <div>
-          <p className="font-semibold text-emerald-900 dark:text-emerald-100">
-            You&apos;re all set
-          </p>
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">
-            Wallet linked and verified
-          </p>
-        </div>
-      </div>
-    </div>
+    <StatusBanner
+      variant="success"
+      icon={<ShieldCheckIcon className="size-4" />}
+      title="You're all set"
+      description="Wallet linked and verified"
+    />
   )
 }
 
@@ -123,7 +98,7 @@ export function UserPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Page header */}
       <div>
         <h1 className="text-xl font-semibold">
@@ -135,16 +110,16 @@ export function UserPage() {
       </div>
 
       {/* Status banner */}
-      <StatusBanner
+      <UserStatusBanner
         hasWallet={hasLinkedAddresses}
         isVerified={hasVerifiedAddress}
       />
 
       {/* Identity card - compact */}
-      <Card className="overflow-hidden py-0">
-        <CardContent className="p-4">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-lg font-bold text-primary-foreground">
+      <Card className="card-glow overflow-hidden py-0">
+        <CardContent className="px-3 py-2">
+          <div className="flex items-center gap-2">
+            <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-sm font-bold text-primary-foreground">
               {user.firstName.charAt(0)}
             </div>
             <div className="min-w-0 flex-1">
@@ -170,19 +145,23 @@ export function UserPage() {
 
       {/* Primary action - contextual */}
       {!isConnected ? (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <section className="space-y-1.5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Get Started
           </h2>
           <ConnectWallet />
         </section>
       ) : !hasVerifiedAddress && address ? (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <section className="space-y-1.5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Verify Wallet
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Sign a message to prove you own this address and link it to your account.
+          <TelegramLinkVerify
+            address={address}
+            telegramUsername={user?.username ?? null}
+          />
+          <p className="text-xs text-muted-foreground">
+            Or sign a message to prove you own this address.
           </p>
           <SIWEButton />
         </section>
@@ -190,17 +169,17 @@ export function UserPage() {
 
       {/* Wallets section */}
       {hasLinkedAddresses && (
-        <section className="space-y-3">
+        <section className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Wallets ({addresses.length})
             </h2>
             {isConnected && (
               <ConnectWallet />
             )}
           </div>
-          <Card className="py-0">
-            <CardContent className="p-3">
+          <Card className="card-glow py-0">
+            <CardContent className="px-3 py-2">
               <AddressList />
             </CardContent>
           </Card>
@@ -209,12 +188,12 @@ export function UserPage() {
 
       {/* ENS Identity - expandable section */}
       {isConnected && address && (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <section className="space-y-1.5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             ENS Identity
           </h2>
-          <Card className="py-0">
-            <CardContent className="p-4">
+          <Card className="card-glow py-0">
+            <CardContent className="px-3 py-2">
               <ENSIdentityCard address={address} compact />
             </CardContent>
           </Card>
@@ -223,8 +202,8 @@ export function UserPage() {
 
       {/* Channel eligibility */}
       {urlChannelId ? (
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+        <section className="space-y-1.5">
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Channel Eligibility
           </h2>
           <EligibilityChecker channelId={urlChannelId as Id<"channels">} compact />
@@ -233,18 +212,18 @@ export function UserPage() {
         <section>
           <Link
             to="/get-eligible"
-            className="flex items-center justify-between rounded-xl border bg-card p-4 transition-colors hover:bg-accent"
+            className="card-glow flex items-center justify-between rounded-lg border bg-card px-3 py-2 transition-colors hover:bg-accent"
           >
-            <div className="flex items-center gap-3">
-              <ShieldCheckIcon className="size-5 text-muted-foreground" />
+            <div className="flex items-center gap-2">
+              <ShieldCheckIcon className="size-4 text-muted-foreground" />
               <div>
-                <p className="font-medium">Check Eligibility</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm font-medium">Check Eligibility</p>
+                <p className="text-xs text-muted-foreground">
                   See if you qualify for gated channels
                 </p>
               </div>
             </div>
-            <ChevronRightIcon className="size-5 text-muted-foreground" />
+            <ChevronRightIcon className="size-4 text-muted-foreground" />
           </Link>
         </section>
       )}
