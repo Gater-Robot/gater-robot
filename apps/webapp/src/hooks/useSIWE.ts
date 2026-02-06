@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useMutation } from "convex/react"
 import { createSiweMessage } from "viem/siwe"
 import { useAccount, useChainId, useSignMessage } from "wagmi"
@@ -18,7 +18,16 @@ export function useSIWE() {
   const [status, setStatus] = useState<SIWEStatus>("idle")
   const [error, setError] = useState<string | null>(null)
 
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
+
+  // Reset SIWE state when wallet disconnects mid-flow
+  useEffect(() => {
+    if (!isConnected && status !== "idle" && status !== "success") {
+      setStatus("idle")
+      setError(null)
+    }
+  }, [isConnected, status])
+
   const chainId = useChainId()
   const { signMessageAsync } = useSignMessage()
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react"
 import { useAccount } from "wagmi"
 import { useMutation } from "convex/react"
+import { toast } from "sonner"
 
 import { api } from "@/convex/api"
 import { useTelegram } from "@/contexts/TelegramContext"
@@ -12,6 +13,20 @@ export function useAutoAddAddress() {
   const { addresses } = useAddresses()
   const addAddress = useMutation(api.ens.addAddress)
   const lastAddedRef = useRef<string | null>(null)
+  const wasConnectedRef = useRef(false)
+
+  // Clear ref on disconnect so reconnecting the same wallet works
+  useEffect(() => {
+    if (isConnected) {
+      wasConnectedRef.current = true
+    } else if (wasConnectedRef.current) {
+      wasConnectedRef.current = false
+      lastAddedRef.current = null
+      toast.info("Wallet disconnected", {
+        description: "Your linked addresses are still saved.",
+      })
+    }
+  }, [isConnected])
 
   useEffect(() => {
     if (!isInitialized || !isConnected || !address || !initDataRaw || !user) return
