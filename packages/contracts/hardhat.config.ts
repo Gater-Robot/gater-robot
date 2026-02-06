@@ -1,7 +1,7 @@
 import { config as loadEnv } from "dotenv";
-import "@nomicfoundation/hardhat-ignition";
-import "@nomicfoundation/hardhat-ignition-viem";
-import "@nomicfoundation/hardhat-viem";
+import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
+import hardhatIgnitionViem from "@nomicfoundation/hardhat-ignition-viem";
+import hardhatViem from "@nomicfoundation/hardhat-viem";
 import hardhatVerify from "@nomicfoundation/hardhat-verify";
 import { configVariable, defineConfig, type HardhatUserConfig } from "hardhat/config";
 
@@ -32,7 +32,7 @@ if (process.env.ARC_TESTNET_RPC_URL) {
 }
 
 export default defineConfig({
-  plugins: [hardhatVerify],
+  plugins: [hardhatIgnition, hardhatIgnitionViem, hardhatViem, hardhatVerify],
   solidity: {
     version: "0.8.24",
     settings: {
