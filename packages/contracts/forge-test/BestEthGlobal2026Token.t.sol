@@ -55,4 +55,27 @@ contract BestEthGlobal2026TokenTest is Test {
         vm.prank(alice);
         token.faucet();
     }
+
+    function testFaucetForEmitsEvent() public {
+        vm.expectEmit(true, false, false, true);
+        emit BestEthGlobal2026Token.FaucetClaimed(alice, token.FAUCET_AMOUNT());
+        token.faucetFor(alice);
+    }
+
+    function testFaucetForMultipleBeneficiaries() public {
+        address bob = address(0x2);
+        token.faucetFor(alice);
+        token.faucetFor(bob);
+        assertEq(token.balanceOf(alice), token.FAUCET_AMOUNT());
+        assertEq(token.balanceOf(bob), token.FAUCET_AMOUNT());
+    }
+
+    function testHasClaimedTrueAfterFaucetFor() public {
+        token.faucetFor(alice);
+        assertTrue(token.hasClaimed(alice));
+    }
+
+    function testHasClaimedFalseBeforeClaim() public view {
+        assertFalse(token.hasClaimed(alice));
+    }
 }
