@@ -4,6 +4,7 @@ import { Outlet, useLocation, useNavigate, useSearchParams } from "react-router-
 import { AppNav } from "@/components/AppNav"
 import { TelegramThemeSync } from "@/components/TelegramThemeSync"
 import { Toaster } from "@/components/ui/sonner"
+import { WalletToolbar } from "@/components/wallet/WalletToolbar"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { getAdminStartParamRedirect } from "@/lib/adminMode"
 
@@ -65,6 +66,7 @@ export function RootLayout() {
       data-page={pageKey}
       className="flex min-h-[100svh] flex-col bg-flux-gradient bg-dots text-foreground"
     >
+      <WalletToolbar />
       <main className="mx-auto max-w-2xl flex-1 px-4 pt-4 pb-20 sm:max-w-4xl sm:pr-20">
         <Outlet />
       </main>

@@ -1,10 +1,12 @@
 import * as React from "react"
 import { getExplorerTxUrl } from "@gater/chain-registry"
 import {
+  AlertTriangleIcon,
   CheckCircle2Icon,
   DropletsIcon,
   ExternalLinkIcon,
   PlusIcon,
+  RefreshCwIcon,
   XCircleIcon,
 } from "lucide-react"
 import { formatUnits, type Address } from "viem"
@@ -16,7 +18,6 @@ import {
   useWriteContract,
 } from "wagmi"
 
-import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { TransactionStatus } from "@/components/web3/TransactionStatus"
 import { Badge } from "@/components/ui/badge"
 import { SectionHeader } from "@/components/ui/section-header"
@@ -25,6 +26,7 @@ import { StatPill } from "@/components/ui/stat-pill"
 const BEST_TOKEN_SYMBOL = "BEST"
 const BEST_TOKEN_DECIMALS = 18
 const FAUCET_AMOUNT = "2026"
+const FAUCET_CHAIN_IDS = [84532, 8453] // Base Sepolia, Base
 
 const BEST_TOKEN_ADDRESS = (import.meta.env.VITE_BEST_TOKEN_ADDRESS ||
   "0x0000000000000000000000000000000000000000") as Address
@@ -68,7 +70,7 @@ function truncateAddress(addr: string): string {
 }
 
 export function FaucetPage() {
-  const { address, isConnected } = useAccount()
+  const { address } = useAccount()
   const chainId = useChainId()
 
   const [claimState, setClaimState] = React.useState<ClaimState>("idle")
@@ -77,18 +79,20 @@ export function FaucetPage() {
 
   const isContractConfigured =
     BEST_TOKEN_ADDRESS !== "0x0000000000000000000000000000000000000000"
+  const isChainSupported = FAUCET_CHAIN_IDS.includes(chainId)
 
   const {
     data: hasClaimed,
     refetch: refetchHasClaimed,
     isLoading: isLoadingHasClaimed,
+    error: hasClaimedError,
   } = useReadContract({
     address: BEST_TOKEN_ADDRESS,
     abi: BEST_TOKEN_ABI,
     functionName: "hasClaimed",
     args: address ? [address] : undefined,
     query: {
-      enabled: isConnected && !!address && isContractConfigured,
+      enabled: !!address && isContractConfigured,
     },
   })
 
@@ -98,7 +102,7 @@ export function FaucetPage() {
     functionName: "balanceOf",
     args: address ? [address] : undefined,
     query: {
-      enabled: isConnected && !!address && isContractConfigured,
+      enabled: !!address && isContractConfigured,
     },
   })
 
@@ -236,21 +240,74 @@ export function FaucetPage() {
         )}
 
         {/* Connect wallet prompt */}
-        {!isConnected && (
+        {!address && (
           <div className="py-8 text-center">
-            <p className="mb-4 text-muted-foreground">
-              Connect your wallet to claim tokens.
+            <p className="text-muted-foreground">
+              Connect your wallet using the button above to claim tokens.
             </p>
-            <div className="flex justify-center">
-              <ConnectWallet />
-            </div>
           </div>
         )}
 
-        {isConnected && isContractConfigured && (
+        {address && isContractConfigured && (
           <div className="space-y-6">
+            {/* Wrong chain - show switch network prompt */}
+            {!isChainSupported && (
+              <div className="space-y-4 py-6 text-center fade-up">
+                <div className="inline-flex size-16 items-center justify-center rounded-full bg-warning/10">
+                  <AlertTriangleIcon className="size-8 text-warning" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">Wrong Network</h3>
+                  <p className="text-muted-foreground">
+                    Switch to Base or Base Sepolia to claim tokens.
+                  </p>
+                </div>
+                <div className="flex justify-center">
+                  {/* @ts-ignore - web component */}
+                  <appkit-network-button />
+                </div>
+              </div>
+            )}
+
+            {/* Loading state */}
+            {isChainSupported && isLoadingHasClaimed && (
+              <div className="py-8 text-center fade-up">
+                <div className="inline-flex size-12 items-center justify-center">
+                  <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                </div>
+                <p className="mt-3 text-sm text-muted-foreground">
+                  Checking claim status...
+                </p>
+              </div>
+            )}
+
+            {/* Query error state */}
+            {isChainSupported && !isLoadingHasClaimed && hasClaimedError && (
+              <div className="space-y-4 py-6 text-center fade-up">
+                <div className="inline-flex size-16 items-center justify-center rounded-full bg-destructive/10">
+                  <XCircleIcon className="size-8 text-destructive" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-destructive">
+                    Connection Error
+                  </h3>
+                  <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                    Could not connect to the contract. Check your network connection.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void refetchHasClaimed()}
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                >
+                  <RefreshCwIcon className="size-3.5" />
+                  Try Again
+                </button>
+              </div>
+            )}
+
             {/* Already claimed state */}
-            {hasClaimed && claimState !== "success" && (
+            {isChainSupported && hasClaimed && claimState !== "success" && (
               <div className="space-y-4 py-6 text-center fade-up">
                 <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
                   <CheckCircle2Icon className="size-8 text-success" />
@@ -267,7 +324,8 @@ export function FaucetPage() {
             )}
 
             {/* Eligible to claim state */}
-            {hasClaimed === false &&
+            {isChainSupported &&
+              hasClaimed === false &&
               !isLoadingHasClaimed &&
               claimState === "idle" && (
                 <div className="space-y-4 text-center fade-up stagger-3">
@@ -289,7 +347,7 @@ export function FaucetPage() {
               )}
 
             {/* Claiming / transaction in progress */}
-            {claimState === "claiming" && (
+            {isChainSupported && claimState === "claiming" && (
               <div className="fade-up">
                 <TransactionStatus
                   state={isConfirming ? "pending" : "loading"}
@@ -310,7 +368,7 @@ export function FaucetPage() {
             )}
 
             {/* Success state */}
-            {claimState === "success" && (
+            {isChainSupported && claimState === "success" && (
               <div className="space-y-4 py-6 text-center fade-up">
                 <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
                   <CheckCircle2Icon className="size-8 text-success" />
@@ -348,8 +406,8 @@ export function FaucetPage() {
               </div>
             )}
 
-            {/* Error state */}
-            {claimState === "error" && (
+            {/* Claim error state */}
+            {isChainSupported && claimState === "error" && (
               <div className="space-y-4 py-6 text-center fade-up">
                 <div className="inline-flex size-16 items-center justify-center rounded-full bg-destructive/10">
                   <XCircleIcon className="size-8 text-destructive" />
@@ -371,10 +429,37 @@ export function FaucetPage() {
                 </button>
               </div>
             )}
+
+            {/* Fallback: unknown state - couldn't verify claim status */}
+            {isChainSupported &&
+              !isLoadingHasClaimed &&
+              !hasClaimedError &&
+              hasClaimed === undefined &&
+              claimState === "idle" && (
+                <div className="space-y-4 py-6 text-center fade-up">
+                  <div className="inline-flex size-16 items-center justify-center rounded-full bg-warning/10">
+                    <AlertTriangleIcon className="size-8 text-warning" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold">Unable to Verify</h3>
+                    <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+                      Could not check your claim status. Try refreshing.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void refetchHasClaimed()}
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                  >
+                    <RefreshCwIcon className="size-3.5" />
+                    Refresh
+                  </button>
+                </div>
+              )}
           </div>
         )}
 
-        {isConnected && !isContractConfigured && (
+        {address && !isContractConfigured && (
           <div className="py-6 text-center">
             <p className="text-muted-foreground">
               Faucet is not available on this network yet.
