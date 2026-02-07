@@ -1,5 +1,8 @@
+import * as React from "react"
 import { Link, useSearchParams } from "react-router-dom"
 import {
+  AlertTriangleIcon,
+  ChevronDownIcon,
   ChevronRightIcon,
   ShieldCheckIcon,
   UserIcon,
@@ -18,6 +21,11 @@ import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PulseDot } from "@/components/ui/pulse-dot"
 import { SectionHeader } from "@/components/ui/section-header"
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { useAddresses } from "@/hooks/useAddresses"
 import { cn } from "@/lib/utils"
@@ -73,6 +81,10 @@ export function UserPage() {
 
   const urlChannelId = searchParams.get("channelId")
 
+  // Collapsible status banner state
+  const [isStatusOpen, setIsStatusOpen] = React.useState(false)
+  const isHealthy = hasLinkedAddresses && hasVerifiedAddress
+
   if (isLoading) {
     return (
       <div className="space-y-4 fade-up">
@@ -101,24 +113,60 @@ export function UserPage() {
 
   return (
     <div className="space-y-3">
-      {/* Page header */}
-      <div className="flex items-center gap-3 fade-up stagger-1">
-        <PulseDot color="bg-primary" size="sm" />
-        <h1 className="text-xl font-bold tracking-tight">
-          Hey, <span className="text-primary">{user.firstName}</span>
-        </h1>
-        <Badge variant="flux" size="sm">
-          {hasVerifiedAddress ? "VERIFIED" : "SETUP"}
-        </Badge>
-      </div>
+      {/* Page header with collapsible status */}
+      <Collapsible open={isStatusOpen} onOpenChange={setIsStatusOpen}>
+        <div className="flex items-center justify-between gap-3 fade-up stagger-1">
+          {/* Left side: user greeting */}
+          <div className="flex items-center gap-3">
+            <PulseDot color="bg-primary" size="sm" />
+            <h1 className="text-xl font-bold tracking-tight">
+              Hey, <span className="text-primary">{user.username ? `@${user.username}` : user.firstName}</span>
+            </h1>
+            <Badge variant="flux" size="sm">
+              {hasVerifiedAddress ? "VERIFIED" : "SETUP"}
+            </Badge>
+          </div>
 
-      {/* Status banner */}
-      <div className="fade-up stagger-2">
-        <UserStatusBanner
-          hasWallet={hasLinkedAddresses}
-          isVerified={hasVerifiedAddress}
-        />
-      </div>
+          {/* Right side: health status toggle */}
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              aria-label={isHealthy
+                ? "Health status: All systems operational"
+                : "Health status: Action required"}
+              className={cn(
+                "flex items-center gap-1.5",
+                "rounded-lg p-1.5",
+                "transition-all",
+                "hover:bg-accent",
+                "active:scale-[0.98]",
+                "focus-visible:border-ring",
+                "focus-visible:ring-ring/50",
+                "focus-visible:ring-[3px]",
+                "outline-none",
+                "[&[data-state=open]>svg]:rotate-180"
+              )}
+            >
+              {isHealthy ? (
+                <ShieldCheckIcon className="size-5 text-success" />
+              ) : (
+                <AlertTriangleIcon className="size-5 text-warning" />
+              )}
+              <ChevronDownIcon className="size-4 text-muted-foreground transition-transform duration-200" />
+            </button>
+          </CollapsibleTrigger>
+        </div>
+
+        {/* Collapsible status banner */}
+        <CollapsibleContent className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden">
+          <div className="pt-3 fade-up stagger-2">
+            <UserStatusBanner
+              hasWallet={hasLinkedAddresses}
+              isVerified={hasVerifiedAddress}
+            />
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
 
       {/* Identity card - compact */}
       <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-4 fade-up stagger-2">
