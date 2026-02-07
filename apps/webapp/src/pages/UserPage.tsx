@@ -8,12 +8,11 @@ import {
 import { StatusBanner } from "@/components/ui/status-banner"
 import { useAccount } from "wagmi"
 
-import { AddressList } from "@/components/addresses/AddressList"
 import { EligibilityChecker } from "@/components/eligibility/EligibilityChecker"
-import { ENSIdentityCard } from "@/components/ens"
 import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { TelegramLinkVerify } from "@/components/ens/TelegramLinkVerify"
 import { SIWEButton } from "@/components/wallet/SIWEButton"
+import { WalletTable } from "@/components/wallet/WalletTable"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { PulseDot } from "@/components/ui/pulse-dot"
@@ -168,28 +167,14 @@ export function UserPage() {
         </section>
       ) : null}
 
-      {/* Wallets section */}
-      {hasLinkedAddresses && (
-        <section className="space-y-1.5 fade-up stagger-3">
-          <div className="flex items-center justify-between">
-            <SectionHeader count={addresses.length}>Wallets</SectionHeader>
-            {isConnected && (
-              <ConnectWallet />
-            )}
-          </div>
-          <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-3">
-            <AddressList />
-          </div>
-        </section>
-      )}
-
-      {/* ENS Identity - expandable section */}
-      {isConnected && address && (
-        <section className="space-y-1.5 fade-up stagger-4">
-          <SectionHeader>ENS Identity</SectionHeader>
-          <ENSIdentityCard address={address} compact />
-        </section>
-      )}
+      {/* Wallets section — accordion table with add/verify/delete/default */}
+      <section className="fade-up stagger-3">
+        <WalletTable
+          onVerify={() => {
+            // Future: scroll to SIWE/ENS verify section
+          }}
+        />
+      </section>
 
       {/* Channel eligibility */}
       {urlChannelId ? (

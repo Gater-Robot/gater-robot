@@ -323,6 +323,68 @@ export const getUserAddresses = query({
 })
 
 /**
+ * Delete an address
+ * Handles cleanup of defaultAddressId if the deleted address was the default
+ */
+export const deleteAddress = mutation({
+  args: {
+    addressId: v.id('addresses'),
+    initDataRaw: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_telegram_id', (q) =>
+        q.eq('telegramUserId', authUser.id)
+      )
+      .unique()
+
+    if (!user) throw new Error('User not found')
+
+    const address = await ctx.db.get(args.addressId)
+    if (!address) throw new Error('Address not found')
+    if (address.userId !== user._id) throw new Error('Address does not belong to user')
+
+    const now = Date.now()
+
+    // If deleting the default address, try to reassign to another verified address
+    if (user.defaultAddressId === args.addressId) {
+      const otherAddresses = await ctx.db
+        .query('addresses')
+        .withIndex('by_user', (q) => q.eq('userId', user._id))
+        .collect()
+
+      const nextDefault = otherAddresses.find(
+        (a) => a._id !== args.addressId && a.status === 'verified'
+      )
+
+      await ctx.db.patch(user._id, {
+        defaultAddressId: nextDefault?._id ?? undefined,
+        primaryEnsName: nextDefault?.ensName ?? undefined,
+        lastSeenAt: now,
+      })
+    }
+
+    // Delete the address
+    await ctx.db.delete(args.addressId)
+
+    // Log the event
+    await ctx.db.insert('events', {
+      userId: user._id,
+      action: 'address_deleted',
+      metadata: {
+        address: address.address,
+        status: address.status,
+      },
+      createdAt: now,
+    })
+
+    return { success: true }
+  },
+})
+
+/**
  * Get user with their default address and ENS
  */
 export const getUserWithEns = query({
