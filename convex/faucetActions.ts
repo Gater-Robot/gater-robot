@@ -7,6 +7,7 @@ import { type Hex } from "viem"
 
 import { getChainClient } from "./lib/balance"
 import { getSponsorWalletClient } from "./lib/sponsor"
+import { isRetryableError, FAUCET_RETRY_CONFIG } from "./lib/faucetUtils.js"
 
 const FAUCET_FOR_ABI = [
   {
@@ -31,8 +32,7 @@ function getFaucetContractAddress(): Hex {
   return addr as Hex
 }
 
-const MAX_RETRIES = 3
-const RETRY_BASE_MS = 2000
+const { MAX_RETRIES, RETRY_BASE_MS } = FAUCET_RETRY_CONFIG
 
 async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms))
@@ -116,15 +116,9 @@ export const processClaim = internalAction({
         break // success
       } catch (err) {
         lastError = err instanceof Error ? err : new Error(String(err))
-        const message = lastError.message.toLowerCase()
 
         // Don't retry on deterministic failures
-        if (
-          message.includes("faucet already claimed") ||
-          message.includes("ownableunauthorizedaccount") ||
-          message.includes("insufficient funds") ||
-          message.includes("execution reverted")
-        ) {
+        if (!isRetryableError(lastError.message)) {
           break
         }
 

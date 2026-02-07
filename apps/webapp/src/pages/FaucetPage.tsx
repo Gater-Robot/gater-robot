@@ -3,14 +3,10 @@ import { getExplorerTxUrl } from "@gater/chain-registry"
 import {
   AlertTriangleIcon,
   CheckCircle2Icon,
-  DropletsIcon,
   ExternalLinkIcon,
-  PlusIcon,
   RefreshCwIcon,
-  WalletIcon,
   XCircleIcon,
 } from "lucide-react"
-import { formatUnits, type Address } from "viem"
 import {
   useAccount,
   useChainId,
@@ -25,116 +21,26 @@ import { api } from "@/convex/api"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { TransactionStatus } from "@/components/web3/TransactionStatus"
 import { Badge } from "@/components/ui/badge"
-import { SectionHeader } from "@/components/ui/section-header"
 import { StatPill } from "@/components/ui/stat-pill"
 
-const BEST_TOKEN_SYMBOL = "BEST"
-const BEST_TOKEN_DECIMALS = 18
-const FAUCET_AMOUNT = "2026"
-const FAUCET_CHAIN_IDS = [84532, 8453] // Base Sepolia, Base
+import {
+  BEST_TOKEN_SYMBOL,
+  BEST_TOKEN_DECIMALS,
+  FAUCET_AMOUNT,
+  FAUCET_CHAIN_IDS,
+  BEST_TOKEN_ADDRESS,
+  BEST_TOKEN_ABI,
+  formatBalance,
+  truncateAddress,
+  type ClaimState,
+  type GaslessStatus,
+} from "./faucet"
 
-const BEST_TOKEN_ADDRESS = (import.meta.env.VITE_BEST_TOKEN_ADDRESS ||
-  "0x0000000000000000000000000000000000000000") as Address
-
-const BEST_TOKEN_ABI = [
-  {
-    type: "function",
-    name: "faucet",
-    inputs: [],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-  {
-    type: "function",
-    name: "hasClaimed",
-    inputs: [{ name: "account", type: "address" }],
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "view",
-  },
-  {
-    type: "function",
-    name: "balanceOf",
-    inputs: [{ name: "account", type: "address" }],
-    outputs: [{ name: "", type: "uint256" }],
-    stateMutability: "view",
-  },
-] as const
-
-type ClaimState = "idle" | "claiming" | "gasless-pending" | "success" | "error"
-
-type GaslessStatus = "idle" | "pending" | "submitting" | "submitted" | "confirmed" | "failed"
-
-function formatBalance(value: bigint | undefined): string {
-  if (value === undefined) return "0"
-  return parseFloat(formatUnits(value, BEST_TOKEN_DECIMALS)).toLocaleString(
-    undefined,
-    { maximumFractionDigits: 2 },
-  )
-}
-
-function truncateAddress(addr: string): string {
-  return `${addr.slice(0, 6)}...${addr.slice(-4)}`
-}
-
-function GaslessClaimStatus({
-  status,
-  txHash,
-  chainId,
-  errorMessage,
-  onRetry,
-}: {
-  status: GaslessStatus
-  txHash?: string
-  chainId: number
-  errorMessage?: string
-  onRetry: () => void
-}) {
-  if (status === "idle") return null
-
-  if (status === "confirmed") return null // handled by parent success state
-
-  if (status === "failed") {
-    return (
-      <div className="space-y-3 py-4 text-center fade-up">
-        <div className="inline-flex size-12 items-center justify-center rounded-full bg-destructive/10">
-          <XCircleIcon className="size-6 text-destructive" />
-        </div>
-        <div>
-          <h3 className="text-base font-semibold text-destructive">Gasless Claim Failed</h3>
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground mt-1">
-            {errorMessage || "Something went wrong. You can try again or claim with gas."}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onRetry}
-          className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-        >
-          Try Again
-        </button>
-      </div>
-    )
-  }
-
-  // pending, submitting, submitted
-  const titles: Record<string, string> = {
-    pending: "Preparing gasless transaction...",
-    submitting: "Sending sponsored transaction...",
-    submitted: "Confirming on-chain...",
-  }
-
-  return (
-    <div className="fade-up">
-      <TransactionStatus
-        state="pending"
-        hash={txHash}
-        chainId={chainId}
-        title={titles[status] ?? "Processing..."}
-        description="No gas needed — we're sponsoring this transaction for you."
-      />
-    </div>
-  )
-}
+import { FaucetHero } from "./faucet/FaucetHero"
+import { ClaimButtons } from "./faucet/ClaimButtons"
+import { GaslessClaimStatus } from "./faucet/GaslessClaimStatus"
+import { ClaimSuccess, ClaimError } from "./faucet/ClaimResult"
+import { AboutSection } from "./faucet/AboutSection"
 
 export function FaucetPage() {
   const { address } = useAccount()
@@ -345,15 +251,7 @@ export function FaucetPage() {
       {/* Hero + claim section */}
       <div className="rounded-xl border border-border bg-[var(--color-surface)] p-6 card-glow fade-up stagger-2">
         {/* Hero amount display */}
-        <div className="text-center py-6">
-          <span className="font-mono text-5xl font-bold text-primary drop-shadow-[0_0_12px_var(--color-glow)]">
-            {FAUCET_AMOUNT}
-          </span>
-          <div className="font-mono text-lg text-muted-foreground mt-1">$BEST</div>
-          <p className="text-sm text-muted-foreground mt-2">
-            Each address can claim once. Connect a wallet to get started.
-          </p>
-        </div>
+        <FaucetHero />
 
         {/* Contract not configured warning */}
         {!isContractConfigured && (
@@ -454,35 +352,10 @@ export function FaucetPage() {
               (claimState === "idle" || claimState === "gasless-pending") && (
                 <div className="space-y-4 text-center fade-up stagger-3">
                   {claimState === "idle" && gaslessStatus === "idle" && (
-                    <>
-                      <p className="text-muted-foreground">
-                        You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong>{" "}
-                        tokens.
-                      </p>
-                      {/* Primary: Gasless claim */}
-                      <button
-                        type="button"
-                        onClick={handleGaslessClaim}
-                        className="w-full rounded-xl bg-primary text-primary-foreground px-6 py-4 font-sans text-base font-semibold hover:shadow-[0_0_30px_var(--color-glow)] active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                      >
-                        <span className="inline-flex items-center gap-2">
-                          <DropletsIcon className="size-5" />
-                          Claim Gasless
-                        </span>
-                      </button>
-                      <p className="text-xs text-muted-foreground">
-                        No gas required — sponsored by Gater Robot
-                      </p>
-                      {/* Secondary: Manual claim */}
-                      <button
-                        type="button"
-                        onClick={handleClaim}
-                        className="inline-flex items-center gap-2 rounded-lg border border-border bg-transparent text-muted-foreground px-4 py-2 text-xs font-mono hover:bg-primary/5 hover:text-foreground active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                      >
-                        <WalletIcon className="size-3.5" />
-                        Claim with Gas
-                      </button>
-                    </>
+                    <ClaimButtons
+                      onGaslessClaim={handleGaslessClaim}
+                      onManualClaim={handleClaim}
+                    />
                   )}
                   {/* Gasless claim in progress */}
                   {gaslessStatus !== "idle" && gaslessStatus !== "confirmed" && gaslessStatus !== "failed" && (
@@ -529,65 +402,19 @@ export function FaucetPage() {
 
             {/* Success state */}
             {isChainSupported && claimState === "success" && (
-              <div className="space-y-4 py-6 text-center fade-up">
-                <div className="inline-flex size-16 items-center justify-center rounded-full bg-success/10">
-                  <CheckCircle2Icon className="size-8 text-success" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-success">
-                    Tokens Claimed!
-                  </h3>
-                  <p className="text-muted-foreground">
-                    You received {FAUCET_AMOUNT} $BEST tokens.
-                  </p>
-                </div>
-                <div className="grid grid-cols-2 gap-3 fade-up stagger-3">
-                  <StatPill label="Balance" value={`${formattedBalance} $BEST`} color="text-primary" />
-                  <StatPill label="Status" value="Claimed" color="text-success" />
-                </div>
-
-                {!addedToWallet ? (
-                  <button
-                    type="button"
-                    onClick={handleAddToWallet}
-                    className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <PlusIcon className="size-3.5" />
-                      Add $BEST to Wallet
-                    </span>
-                  </button>
-                ) : (
-                  <p className="flex items-center justify-center gap-1 text-sm text-success">
-                    <CheckCircle2Icon className="size-4" />
-                    Token added to wallet
-                  </p>
-                )}
-              </div>
+              <ClaimSuccess
+                formattedBalance={formattedBalance}
+                addedToWallet={addedToWallet}
+                onAddToWallet={handleAddToWallet}
+              />
             )}
 
             {/* Claim error state */}
             {isChainSupported && claimState === "error" && (
-              <div className="space-y-4 py-6 text-center fade-up">
-                <div className="inline-flex size-16 items-center justify-center rounded-full bg-destructive/10">
-                  <XCircleIcon className="size-8 text-destructive" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-destructive">
-                    Claim Failed
-                  </h3>
-                  <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-                    {errorMessage || "Something went wrong. Please try again."}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                >
-                  Try Again
-                </button>
-              </div>
+              <ClaimError
+                errorMessage={errorMessage}
+                onReset={handleReset}
+              />
             )}
 
             {/* Fallback: unknown state - couldn't verify claim status */}
@@ -653,37 +480,7 @@ export function FaucetPage() {
       </div>
 
       {/* About section */}
-      <div className="space-y-3 fade-up stagger-4">
-        <SectionHeader>About $BEST</SectionHeader>
-
-        <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-4">
-          <p className="text-sm text-muted-foreground mb-4">
-            <strong className="text-foreground">$BEST</strong> (Best Token) is the utility token for Gater Robot,
-            used for token-gating Telegram groups and premium features.
-          </p>
-
-          <div className="space-y-0">
-            <div className="flex justify-between py-2 border-b border-border/30">
-              <span className="text-sm text-muted-foreground">Faucet amount</span>
-              <span className="font-mono text-sm text-foreground">{FAUCET_AMOUNT} tokens</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-border/30">
-              <span className="text-sm text-muted-foreground">Standard</span>
-              <span className="font-mono text-sm text-foreground">ERC-20</span>
-            </div>
-            <div className="flex justify-between py-2 border-b border-border/30">
-              <span className="text-sm text-muted-foreground">Network</span>
-              <span className="font-mono text-sm text-foreground">Base / Base Sepolia</span>
-            </div>
-            <div className="flex justify-between py-2 last:border-0">
-              <span className="text-sm text-muted-foreground">Contract</span>
-              <span className="font-mono text-sm text-foreground">
-                {isContractConfigured ? truncateAddress(BEST_TOKEN_ADDRESS) : "Not deployed"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AboutSection isContractConfigured={isContractConfigured} />
     </div>
   )
 }

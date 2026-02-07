@@ -2,19 +2,27 @@ import { strict as assert } from "node:assert";
 import { describe, it } from "mocha";
 import hre from "hardhat";
 import { parseEther } from "viem";
+import { loadFixture } from "@nomicfoundation/hardhat-toolbox-viem/network-helpers";
 
 const TOKEN_NAME = "Best Token";
 const TOKEN_SYMBOL = "BEST";
 
+async function deployTokenFixture() {
+  const [deployer, alice, bob] = await hre.viem.getWalletClients();
+  const publicClient = await hre.viem.getPublicClient();
+
+  const contract = await hre.viem.deployContract(
+    "BestEthGlobal2026Token",
+    [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
+    { account: deployer.account }
+  );
+
+  return { contract, deployer, alice, bob, publicClient };
+}
+
 describe("BestEthGlobal2026Token", () => {
   it("allows a one-time faucet claim", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, alice } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucet({ account: alice.account });
 
@@ -23,13 +31,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("rejects duplicate faucet claims", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, alice } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucet({ account: alice.account });
 
@@ -40,13 +42,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("allows owner to claim via faucetFor on behalf of another address", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, deployer, alice } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucetFor([alice.account.address], {
       account: deployer.account,
@@ -57,13 +53,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("rejects faucetFor from non-owner", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, alice } = await loadFixture(deployTokenFixture);
 
     await assert.rejects(
       contract.write.faucetFor([alice.account.address], {
@@ -74,13 +64,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("rejects faucetFor for already claimed address", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, deployer, alice } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucet({ account: alice.account });
 
@@ -93,13 +77,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("faucetFor and faucet share hasClaimed mapping", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, deployer, alice } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucetFor([alice.account.address], {
       account: deployer.account,
@@ -112,14 +90,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("faucetFor emits FaucetClaimed event", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-    const publicClient = await hre.viem.getPublicClient();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, deployer, alice, publicClient } = await loadFixture(deployTokenFixture);
 
     const hash = await contract.write.faucetFor([alice.account.address], {
       account: deployer.account,
@@ -136,13 +107,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("faucetFor allows multiple different beneficiaries", async () => {
-    const [deployer, alice, bob] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, deployer, alice, bob } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucetFor([alice.account.address], {
       account: deployer.account,
@@ -160,13 +125,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("hasClaimed returns true after faucetFor", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, deployer, alice } = await loadFixture(deployTokenFixture);
 
     await contract.write.faucetFor([alice.account.address], {
       account: deployer.account,
@@ -177,13 +136,7 @@ describe("BestEthGlobal2026Token", () => {
   });
 
   it("hasClaimed returns false before any claim", async () => {
-    const [deployer, alice] = await hre.viem.getWalletClients();
-
-    const contract = await hre.viem.deployContract(
-      "BestEthGlobal2026Token",
-      [TOKEN_NAME, TOKEN_SYMBOL, deployer.account.address],
-      { account: deployer.account }
-    );
+    const { contract, alice } = await loadFixture(deployTokenFixture);
 
     const claimed = await contract.read.hasClaimed([alice.account.address]);
     assert.equal(claimed, false);
