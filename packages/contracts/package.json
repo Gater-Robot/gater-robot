@@ -8,13 +8,14 @@
     "test": "hardhat test",
     "test:forge": "forge test",
     "deploy": "tsx scripts/deploy.ts",
-    "deploy:base": "hardhat ignition deploy ignition/modules/BestToken.ts --network base",
-    "deploy:arc": "hardhat ignition deploy ignition/modules/BestToken.ts --network arc",
+    "deploy:base": "hardhat ignition deploy ignition/modules/BestEthGlobal2026Token.ts --network base",
+    "deploy:arc": "hardhat ignition deploy ignition/modules/BestEthGlobal2026Token.ts --network arcTestnet",
     "sync:addresses": "node scripts/sync-addresses.mjs"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "3.0.7",
     "@nomicfoundation/hardhat-ignition-viem": "3.0.7",
+    "@nomicfoundation/hardhat-verify": "^3.0.9",
     "@nomicfoundation/hardhat-viem": "3.0.2",
     "dotenv": "16.6.1",
     "hardhat": "3.1.6",

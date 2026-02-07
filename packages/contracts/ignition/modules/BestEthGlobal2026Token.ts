@@ -1,6 +1,6 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
-const BestTokenModule = buildModule("BestTokenModule", (moduleBuilder) => {
+const BestEthGlobal2026TokenModule = buildModule("BestEthGlobal2026TokenModule", (moduleBuilder) => {
   const name = moduleBuilder.getParameter("name", "Best Token");
   const symbol = moduleBuilder.getParameter("symbol", "BEST");
   const initialOwner = moduleBuilder.getParameter(
@@ -8,13 +8,13 @@ const BestTokenModule = buildModule("BestTokenModule", (moduleBuilder) => {
     moduleBuilder.getAccount(0)
   );
 
-  const bestToken = moduleBuilder.contract("BestToken", [
+  const bestEthGlobal2026Token = moduleBuilder.contract("BestEthGlobal2026Token", [
     name,
     symbol,
     initialOwner
   ]);
 
-  return { bestToken };
+  return { bestEthGlobal2026Token };
 });
 
-export default BestTokenModule;
+export default BestEthGlobal2026TokenModule;

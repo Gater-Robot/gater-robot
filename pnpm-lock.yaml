@@ -340,6 +340,9 @@ importers:
       '@nomicfoundation/hardhat-ignition-viem':
         specifier: 3.0.7
         version: 3.0.7(@nomicfoundation/hardhat-ignition@3.0.7(@nomicfoundation/hardhat-verify@3.0.9(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)))(bufferutil@4.1.0)(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10))(utf-8-validate@5.0.10))(@nomicfoundation/hardhat-verify@3.0.9(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10)))(@nomicfoundation/hardhat-viem@3.0.2(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10))(viem@2.45.1(bufferutil@4.1.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76)))(@nomicfoundation/ignition-core@3.0.7(bufferutil@4.1.0)(utf-8-validate@5.0.10))(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10))(viem@2.45.1(bufferutil@4.1.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76))
+      '@nomicfoundation/hardhat-verify':
+        specifier: ^3.0.9
+        version: 3.0.9(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@nomicfoundation/hardhat-viem':
         specifier: 3.0.2
         version: 3.0.2(hardhat@3.1.6(bufferutil@4.1.0)(utf-8-validate@5.0.10))(viem@2.45.1(bufferutil@4.1.0)(typescript@5.9.2)(utf-8-validate@5.0.10)(zod@3.25.76))
