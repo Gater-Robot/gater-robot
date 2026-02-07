@@ -37,10 +37,15 @@ export function useAddresses(): {
   setDefault: (addressId: Id<"addresses">) => Promise<void>
   isSettingDefault: boolean
   setDefaultError: Error | null
+  deleteAddress: (addressId: Id<"addresses">) => Promise<void>
+  isDeletingAddress: boolean
+  deleteAddressError: Error | null
 } {
   const { initDataRaw, isLoading: telegramLoading } = useTelegram()
   const [setDefaultError, setSetDefaultError] = useState<Error | null>(null)
   const [isSettingDefault, setIsSettingDefault] = useState(false)
+  const [deleteAddressError, setDeleteAddressError] = useState<Error | null>(null)
+  const [isDeletingAddress, setIsDeletingAddress] = useState(false)
 
   const addresses = useQuery(
     api.ens.getUserAddresses,
@@ -48,6 +53,7 @@ export function useAddresses(): {
   ) as UserAddress[] | undefined
 
   const setDefaultMutation = useMutation(api.ens.setDefaultAddress)
+  const deleteAddressMutation = useMutation(api.ens.deleteAddress)
 
   const setDefault = useCallback(
     async (addressId: Id<"addresses">) => {
@@ -74,6 +80,29 @@ export function useAddresses(): {
     [initDataRaw, setDefaultMutation],
   )
 
+  const deleteAddress = useCallback(
+    async (addressId: Id<"addresses">) => {
+      if (!initDataRaw) {
+        setDeleteAddressError(new Error("Not authenticated"))
+        return
+      }
+
+      setIsDeletingAddress(true)
+      setDeleteAddressError(null)
+      try {
+        await deleteAddressMutation({ addressId, initDataRaw })
+      } catch (err) {
+        const error =
+          err instanceof Error ? err : new Error("Failed to delete address")
+        setDeleteAddressError(error)
+        throw error
+      } finally {
+        setIsDeletingAddress(false)
+      }
+    },
+    [initDataRaw, deleteAddressMutation],
+  )
+
   const isLoading = telegramLoading || addresses === undefined
 
   return {
@@ -83,5 +112,8 @@ export function useAddresses(): {
     setDefault,
     isSettingDefault,
     setDefaultError,
+    deleteAddress,
+    isDeletingAddress,
+    deleteAddressError,
   }
 }

@@ -293,6 +293,49 @@ export const setDefaultAddress = mutation({
 })
 
 /**
+ * Delete an address from a user's account
+ */
+export const deleteAddress = mutation({
+  args: {
+    addressId: v.id('addresses'),
+    initDataRaw: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // 1. Authenticate user
+    const authUser = await requireAuth(ctx, args.initDataRaw)
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_telegram_id', (q) => q.eq('telegramUserId', authUser.id))
+      .unique()
+
+    if (!user) throw new Error('User not found')
+
+    // 2. Verify ownership
+    const address = await ctx.db.get(args.addressId)
+    if (!address) throw new Error('Address not found')
+    if (address.userId !== user._id) throw new Error('Not authorized')
+
+    // 3. Prevent deletion of default address
+    if (user.defaultAddressId === args.addressId) {
+      throw new Error('Cannot delete default address. Set another address as default first.')
+    }
+
+    // 4. Delete address
+    await ctx.db.delete(args.addressId)
+
+    // 5. Log event
+    await ctx.db.insert('events', {
+      type: 'address_deleted',
+      userId: user._id,
+      metadata: { address: address.address },
+      timestamp: Date.now(),
+    })
+
+    return { success: true }
+  },
+})
+
+/**
  * Get all addresses for a user
  */
 export const getUserAddresses = query({
