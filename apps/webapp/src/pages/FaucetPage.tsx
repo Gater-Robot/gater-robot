@@ -22,6 +22,7 @@ import {
 import { useMutation, useQuery } from "convex/react"
 import { api } from "@/convex/api"
 
+import { useTelegram } from "@/contexts/TelegramContext"
 import { TransactionStatus } from "@/components/web3/TransactionStatus"
 import { Badge } from "@/components/ui/badge"
 import { SectionHeader } from "@/components/ui/section-header"
@@ -138,6 +139,7 @@ function GaslessClaimStatus({
 export function FaucetPage() {
   const { address } = useAccount()
   const chainId = useChainId()
+  const { user: telegramUser } = useTelegram()
 
   const [claimState, setClaimState] = React.useState<ClaimState>("idle")
   const [errorMessage, setErrorMessage] = React.useState<string>("")
@@ -199,6 +201,9 @@ export function FaucetPage() {
   } = useWaitForTransactionReceipt({ hash: txHash })
 
   React.useEffect(() => {
+    // Only react to wagmi state when in the manual (gas) claim flow
+    if (claimState !== "claiming" && claimState !== "idle") return
+
     if (isWritePending || isConfirming) {
       setClaimState("claiming")
       return
@@ -218,6 +223,7 @@ export function FaucetPage() {
       )
     }
   }, [
+    claimState,
     confirmError,
     isConfirmed,
     isConfirming,
@@ -245,6 +251,9 @@ export function FaucetPage() {
       setClaimState("success")
       void refetchHasClaimed()
       void refetchBalance()
+    } else if (status === "failed") {
+      setClaimState("error")
+      setErrorMessage(gaslessClaim.errorMessage ?? "Gasless claim failed")
     }
   }, [gaslessClaim, refetchHasClaimed, refetchBalance])
 
@@ -274,7 +283,7 @@ export function FaucetPage() {
 
     try {
       await claimGasless({
-        telegramUserId: "anonymous", // TODO: wire up real Telegram user ID from context
+        telegramUserId: telegramUser?.id?.toString() ?? "anonymous",
         recipientAddress: address,
         chainId,
       })

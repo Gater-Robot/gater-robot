@@ -22,6 +22,12 @@ export const claimFaucetGasless = mutation({
     }
     const normalizedAddress = getAddress(args.recipientAddress)
 
+    // Validate chain ID is supported
+    const SUPPORTED_FAUCET_CHAINS = [8453, 84532] // Base, Base Sepolia
+    if (!SUPPORTED_FAUCET_CHAINS.includes(args.chainId)) {
+      throw new Error(`Unsupported chain: ${args.chainId}. Faucet is only available on Base.`)
+    }
+
     // Check for existing claim by this address (any status except "failed")
     const existingByAddress = await ctx.db
       .query("faucetClaims")

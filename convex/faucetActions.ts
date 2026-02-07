@@ -114,7 +114,15 @@ export const processClaim = internalAction({
         return
       }
     } catch (err) {
-      console.warn(`[faucet] Could not check hasClaimed on-chain, proceeding anyway:`, err)
+      // If we can't verify on-chain, fail the claim to avoid wasting gas
+      const message = err instanceof Error ? err.message : "RPC error"
+      console.error(`[faucet] Could not check hasClaimed on-chain, failing claim:`, message)
+      await ctx.runMutation(internal.faucetMutations.updateClaimStatus, {
+        claimId: args.claimId,
+        status: "failed",
+        errorMessage: `Could not verify eligibility on-chain: ${message}`,
+      })
+      return
     }
 
     // Send the transaction with retry logic

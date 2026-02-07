@@ -1,5 +1,6 @@
 import { query, internalQuery } from "./_generated/server"
 import { v } from "convex/values"
+import { getAddress, isAddress } from "viem"
 
 /**
  * Get the current faucet claim status for a given wallet address.
@@ -10,9 +11,14 @@ export const getClaimByAddress = query({
     recipientAddress: v.string(),
   },
   handler: async (ctx, args) => {
+    // Normalize address to match the checksummed format stored by the mutation
+    const normalized = isAddress(args.recipientAddress)
+      ? getAddress(args.recipientAddress)
+      : args.recipientAddress
+
     const claims = await ctx.db
       .query("faucetClaims")
-      .withIndex("by_address", (q) => q.eq("recipientAddress", args.recipientAddress))
+      .withIndex("by_address", (q) => q.eq("recipientAddress", normalized))
       .order("desc")
       .take(1)
 
