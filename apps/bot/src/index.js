@@ -88,6 +88,37 @@ bot.onText(/\/admin/, (msg) => {
   sendMessageSafe(chatId, `Admin mode ${status}. Use /admin again to toggle.`);
 });
 
+const buildHealthKeyboard = () => ({
+  reply_markup: {
+    inline_keyboard: [
+      [
+        {
+          text: "Open Health Diagnostics",
+          web_app: { url: new URL("/health?access=admin", webAppUrl).href },
+        },
+      ],
+    ],
+  },
+});
+
+bot.onText(/\/health/, (msg) => {
+  const chatId = msg.chat.id;
+
+  if (!webAppUrl) {
+    sendMessageSafe(
+      chatId,
+      "Health diagnostics unavailable. WEBAPP_URL is not configured.",
+    );
+    return;
+  }
+
+  sendMessageSafe(
+    chatId,
+    "Tap below to view system health and diagnostics.",
+    buildHealthKeyboard(),
+  );
+});
+
 bot.on("polling_error", (error) => {
   console.error("Polling error:", error);
 });

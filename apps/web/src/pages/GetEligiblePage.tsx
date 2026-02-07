@@ -43,7 +43,7 @@ import {
   Wallet,
   Link as LinkIcon,
 } from 'lucide-react'
-import { Id } from '../../../../convex/_generated/dataModel'
+type Id<TableName extends string> = string & { __tableName?: TableName }
 
 type SwapState = 'idle' | 'swapping' | 'success' | 'error'
 

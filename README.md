@@ -1,5 +1,13 @@
 # Gater Robot
 
+Run 4 terminals (outside vscode to avoid port forwarding fights with remote-ssh)
+```sh
+cloudflared tunnel run gater
+pnpm convex dev
+pnpm --filter @gater/webapp dev
+pnpm -F @gater/bot
+```
+BEST Token: https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
 
 >**Elevator pitch**
 >
@@ -18,7 +26,7 @@ Open in Telegram [@GaterRobot](https://t.me/gaterrobot)
 
 ---
 
-## Development tunnel (Cloudflare Quick Tunnel)
+## Development tunnel (Cloudflare Tunnel)
 
 Telegram Mini Apps must be served from a **public HTTPS URL** during development. We use Cloudflare Quick Tunnel
 to expose the local Mini App so it can be opened inside Telegram.
@@ -29,17 +37,33 @@ to expose the local Mini App so it can be opened inside Telegram.
 **Run the Mini App and tunnel**
 ```bash
 # terminal 1: run the web app (assumes it starts on :5173)
-pnpm --filter @gater/web dev
+pnpm --filter @gater/webapp dev
 
-# terminal 2: expose it publicly
-cloudflared tunnel --url http://localhost:5173
+# terminal 2: expose it publicly (named tunnel)
+cloudflared tunnel run gater
 ```
 
-Cloudflared will print a public HTTPS URL (e.g. `https://<random>.trycloudflare.com`). Use this URL when
-opening the Mini App in Telegram (and for any `startapp` deep links). Avoid committing personal tunnel URLs.
+Dev URL: `https://gater-dev.agentix.bot`  
+Prod URL: `https://gater-app.agentix.bot`
 
 ---
 
 ## Hackathon plan
 
 See `docs/FINAL_PLAN.md` for the reconciled 5‑day demo plan and where the older planning docs diverge.
+
+---
+
+## Webapp migration (apps/web → apps/webapp)
+
+See `docs/WEBAPP_MIGRATION_PLAN.md` for the parity definition, phased migration plan, and tracker.
+
+---
+
+## Credits
+
+- **Scaffold-ETH 2** — multi-chain dapp patterns and tooling inspiration.
+- **ethid.org** / **ethereum-identity-kit** — identity + SIWE UX building blocks.
+- **ENS** — Ethereum identity primitives and ecosystem.
+- **LI.FI** — cross-chain swap/bridge infrastructure and widget.
+- **ETHGlobal Hacker Pass NFT** — hackathon participation and access.
