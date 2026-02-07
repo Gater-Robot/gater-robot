@@ -28,6 +28,7 @@ export function useAddAddress(): UseAddAddressReturn {
   const [isValid, setIsValid] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const inflightRef = useRef(false)
 
   // Debounced validation
   useEffect(() => {
@@ -69,8 +70,9 @@ export function useAddAddress(): UseAddAddressReturn {
   }, [input, addresses])
 
   const addAddress = useCallback(async (): Promise<boolean> => {
-    if (!isValid || isAdding || !initDataRaw) return false
+    if (!isValid || inflightRef.current || !initDataRaw) return false
 
+    inflightRef.current = true
     setIsAdding(true)
     try {
       await addMutation({ address: input.trim(), initDataRaw })
@@ -84,9 +86,10 @@ export function useAddAddress(): UseAddAddressReturn {
       setValidationError(message)
       return false
     } finally {
+      inflightRef.current = false
       setIsAdding(false)
     }
-  }, [isValid, isAdding, initDataRaw, addMutation, input])
+  }, [isValid, initDataRaw, addMutation, input])
 
   const reset = useCallback(() => {
     setInput("")

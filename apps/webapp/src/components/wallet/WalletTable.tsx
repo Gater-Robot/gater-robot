@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   CheckIcon,
   ChevronDownIcon,
@@ -122,13 +122,16 @@ function AddWalletInput({ onAdded }: { onAdded?: () => void }) {
         <p className="text-xs text-muted-foreground">Validating...</p>
       )}
 
-      <button
+      {/* F3: Cancel button with proper touch target */}
+      <Button
         type="button"
+        variant="ghost"
+        size="sm"
         onClick={handleCancel}
         className="text-xs text-muted-foreground hover:text-foreground"
       >
         Cancel
-      </button>
+      </Button>
     </div>
   )
 }
@@ -141,6 +144,7 @@ function WalletRow({
   onSetDefault,
   isSettingDefault,
   isDeleting,
+  isConfirmingDelete,
 }: {
   address: UserAddress
   onVerify?: (address: UserAddress) => void
@@ -148,6 +152,7 @@ function WalletRow({
   onSetDefault?: (addressId: Id<"addresses">) => void
   isSettingDefault: boolean
   isDeleting: boolean
+  isConfirmingDelete: boolean
 }) {
   const isVerified = address.status === "verified"
   const isPending = address.status === "pending"
@@ -169,8 +174,10 @@ function WalletRow({
       {/* Trigger — the visible row */}
       <AccordionTrigger className="px-3 py-3 hover:no-underline [&>svg]:hidden">
         <div className="flex w-full items-center gap-3">
-          {/* Status dot */}
+          {/* F8: Status dot with aria-label */}
           <div
+            role="img"
+            aria-label={isVerified ? "Verified" : "Pending verification"}
             className={cn(
               "flex size-9 shrink-0 items-center justify-center rounded-full text-xs font-bold",
               isVerified
@@ -244,6 +251,7 @@ function WalletRow({
             </Button>
           )}
 
+          {/* F5: per-row isSettingDefault */}
           {isVerified && !address.isDefault && onSetDefault && (
             <Button
               size="sm"
@@ -267,11 +275,15 @@ function WalletRow({
             </Badge>
           )}
 
+          {/* F1: Delete with visual confirmation state */}
           {onDelete && (
             <Button
               size="sm"
-              variant="ghost"
-              className="ml-auto text-destructive hover:bg-destructive/10 hover:text-destructive"
+              variant={isConfirmingDelete ? "destructive" : "ghost"}
+              className={cn(
+                "ml-auto",
+                !isConfirmingDelete && "text-destructive hover:bg-destructive/10 hover:text-destructive"
+              )}
               disabled={isDeleting}
               onClick={() => onDelete(address._id)}
             >
@@ -280,7 +292,7 @@ function WalletRow({
               ) : (
                 <Trash2Icon className="size-3.5" />
               )}
-              Remove
+              {isConfirmingDelete ? "Tap again to remove" : "Remove"}
             </Button>
           )}
         </div>
@@ -317,41 +329,64 @@ export function WalletTable({ className, onVerify }: WalletTableProps) {
   const {
     addresses,
     isLoading,
+    error,
     setDefault,
     isSettingDefault,
   } = useAddresses()
-  const { deleteAddress, isDeleting } = useDeleteAddress()
+  const { deleteAddress, deletingId } = useDeleteAddress()
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const [settingDefaultId, setSettingDefaultId] = useState<string | null>(null)
 
-  const defaultAddress = addresses.find((a) => a.isDefault)
-  const sortedAddresses = [...addresses].sort((a, b) => {
-    // Default first, then verified, then pending, then by creation time
-    if (a.isDefault && !b.isDefault) return -1
-    if (!a.isDefault && b.isDefault) return 1
-    if (a.status === "verified" && b.status !== "verified") return -1
-    if (a.status !== "verified" && b.status === "verified") return 1
-    return b._creationTime - a._creationTime
-  })
+  // F2: Clean up delete confirmation timer on unmount
+  const deleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEffect(() => {
+    return () => {
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
+    }
+  }, [])
 
+  // F7: Memoize derived data
+  const defaultAddress = useMemo(
+    () => addresses.find((a) => a.isDefault),
+    [addresses]
+  )
+  const sortedAddresses = useMemo(
+    () =>
+      [...addresses].sort((a, b) => {
+        if (a.isDefault && !b.isDefault) return -1
+        if (!a.isDefault && b.isDefault) return 1
+        if (a.status === "verified" && b.status !== "verified") return -1
+        if (a.status !== "verified" && b.status === "verified") return 1
+        return b._creationTime - a._creationTime
+      }),
+    [addresses]
+  )
+
+  // F5: Track which address is being set as default
   const handleSetDefault = useCallback(
     async (addressId: Id<"addresses">) => {
+      setSettingDefaultId(addressId)
       try {
         await setDefault(addressId)
       } catch {
         // error surfaced via hook state
+      } finally {
+        setSettingDefaultId(null)
       }
     },
     [setDefault]
   )
 
+  // F1 + F2: Delete with visual confirmation + timer cleanup
   const handleDelete = useCallback(
     async (addressId: Id<"addresses">) => {
       if (confirmDeleteId !== addressId) {
         setConfirmDeleteId(addressId)
-        // Auto-clear confirmation after 3s
-        setTimeout(() => setConfirmDeleteId(null), 3000)
+        if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
+        deleteTimerRef.current = setTimeout(() => setConfirmDeleteId(null), 3000)
         return
       }
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current)
       await deleteAddress(addressId)
       setConfirmDeleteId(null)
     },
@@ -363,6 +398,21 @@ export function WalletTable({ className, onVerify }: WalletTableProps) {
       <div className={cn("space-y-4", className)}>
         <SectionHeader>Wallets</SectionHeader>
         <WalletTableSkeleton />
+      </div>
+    )
+  }
+
+  // F9: Error state
+  if (error) {
+    return (
+      <div className={cn("space-y-3", className)}>
+        <SectionHeader>Wallets</SectionHeader>
+        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-center">
+          <p className="text-sm text-destructive">Failed to load wallets</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Please try refreshing the app.
+          </p>
+        </div>
       </div>
     )
   }
@@ -394,8 +444,9 @@ export function WalletTable({ className, onVerify }: WalletTableProps) {
               onVerify={onVerify}
               onDelete={handleDelete}
               onSetDefault={handleSetDefault}
-              isSettingDefault={isSettingDefault}
-              isDeleting={isDeleting}
+              isSettingDefault={isSettingDefault && settingDefaultId === addr._id}
+              isDeleting={deletingId === addr._id}
+              isConfirmingDelete={confirmDeleteId === addr._id}
             />
           ))}
         </Accordion>

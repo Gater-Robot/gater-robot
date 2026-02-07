@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useRef, useState } from "react"
 import { useMutation } from "convex/react"
 
 import { api } from "@/convex/api"
@@ -8,7 +8,7 @@ type Id<TableName extends string> = string & { __tableName?: TableName }
 
 export interface UseDeleteAddressReturn {
   deleteAddress: (addressId: Id<"addresses">) => Promise<boolean>
-  isDeleting: boolean
+  deletingId: string | null
   error: Error | null
 }
 
@@ -16,14 +16,16 @@ export function useDeleteAddress(): UseDeleteAddressReturn {
   const { initDataRaw } = useTelegram()
   const deleteMutation = useMutation(api.ens.deleteAddress)
 
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [error, setError] = useState<Error | null>(null)
+  const inflightRef = useRef(false)
 
   const deleteAddress = useCallback(
     async (addressId: Id<"addresses">): Promise<boolean> => {
-      if (!initDataRaw || isDeleting) return false
+      if (!initDataRaw || inflightRef.current) return false
 
-      setIsDeleting(true)
+      inflightRef.current = true
+      setDeletingId(addressId)
       setError(null)
       try {
         await deleteMutation({ addressId, initDataRaw })
@@ -34,11 +36,12 @@ export function useDeleteAddress(): UseDeleteAddressReturn {
         setError(e)
         return false
       } finally {
-        setIsDeleting(false)
+        inflightRef.current = false
+        setDeletingId(null)
       }
     },
-    [initDataRaw, isDeleting, deleteMutation]
+    [initDataRaw, deleteMutation]
   )
 
-  return { deleteAddress, isDeleting, error }
+  return { deleteAddress, deletingId, error }
 }

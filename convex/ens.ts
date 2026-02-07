@@ -359,11 +359,20 @@ export const deleteAddress = mutation({
         (a) => a._id !== args.addressId && a.status === 'verified'
       )
 
-      await ctx.db.patch(user._id, {
-        defaultAddressId: nextDefault?._id ?? undefined,
-        primaryEnsName: nextDefault?.ensName ?? undefined,
-        lastSeenAt: now,
-      })
+      if (nextDefault) {
+        await ctx.db.patch(user._id, {
+          defaultAddressId: nextDefault._id,
+          primaryEnsName: nextDefault.ensName,
+          lastSeenAt: now,
+        })
+      } else {
+        // Explicitly clear the default — rebuild user without stale refs
+        await ctx.db.patch(user._id, {
+          defaultAddressId: undefined,
+          primaryEnsName: undefined,
+          lastSeenAt: now,
+        })
+      }
     }
 
     // Delete the address
