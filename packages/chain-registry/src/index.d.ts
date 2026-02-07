@@ -23,7 +23,6 @@ export type SupportedChainKey =
   | "worldchain"
   | "aurora"
   | "celo"
-  | "shibarium"
   | "sepolia"
   | "baseSepolia"
 

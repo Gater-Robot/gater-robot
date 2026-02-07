@@ -21,7 +21,6 @@ import {
   polygon,
   scroll,
   sepolia,
-  shibarium,
   sonic,
   unichain,
   worldchain,
@@ -53,7 +52,6 @@ const CHAIN_BY_KEY = {
   worldchain,
   aurora,
   celo,
-  shibarium,
   sepolia,
   baseSepolia,
 }
@@ -94,7 +92,6 @@ export const SUPPORTED_CHAINS = [
   asSupportedChain("worldchain"),
   asSupportedChain("aurora"),
   asSupportedChain("celo"),
-  asSupportedChain("shibarium"),
   asSupportedChain("sepolia"),
   asSupportedChain("baseSepolia"),
 ]
