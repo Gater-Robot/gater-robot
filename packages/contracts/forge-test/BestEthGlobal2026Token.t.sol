@@ -2,6 +2,7 @@
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {BestEthGlobal2026Token} from "../contracts/BestEthGlobal2026Token.sol";
 
 contract BestEthGlobal2026TokenTest is Test {
@@ -21,6 +22,34 @@ contract BestEthGlobal2026TokenTest is Test {
     function testFaucetOnlyOnce() public {
         vm.prank(alice);
         token.faucet();
+
+        vm.expectRevert("Faucet already claimed");
+        vm.prank(alice);
+        token.faucet();
+    }
+
+    function testFaucetForClaim() public {
+        token.faucetFor(alice);
+        assertEq(token.balanceOf(alice), token.FAUCET_AMOUNT());
+    }
+
+    function testFaucetForRevertsNonOwner() public {
+        address bob = address(0x2);
+        vm.expectRevert(abi.encodeWithSelector(Ownable.OwnableUnauthorizedAccount.selector, bob));
+        vm.prank(bob);
+        token.faucetFor(alice);
+    }
+
+    function testFaucetForRevertsAlreadyClaimed() public {
+        vm.prank(alice);
+        token.faucet();
+
+        vm.expectRevert("Faucet already claimed");
+        token.faucetFor(alice);
+    }
+
+    function testFaucetForSharesHasClaimed() public {
+        token.faucetFor(alice);
 
         vm.expectRevert("Faucet already claimed");
         vm.prank(alice);

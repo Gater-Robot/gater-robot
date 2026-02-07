@@ -7,6 +7,7 @@ import {
   ExternalLinkIcon,
   PlusIcon,
   RefreshCwIcon,
+  WalletIcon,
   XCircleIcon,
 } from "lucide-react"
 import { formatUnits, type Address } from "viem"
@@ -17,6 +18,9 @@ import {
   useWaitForTransactionReceipt,
   useWriteContract,
 } from "wagmi"
+
+import { useMutation, useQuery } from "convex/react"
+import { api } from "@/convex/api"
 
 import { TransactionStatus } from "@/components/web3/TransactionStatus"
 import { Badge } from "@/components/ui/badge"
@@ -55,7 +59,9 @@ const BEST_TOKEN_ABI = [
   },
 ] as const
 
-type ClaimState = "idle" | "claiming" | "success" | "error"
+type ClaimState = "idle" | "claiming" | "gasless-pending" | "success" | "error"
+
+type GaslessStatus = "idle" | "pending" | "submitting" | "submitted" | "confirmed" | "failed"
 
 function formatBalance(value: bigint | undefined): string {
   if (value === undefined) return "0"
@@ -69,6 +75,66 @@ function truncateAddress(addr: string): string {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`
 }
 
+function GaslessClaimStatus({
+  status,
+  txHash,
+  chainId,
+  errorMessage,
+  onRetry,
+}: {
+  status: GaslessStatus
+  txHash?: string
+  chainId: number
+  errorMessage?: string
+  onRetry: () => void
+}) {
+  if (status === "idle") return null
+
+  if (status === "confirmed") return null // handled by parent success state
+
+  if (status === "failed") {
+    return (
+      <div className="space-y-3 py-4 text-center fade-up">
+        <div className="inline-flex size-12 items-center justify-center rounded-full bg-destructive/10">
+          <XCircleIcon className="size-6 text-destructive" />
+        </div>
+        <div>
+          <h3 className="text-base font-semibold text-destructive">Gasless Claim Failed</h3>
+          <p className="mx-auto max-w-sm text-sm text-muted-foreground mt-1">
+            {errorMessage || "Something went wrong. You can try again or claim with gas."}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="rounded-lg bg-primary/10 text-primary px-4 py-2 text-xs font-mono hover:bg-primary/20 active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          Try Again
+        </button>
+      </div>
+    )
+  }
+
+  // pending, submitting, submitted
+  const titles: Record<string, string> = {
+    pending: "Preparing gasless transaction...",
+    submitting: "Sending sponsored transaction...",
+    submitted: "Confirming on-chain...",
+  }
+
+  return (
+    <div className="fade-up">
+      <TransactionStatus
+        state="pending"
+        hash={txHash}
+        chainId={chainId}
+        title={titles[status] ?? "Processing..."}
+        description="No gas needed — we're sponsoring this transaction for you."
+      />
+    </div>
+  )
+}
+
 export function FaucetPage() {
   const { address } = useAccount()
   const chainId = useChainId()
@@ -76,6 +142,18 @@ export function FaucetPage() {
   const [claimState, setClaimState] = React.useState<ClaimState>("idle")
   const [errorMessage, setErrorMessage] = React.useState<string>("")
   const [addedToWallet, setAddedToWallet] = React.useState(false)
+
+  // Gasless claim state
+  const [gaslessStatus, setGaslessStatus] = React.useState<GaslessStatus>("idle")
+
+  // Convex mutation for gasless claim
+  const claimGasless = useMutation(api.faucetMutations.claimFaucetGasless)
+
+  // Subscribe to claim status from Convex (live updates)
+  const gaslessClaim = useQuery(
+    api.faucetQueries.getClaimByAddress,
+    address ? { recipientAddress: address } : "skip",
+  )
 
   const isContractConfigured =
     BEST_TOKEN_ADDRESS !== "0x0000000000000000000000000000000000000000"
@@ -153,7 +231,22 @@ export function FaucetPage() {
     setClaimState("idle")
     setErrorMessage("")
     setAddedToWallet(false)
+    setGaslessStatus("idle")
   }, [address, chainId])
+
+  // Sync gasless claim status from Convex subscription
+  React.useEffect(() => {
+    if (!gaslessClaim) return
+
+    const status = gaslessClaim.status as GaslessStatus
+    setGaslessStatus(status)
+
+    if (status === "confirmed") {
+      setClaimState("success")
+      void refetchHasClaimed()
+      void refetchBalance()
+    }
+  }, [gaslessClaim, refetchHasClaimed, refetchBalance])
 
   const handleClaim = () => {
     setErrorMessage("")
@@ -171,6 +264,33 @@ export function FaucetPage() {
         err instanceof Error ? err.message : "Failed to initiate transaction",
       )
     }
+  }
+
+  const handleGaslessClaim = async () => {
+    if (!address) return
+    setErrorMessage("")
+    setClaimState("gasless-pending")
+    setGaslessStatus("pending")
+
+    try {
+      await claimGasless({
+        telegramUserId: "anonymous", // TODO: wire up real Telegram user ID from context
+        recipientAddress: address,
+        chainId,
+      })
+    } catch (err) {
+      setGaslessStatus("failed")
+      setClaimState("error")
+      setErrorMessage(
+        err instanceof Error ? err.message : "Gasless claim failed",
+      )
+    }
+  }
+
+  const handleGaslessRetry = () => {
+    setGaslessStatus("idle")
+    setClaimState("idle")
+    setErrorMessage("")
   }
 
   const handleReset = () => {
@@ -327,22 +447,58 @@ export function FaucetPage() {
             {isChainSupported &&
               hasClaimed === false &&
               !isLoadingHasClaimed &&
-              claimState === "idle" && (
+              (claimState === "idle" || claimState === "gasless-pending") && (
                 <div className="space-y-4 text-center fade-up stagger-3">
-                  <p className="text-muted-foreground">
-                    You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong>{" "}
-                    tokens.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleClaim}
-                    className="w-full rounded-xl bg-primary text-primary-foreground px-6 py-4 font-sans text-base font-semibold hover:shadow-[0_0_30px_var(--color-glow)] active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
-                  >
-                    <span className="inline-flex items-center gap-2">
-                      <DropletsIcon className="size-5" />
-                      Claim Tokens
-                    </span>
-                  </button>
+                  {claimState === "idle" && gaslessStatus === "idle" && (
+                    <>
+                      <p className="text-muted-foreground">
+                        You are eligible to claim <strong>{FAUCET_AMOUNT} $BEST</strong>{" "}
+                        tokens.
+                      </p>
+                      {/* Primary: Gasless claim */}
+                      <button
+                        type="button"
+                        onClick={handleGaslessClaim}
+                        className="w-full rounded-xl bg-primary text-primary-foreground px-6 py-4 font-sans text-base font-semibold hover:shadow-[0_0_30px_var(--color-glow)] active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                      >
+                        <span className="inline-flex items-center gap-2">
+                          <DropletsIcon className="size-5" />
+                          Claim Gasless
+                        </span>
+                      </button>
+                      <p className="text-xs text-muted-foreground">
+                        No gas required — sponsored by Gater Robot
+                      </p>
+                      {/* Secondary: Manual claim */}
+                      <button
+                        type="button"
+                        onClick={handleClaim}
+                        className="inline-flex items-center gap-2 rounded-lg border border-border bg-transparent text-muted-foreground px-4 py-2 text-xs font-mono hover:bg-primary/5 hover:text-foreground active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+                      >
+                        <WalletIcon className="size-3.5" />
+                        Claim with Gas
+                      </button>
+                    </>
+                  )}
+                  {/* Gasless claim in progress */}
+                  {gaslessStatus !== "idle" && gaslessStatus !== "confirmed" && gaslessStatus !== "failed" && (
+                    <GaslessClaimStatus
+                      status={gaslessStatus}
+                      txHash={gaslessClaim?.txHash}
+                      chainId={chainId}
+                      onRetry={handleGaslessRetry}
+                    />
+                  )}
+                  {/* Gasless claim failed — show retry + manual fallback */}
+                  {gaslessStatus === "failed" && (
+                    <GaslessClaimStatus
+                      status={gaslessStatus}
+                      txHash={gaslessClaim?.txHash}
+                      chainId={chainId}
+                      errorMessage={gaslessClaim?.errorMessage}
+                      onRetry={handleGaslessRetry}
+                    />
+                  )}
                 </div>
               )}
 
