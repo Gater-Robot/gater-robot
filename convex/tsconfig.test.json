@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "outDir": ".test-dist",
+    "rootDir": ".",
+    "declaration": false,
+    "sourceMap": true
+  },
+  "include": ["lib/balance.ts", "lib/rpc.ts", "lib/telegramBotVerification.ts", "lib/sponsor.ts"]
+}

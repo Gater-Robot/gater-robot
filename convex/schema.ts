@@ -169,4 +169,27 @@ export default defineSchema({
     .index('by_org', ['orgId'])
     .index('by_channel', ['channelId'])
     .index('by_action', ['action']),
+
+  /**
+   * Faucet Claims table - Gasless faucet claim tracking
+   */
+  faucetClaims: defineTable({
+    telegramUserId: v.string(),
+    recipientAddress: v.string(),
+    chainId: v.number(),
+    status: v.union(
+      v.literal('pending'),
+      v.literal('submitting'),
+      v.literal('submitted'),
+      v.literal('confirmed'),
+      v.literal('failed')
+    ),
+    txHash: v.optional(v.string()),
+    errorMessage: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index('by_address', ['recipientAddress'])
+    .index('by_telegram_user', ['telegramUserId'])
+    .index('by_status', ['status']),
 })

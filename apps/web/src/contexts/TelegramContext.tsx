@@ -25,6 +25,25 @@ import {
   type TelegramInitResult,
 } from '@/lib/telegram'
 
+function buildMockInitDataRaw(user: TelegramUser): string {
+  const telegramUserShape = {
+    id: Number.isFinite(Number(user.id)) ? Number(user.id) : user.id,
+    first_name: user.firstName,
+    last_name: user.lastName,
+    username: user.username,
+    language_code: user.languageCode,
+    is_premium: user.isPremium,
+  }
+
+  const params = new URLSearchParams()
+  params.set('user', JSON.stringify(telegramUserShape))
+  params.set('auth_date', String(Math.floor(Date.now() / 1000)))
+  // `hash` is normally required for cryptographic verification. This mock value
+  // is only used in local development outside Telegram.
+  params.set('hash', 'mock')
+  return params.toString()
+}
+
 /**
  * Telegram context value interface
  */
@@ -115,10 +134,11 @@ export function TelegramProvider({
 
         // If not in Telegram and we have a mock user, use it
         if (!result.isInTelegram && mockUser) {
+          const mockInitDataRaw = buildMockInitDataRaw(mockUser)
           const mockResult: TelegramInitResult = {
             isInTelegram: false,
             user: mockUser,
-            initDataRaw: 'mock_init_data',
+            initDataRaw: mockInitDataRaw,
             themeParams: null,
             platform: 'web',
             version: 'mock',
@@ -149,11 +169,10 @@ export function TelegramProvider({
   }, [mockUser, onInitialized])
 
   const getInitData = useCallback(() => {
-    if (mockUser && !isInTelegramEnvironment()) {
-      return 'mock_init_data'
-    }
+    if (initResult?.initDataRaw) return initResult.initDataRaw
+    if (mockUser && !isInTelegramEnvironment()) return buildMockInitDataRaw(mockUser)
     return getInitDataRaw()
-  }, [mockUser])
+  }, [initResult, mockUser])
 
   const value: TelegramContextValue = {
     isInitialized,
@@ -161,7 +180,7 @@ export function TelegramProvider({
     isLoading,
     error,
     user: initResult?.user ?? mockUser ?? null,
-    initDataRaw: initResult?.initDataRaw ?? (mockUser ? 'mock_init_data' : null),
+    initDataRaw: initResult?.initDataRaw ?? null,
     themeParams: initResult?.themeParams ?? null,
     platform: initResult?.platform ?? null,
     version: initResult?.version ?? null,

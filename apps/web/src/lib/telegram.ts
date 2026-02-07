@@ -8,10 +8,10 @@
 import {
   init,
   miniApp,
-  initData,
   backButton,
   mainButton,
   themeParams,
+  viewport,
   retrieveLaunchParams,
   type User,
 } from '@telegram-apps/sdk'
@@ -77,12 +77,12 @@ function extractUser(user: User | undefined): TelegramUser | null {
 
   return {
     id: String(user.id),
-    firstName: user.firstName,
-    lastName: user.lastName,
+    firstName: user.first_name,
+    lastName: user.last_name,
     username: user.username,
-    languageCode: user.languageCode,
-    isPremium: user.isPremium,
-    photoUrl: user.photoUrl,
+    languageCode: user.language_code,
+    isPremium: user.is_premium,
+    photoUrl: user.photo_url,
   }
 }
 
@@ -129,7 +129,8 @@ export async function initTelegramSdk(): Promise<TelegramInitResult> {
     const user = extractUser(launchParams.tgWebAppData?.user)
 
     // Get init data raw string (use original signed string, not reconstructed)
-    const initDataRaw = launchParams.tgWebAppDataRaw ?? null
+    const rawData = launchParams.tgWebAppDataRaw
+    const initDataRaw = typeof rawData === 'string' ? rawData : null
 
     // Signal to Telegram that app is ready
     if (miniApp.ready.isAvailable()) {
@@ -140,13 +141,13 @@ export async function initTelegramSdk(): Promise<TelegramInitResult> {
       isInTelegram: true,
       user,
       initDataRaw,
-      themeParams: themeParams.state
+      themeParams: themeParams.isMounted()
         ? {
-            bgColor: themeParams.backgroundColor?.(),
-            textColor: themeParams.textColor?.(),
-            buttonColor: themeParams.buttonColor?.(),
-            buttonTextColor: themeParams.buttonTextColor?.(),
-            secondaryBgColor: themeParams.secondaryBackgroundColor?.(),
+            bgColor: themeParams.backgroundColor(),
+            textColor: themeParams.textColor(),
+            buttonColor: themeParams.buttonColor(),
+            buttonTextColor: themeParams.buttonTextColor(),
+            secondaryBgColor: themeParams.secondaryBackgroundColor(),
           }
         : null,
       platform: launchParams.tgWebAppPlatform ?? null,
@@ -177,7 +178,8 @@ export function getInitDataRaw(): string | null {
     const launchParams = retrieveLaunchParams()
 
     // Use original signed string for backend validation
-    return launchParams.tgWebAppDataRaw ?? null
+    const rawData = launchParams.tgWebAppDataRaw
+    return typeof rawData === 'string' ? rawData : null
   } catch {
     return null
   }
@@ -203,27 +205,19 @@ export function configureMainButton(config: {
   }
 
   if (config.color) {
-    mainButton.setParams({ backgroundColor: config.color })
+    mainButton.setParams({ backgroundColor: config.color as `#${string}` })
   }
 
   if (config.textColor) {
-    mainButton.setParams({ textColor: config.textColor })
+    mainButton.setParams({ textColor: config.textColor as `#${string}` })
   }
 
   if (config.isVisible !== undefined) {
-    if (config.isVisible) {
-      mainButton.show()
-    } else {
-      mainButton.hide()
-    }
+    mainButton.setParams({ isVisible: config.isVisible })
   }
 
   if (config.isEnabled !== undefined) {
-    if (config.isEnabled) {
-      mainButton.enable()
-    } else {
-      mainButton.disable()
-    }
+    mainButton.setParams({ isEnabled: config.isEnabled })
   }
 
   if (config.onClick) {
@@ -268,7 +262,7 @@ export function closeMiniApp(): void {
  * Expand the Mini App to full height
  */
 export function expandMiniApp(): void {
-  if (miniApp.requestFullscreen.isAvailable()) {
-    miniApp.requestFullscreen()
+  if (viewport.expand.isAvailable()) {
+    viewport.expand()
   }
 }

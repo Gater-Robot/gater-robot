@@ -22,6 +22,7 @@ import { AdminPage } from '@/pages/AdminPage'
 import { OrgsPage } from '@/pages/OrgsPage'
 import { GetEligiblePage } from '@/pages/GetEligiblePage'
 import { FaucetPage } from '@/pages/FaucetPage'
+import { RouteErrorPage } from '@/pages/RouteErrorPage'
 
 // Create a client for TanStack Query
 const queryClient = new QueryClient({
@@ -48,19 +49,19 @@ const MOCK_USER = import.meta.env.DEV
 // Router configuration with all app routes
 const router = createBrowserRouter([
   // Default redirect to user page
-  { path: '/', element: <Navigate to="/user" replace /> },
+  { path: '/', element: <Navigate to="/user" replace />, errorElement: <RouteErrorPage /> },
 
   // Main app routes
-  { path: '/user', element: <UserPage /> },
-  { path: '/admin', element: <AdminPage /> },
-  { path: '/orgs', element: <OrgsPage /> },
-  { path: '/get-eligible', element: <GetEligiblePage /> },
+  { path: '/user', element: <UserPage />, errorElement: <RouteErrorPage /> },
+  { path: '/admin', element: <AdminPage />, errorElement: <RouteErrorPage /> },
+  { path: '/orgs', element: <OrgsPage />, errorElement: <RouteErrorPage /> },
+  { path: '/get-eligible', element: <GetEligiblePage />, errorElement: <RouteErrorPage /> },
 
   // ENS demo page (for hackathon)
-  { path: '/ens-eth-id', element: <ENSDemoPage /> },
+  { path: '/ens-eth-id', element: <ENSDemoPage />, errorElement: <RouteErrorPage /> },
 
   // Faucet page for claiming tokens
-  { path: '/faucet', element: <FaucetPage /> },
+  { path: '/faucet', element: <FaucetPage />, errorElement: <RouteErrorPage /> },
 ])
 
 export function App() {
