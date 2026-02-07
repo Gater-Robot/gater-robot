@@ -17,13 +17,14 @@ contract BestEthGlobal2026Token is ERC20, Ownable {
     {}
 
     function faucet() external {
-        require(!hasClaimed[msg.sender], "Faucet already claimed");
-        hasClaimed[msg.sender] = true;
-        _mint(msg.sender, FAUCET_AMOUNT);
-        emit FaucetClaimed(msg.sender, FAUCET_AMOUNT);
+        _processFaucetClaim(msg.sender);
     }
 
     function faucetFor(address beneficiary) external onlyOwner {
+        _processFaucetClaim(beneficiary);
+    }
+
+    function _processFaucetClaim(address beneficiary) internal {
         require(!hasClaimed[beneficiary], "Faucet already claimed");
         hasClaimed[beneficiary] = true;
         _mint(beneficiary, FAUCET_AMOUNT);

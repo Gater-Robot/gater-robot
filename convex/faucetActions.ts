@@ -3,9 +3,9 @@
 import { internalAction } from "./_generated/server"
 import { internal } from "./_generated/api"
 import { v } from "convex/values"
-import { createPublicClient, http, type Hex } from "viem"
-import { getViemChain, getAlchemyHttpUrl, getChainKey, getDefaultRpcUrl } from "@gater/chain-registry"
+import { type Hex } from "viem"
 
+import { getChainClient } from "./lib/balance"
 import { getSponsorWalletClient } from "./lib/sponsor"
 
 const FAUCET_FOR_ABI = [
@@ -24,31 +24,6 @@ const FAUCET_FOR_ABI = [
     stateMutability: "view" as const,
   },
 ] as const
-
-function getRpcUrl(chainId: number): string | undefined {
-  const chainKey = getChainKey(chainId)
-  if (chainKey) {
-    const envKey = `${chainKey.toUpperCase()}_RPC_URL`
-    const configured = (process.env as Record<string, string | undefined>)[envKey]
-    if (configured && configured.length > 0) return configured
-  }
-  const alchemyKey = process.env.ALCHEMY_API_KEY
-  if (alchemyKey) {
-    const url = getAlchemyHttpUrl(chainId, alchemyKey)
-    if (url) return url
-  }
-  return getDefaultRpcUrl(chainId)
-}
-
-function getPublicClient(chainId: number) {
-  const chain = getViemChain(chainId)
-  const rpcUrl = getRpcUrl(chainId)
-  if (!chain || !rpcUrl) throw new Error(`Unsupported chain: ${chainId}`)
-  return createPublicClient({
-    chain,
-    transport: http(rpcUrl, { timeout: 15_000, retryCount: 2 }),
-  })
-}
 
 function getFaucetContractAddress(): Hex {
   const addr = process.env.FAUCET_CONTRACT_ADDRESS
@@ -89,7 +64,7 @@ export const processClaim = internalAction({
     }
 
     const contractAddress = getFaucetContractAddress()
-    const publicClient = getPublicClient(claim.chainId)
+    const publicClient = getChainClient(claim.chainId)
 
     // Mark as submitting
     await ctx.runMutation(internal.faucetMutations.updateClaimStatus, {
@@ -229,9 +204,9 @@ export const sweepStaleClaims = internalAction({
       // For "submitted" claims with a txHash, check on-chain before failing
       if (claim.status === "submitted" && claim.txHash) {
         try {
-          const contractAddress = process.env.FAUCET_CONTRACT_ADDRESS as `0x${string}`
-          if (contractAddress) {
-            const publicClient = getPublicClient(claim.chainId)
+          const contractAddr = getFaucetContractAddress()
+          if (contractAddr) {
+            const publicClient = getChainClient(claim.chainId)
             const receipt = await publicClient.getTransactionReceipt({
               hash: claim.txHash as `0x${string}`,
             })

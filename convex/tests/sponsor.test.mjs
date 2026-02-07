@@ -66,6 +66,14 @@ test("convex sponsor: getSponsorWalletClient returns a client for Base (8453)", 
     const client = getSponsorWalletClient(8453)
     assert.ok(client, "client should be truthy")
     assert.equal(typeof client.writeContract, "function", "client should have writeContract method")
+    // Verify the client is wired to the correct account (Hardhat account #0)
+    assert.equal(
+      client.account.address.toLowerCase(),
+      "0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266",
+      "client account should match the expected address for the test private key"
+    )
+    // Verify the chain is Base
+    assert.equal(client.chain.id, 8453, "client should be configured for Base (chain 8453)")
   } finally {
     if (original === undefined) {
       delete process.env.FAUCET_SPONSOR_PRIVATE_KEY

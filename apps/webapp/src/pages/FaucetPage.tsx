@@ -145,9 +145,6 @@ export function FaucetPage() {
   const [errorMessage, setErrorMessage] = React.useState<string>("")
   const [addedToWallet, setAddedToWallet] = React.useState(false)
 
-  // Gasless claim state
-  const [gaslessStatus, setGaslessStatus] = React.useState<GaslessStatus>("idle")
-
   // Convex mutation for gasless claim
   const claimGasless = useMutation(api.faucetMutations.claimFaucetGasless)
 
@@ -156,6 +153,9 @@ export function FaucetPage() {
     api.faucetQueries.getClaimByAddress,
     address ? { recipientAddress: address } : "skip",
   )
+
+  // Derive gasless status directly from Convex subscription
+  const gaslessStatus: GaslessStatus = (gaslessClaim?.status as GaslessStatus) ?? "idle"
 
   const isContractConfigured =
     BEST_TOKEN_ADDRESS !== "0x0000000000000000000000000000000000000000"
@@ -237,15 +237,13 @@ export function FaucetPage() {
     setClaimState("idle")
     setErrorMessage("")
     setAddedToWallet(false)
-    setGaslessStatus("idle")
   }, [address, chainId])
 
-  // Sync gasless claim status from Convex subscription
+  // Sync gasless claim terminal states to local claimState
   React.useEffect(() => {
     if (!gaslessClaim) return
 
     const status = gaslessClaim.status as GaslessStatus
-    setGaslessStatus(status)
 
     if (status === "confirmed") {
       setClaimState("success")
@@ -279,7 +277,6 @@ export function FaucetPage() {
     if (!address) return
     setErrorMessage("")
     setClaimState("gasless-pending")
-    setGaslessStatus("pending")
 
     try {
       await claimGasless({
@@ -288,7 +285,6 @@ export function FaucetPage() {
         chainId,
       })
     } catch (err) {
-      setGaslessStatus("failed")
       setClaimState("error")
       setErrorMessage(
         err instanceof Error ? err.message : "Gasless claim failed",
@@ -297,7 +293,6 @@ export function FaucetPage() {
   }
 
   const handleGaslessRetry = () => {
-    setGaslessStatus("idle")
     setClaimState("idle")
     setErrorMessage("")
   }
@@ -335,7 +330,7 @@ export function FaucetPage() {
   const txUrl =
     txHash && chainId ? getExplorerTxUrl(chainId, txHash) : undefined
 
-  const formattedBalance = formatBalance(balance)
+  const formattedBalance = React.useMemo(() => formatBalance(balance), [balance])
 
   return (
     <div className="space-y-6">

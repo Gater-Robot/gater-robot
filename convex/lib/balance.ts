@@ -7,31 +7,13 @@
 
 import {
   SUPPORTED_CHAINS,
-  getAlchemyHttpUrl,
-  getChainKey,
   getChainLabel,
-  getDefaultRpcUrl,
   getViemChain,
   isSupportedChainId,
 } from '@gater/chain-registry'
 import { createPublicClient, http, type PublicClient } from 'viem'
 
-function getRpcUrl(chainId: number): string | undefined {
-  const chainKey = getChainKey(chainId)
-  if (chainKey) {
-    const envKey = `${chainKey.toUpperCase()}_RPC_URL`
-    const configured = (process.env as Record<string, string | undefined>)[envKey]
-    if (configured && configured.length > 0) return configured
-  }
-
-  const alchemyKey = process.env.ALCHEMY_API_KEY
-  if (alchemyKey) {
-    const url = getAlchemyHttpUrl(chainId, alchemyKey)
-    if (url) return url
-  }
-
-  return getDefaultRpcUrl(chainId)
-}
+import { getRpcUrl } from './rpc.js'
 
 /**
  * Minimal ERC20 ABI for balance and decimals queries
