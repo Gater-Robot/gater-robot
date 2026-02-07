@@ -29,7 +29,7 @@ const readDeploymentAddress = (chainId) => {
   }
   try {
     const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    return data["BestTokenModule#BestToken"] ?? undefined;
+    return data["BestEthGlobal2026TokenModule#BestEthGlobal2026Token"] ?? undefined;
   } catch (error) {
     console.error(`Error parsing deployment file for chain ${chainId}: ${error.message}`);
     return undefined;

@@ -3,7 +3,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 import hre from "hardhat";
-import bestTokenModule from "../ignition/modules/BestToken.js";
+import bestEthGlobal2026TokenModule from "../ignition/modules/BestEthGlobal2026Token.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,11 +58,11 @@ const main = async () => {
   const networkKey = getNetworkKey(networkName);
   const chainId = hre.network.config.chainId ?? null;
 
-  console.log(`Deploying BestToken to ${networkName} (chainId: ${chainId})...`);
+  console.log(`Deploying BestEthGlobal2026Token to ${networkName} (chainId: ${chainId})...`);
 
-  const { bestToken } = await hre.ignition.deploy(bestTokenModule);
+  const { bestEthGlobal2026Token } = await hre.ignition.deploy(bestEthGlobal2026TokenModule);
 
-  const deployedAddress = await bestToken.getAddress();
+  const deployedAddress = await bestEthGlobal2026Token.getAddress();
   const now = new Date().toISOString();
 
   if (networkKey) {
@@ -80,7 +80,7 @@ const main = async () => {
     );
   }
 
-  console.log(`BestToken deployed on ${networkName}: ${deployedAddress}`);
+  console.log(`BestEthGlobal2026Token deployed on ${networkName}: ${deployedAddress}`);
 };
 
 main().catch((error) => {

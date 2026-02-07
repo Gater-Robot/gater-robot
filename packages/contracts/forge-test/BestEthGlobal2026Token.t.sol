@@ -2,14 +2,14 @@
 pragma solidity ^0.8.24;
 
 import {Test} from "forge-std/Test.sol";
-import {BestToken} from "../contracts/BestToken.sol";
+import {BestEthGlobal2026Token} from "../contracts/BestEthGlobal2026Token.sol";
 
-contract BestTokenTest is Test {
-    BestToken private token;
+contract BestEthGlobal2026TokenTest is Test {
+    BestEthGlobal2026Token private token;
     address private alice = address(0x1);
 
     function setUp() public {
-        token = new BestToken("Best Token", "BEST", address(this));
+        token = new BestEthGlobal2026Token("Best Token", "BEST", address(this));
     }
 
     function testFaucetClaim() public {
