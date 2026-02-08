@@ -12,6 +12,7 @@ import {
   themeParams,
   viewport,
   retrieveLaunchParams,
+  isTMA,
   type User,
 } from "@telegram-apps/sdk"
 
@@ -41,20 +42,15 @@ export interface TelegramInitResult {
   startParam?: string
 }
 
-export function isInTelegramEnvironment(): boolean {
-  if (typeof window === "undefined") return false
-
-  const webApp = (window as any).Telegram?.WebApp
-  if (webApp?.initData) return true
-
-  const urlParams = new URLSearchParams(window.location.search)
-  if (urlParams.has("tgWebAppData")) return true
-
-  const hashParams = new URLSearchParams(window.location.hash.slice(1))
-  if (hashParams.has("tgWebAppData")) return true
-
-  return false
-}
+/**
+ * Detects whether the app is running inside a Telegram Mini App.
+ *
+ * Delegates to the SDK's {@link isTMA} which checks the URL, the
+ * Performance Navigation API, and sessionStorage — covering cases
+ * the previous hand-rolled check missed (hash-based params, stripped
+ * hashes, missing window.Telegram.WebApp).
+ */
+export const isInTelegramEnvironment: () => boolean = isTMA
 
 function extractUser(user: User | undefined): TelegramUser | null {
   if (!user) return null
