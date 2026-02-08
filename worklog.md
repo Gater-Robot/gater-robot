@@ -52,6 +52,9 @@
   - Added `CreateSubscriptionToken.s.sol` for explicit token creation step.
   - `CreateSubscriptionProduct.s.sol` now supports both modes: create new token or use provided `SUB_TOKEN`.
   - Added package scripts: `deploy:subs:create-token` and `deploy:subs:create-token:local`.
+- Added deployment workflow doc with copy/paste commands:
+  - `docs/SUBSCRIPTIONS_DEPLOY_WORKFLOW.md`
+  - includes local Hardhat, UI local run, Base Sepolia dry run, Base mainnet sequence, and troubleshooting.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).

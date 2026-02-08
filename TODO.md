@@ -4,6 +4,7 @@
 - [ ] Send completion notification via `ntfy_send`
 
 ## Done
+- [x] Add dedicated deploy workflow doc for local Hardhat, Sepolia, and mainnet
 - [x] Ignore Foundry generated deployment artifacts (`packages/contracts/broadcast/`)
 - [x] Fix hook salt workflow (predict from factory nonce or use explicit SUB token)
 - [x] Fix Foundry/Uniswap local deploy compiler mismatch (`PoolManager.sol` =0.8.26)
