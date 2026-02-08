@@ -68,7 +68,7 @@ export function WalletActions({
       {isPending && (
         <div className="space-y-2">
           <p className="text-sm font-medium">Verify Wallet</p>
-          <SIWEButton />
+          <SIWEButton address={address.address} />
         </div>
       )}
 

@@ -22,15 +22,22 @@ import {
   ItemTitle,
 } from "@/components/ui/item"
 import type { UserAddress } from "@/hooks/useAddresses"
+import { useEnsNameOnly } from "@/hooks/ens"
 import { cn, truncateAddress } from "@/lib/utils"
 import { WalletActions } from "./WalletActions"
 
 export function WalletTableRow({ address }: { address: UserAddress }) {
   const [isOpen, setIsOpen] = useState(false)
 
+  // Resolve ENS name on the frontend if not already cached
+  const { name: resolvedEnsName } = useEnsNameOnly(address.address as `0x${string}`)
+
   const isVerified = address.status === "verified"
   const isDefault = address.isDefault
-  const displayName = address.ensName || truncateAddress(address.address)
+
+  // Use cached ENS name from DB first, fall back to resolved name, then truncated address
+  const ensName = address.ensName || resolvedEnsName
+  const displayName = ensName || truncateAddress(address.address)
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
@@ -58,18 +65,18 @@ export function WalletTableRow({ address }: { address: UserAddress }) {
             </ItemMedia>
 
             <ItemContent>
-              <ItemTitle>
-                <span className={cn(!address.ensName && "font-mono text-sm")}>
+              <ItemTitle className="leading-tight">
+                <span className={cn(!ensName && "font-mono text-sm")}>
                   {displayName}
                 </span>
-                {address.ensName && (
+                {ensName && (
                   <Badge variant="ens" size="sm" className="ml-2">
                     ENS
                   </Badge>
                 )}
               </ItemTitle>
-              {address.ensName && (
-                <ItemDescription className="font-mono text-xs">
+              {ensName && (
+                <ItemDescription className="mt-0.5 font-mono text-[10px] leading-tight">
                   {truncateAddress(address.address)}
                 </ItemDescription>
               )}

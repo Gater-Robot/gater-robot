@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { useMutation } from "convex/react";
-import { verifyMessage } from "viem";
+import { getAddress, verifyMessage } from "viem";
 import { createSiweMessage } from "viem/siwe";
 import { useAccount, useChainId, useSignMessage } from "wagmi";
 
 import { api } from "@/convex/api";
 import { useTelegram } from "@/contexts/TelegramContext";
+import { truncateAddress } from "@/lib/utils";
 
 export type SIWEStatus =
   | "idle"
@@ -15,7 +16,7 @@ export type SIWEStatus =
   | "success"
   | "error";
 
-export function useSIWE() {
+export function useSIWE(targetAddress?: string) {
   const [status, setStatus] = useState<SIWEStatus>("idle");
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +50,26 @@ export function useSIWE() {
       setError("No wallet connected");
       setStatus("error");
       return;
+    }
+
+    // Validate connected address matches target address (if specified)
+    if (targetAddress) {
+      try {
+        const normalizedConnected = getAddress(address);
+        const normalizedTarget = getAddress(targetAddress);
+
+        if (normalizedConnected !== normalizedTarget) {
+          setError(
+            `Please connect to ${truncateAddress(targetAddress)} in your wallet to verify ownership. Currently connected: ${truncateAddress(address)}`
+          );
+          setStatus("error");
+          return;
+        }
+      } catch (err) {
+        setError("Invalid wallet address format");
+        setStatus("error");
+        return;
+      }
     }
 
     const initDataRaw = getInitData();
@@ -133,6 +154,9 @@ export function useSIWE() {
     generateNonce,
     getInitData,
     signMessageAsync,
+    targetAddress,
+    telegramUser?.id,
+    telegramUser?.username,
     verifySignature,
   ]);
 
