@@ -7,6 +7,11 @@ export function ENSCallToAction() {
   return (
     <Card className="border-dashed border-primary/30">
       <CardContent className="flex items-center gap-3 p-4">
+        <img
+          src="/ens-text-logo.svg"
+          alt="ENS"
+          className="h-6 w-auto opacity-80"
+        />
         <div className="flex-1">
           <p className="text-sm font-medium">Get more with ENS</p>
           <p className="text-xs text-muted-foreground">
