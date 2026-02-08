@@ -38,6 +38,9 @@
   - `packages/contracts/script/DeployLocalSubscriptionsStack.s.sol`
   - `packages/contracts/script/DeployMockUSDC.s.sol`
   - package scripts + `.env.example` + `README.md` updates.
+- Added local convenience script wrappers:
+  - `deploy:subs:create:local`
+  - `deploy:subs:demo:local`
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
