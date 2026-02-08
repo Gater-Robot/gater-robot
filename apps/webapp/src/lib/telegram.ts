@@ -118,6 +118,12 @@ export async function initTelegramSdk(): Promise<TelegramInitResult> {
     }
   } catch (error) {
     console.error("Failed to initialize Telegram SDK:", error)
+    if (import.meta.env.DEV) {
+      console.warn(
+        "[gater] Telegram SDK init failed inside Telegram environment. " +
+          "The real Telegram user will not be available. Check the error above.",
+      )
+    }
     return {
       isInTelegram: false,
       user: null,

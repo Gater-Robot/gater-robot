@@ -87,7 +87,7 @@ export function TelegramProvider({
         const result = await initTelegramSdk()
         if (!mounted) return
 
-        if (!result.isInTelegram && mockUser) {
+        if (!result.isInTelegram && mockUser && !isInTelegramEnvironment()) {
           const mockInitDataRaw = buildMockInitDataRaw(mockUser)
           const mockResult: TelegramInitResult = {
             isInTelegram: false,
