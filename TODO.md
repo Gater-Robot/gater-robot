@@ -4,6 +4,7 @@
 - [ ] Send completion notification via `ntfy_send`
 
 ## Done
+- [x] Fix Foundry/Uniswap local deploy compiler mismatch (`PoolManager.sol` =0.8.26)
 - [x] Add Hardhat-local subscription stack deployment support (PoolManager + MockUSDC + Factory + Router)
 - [x] Add standalone mock USDC deployment script for local/Base demo networks
 - [x] Add local sub-store token tools page for MetaMask add-token buttons (SUB + fake USDC)

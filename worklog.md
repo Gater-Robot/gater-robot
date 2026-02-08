@@ -41,6 +41,10 @@
 - Added local convenience script wrappers:
   - `deploy:subs:create:local`
   - `deploy:subs:demo:local`
+- Fixed local deployment compiler mismatch reported by user:
+  - Foundry config now auto-detects per-file solc versions.
+  - `deploy:subs:local:stack` explicitly uses solc `0.8.26` for Uniswap `PoolManager.sol`.
+  - Verified with Forge compile/build path including `PoolManager` from v4-core.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
