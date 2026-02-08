@@ -9,6 +9,16 @@ pnpm -F @gater/bot
 ```
 BEST Token: https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
 
+## Base Mainnet Contracts
+
+- `BEST` token (legacy faucet/community token): https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
+- `SubscriptionFactory` (creates `SubscriptionDaysToken` and initializes product pools/hooks): https://basescan.org/address/0xFe51bfd14338905bbdAC5b247b35e437D032d45B#code
+- `SubscriptionRouter` (user entrypoint for `buyExactOut`, `refundExactIn`, `refundAll`): https://basescan.org/address/0x236E648B7aE896C74d303e1c5d0884cAaA70D136#code
+- `SubscriptionDaysToken` (current SUB days token for demo product): https://basescan.org/address/0xd0280d98B1a67996932f13F8D56cbA556a1ea48B#code
+- `SubscriptionHook` (Uniswap v4 hook enforcing subscription pricing/refund logic): https://basescan.org/address/0x2F16784d3D46f53dE7c01D0A1c067fE29EF78A88#code
+- `MockUSDC` (demo-only payment token, 6 decimals, not real USDC): https://basescan.org/address/0x5302c4F76B202d6CE60B61eA43E3d8A0851ABb93#code
+- `PoolManager` (Uniswap v4 core dependency used by hook/router): https://basescan.org/address/0x498581fF718922c3f8e6A244956aF099B2652b2b#code
+
 ## Branching, PR, and release pattern
 
 ```mermaid
