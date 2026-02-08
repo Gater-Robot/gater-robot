@@ -55,6 +55,9 @@
 - Added deployment workflow doc with copy/paste commands:
   - `docs/SUBSCRIPTIONS_DEPLOY_WORKFLOW.md`
   - includes local Hardhat, UI local run, Base Sepolia dry run, Base mainnet sequence, and troubleshooting.
+- Added C4 architecture doc focused on Telegram bot + Mini App + Convex:
+  - `docs/TELEGRAM_MINIAPP_CONVEX_C4.md`
+  - includes C4 Level 1 (System Context) and C4 Level 2 (Container) Mermaid diagrams.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
