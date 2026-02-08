@@ -1,223 +1,93 @@
-# Subscriptions Deploy Workflow
+# Subscriptions v4: Judge Brief
 
-This runbook is the canonical flow for deploying and validating the v4 subscriptions stack in this repo.
+This project implements a Uniswap v4 hook-powered subscription system with:
+- decaying `SUB` balances
+- exact-output buys (`buyExactOut`)
+- exact-input refunds (`refundExactIn`, `refundAll`, `refundUpTo`)
+- deterministic deploy scripts for local, testnet, and mainnet
 
-## Hook Swap Sequence (Judge View)
+## Why this is interesting
+- Pricing and refund logic are enforced on-chain in the hook.
+- Refund UX is protected against stale balance issues via `refundAll` (live balance read in transaction).
+- Deployment flow is reproducible with scripts and clear promotion gates (Local -> Base Sepolia -> Base mainnet).
 
-This is the core runtime behavior for buy/refund with custom v4 hook accounting.
+## 1) Deployment and validation flow
+
+```mermaid
+flowchart TD
+    A[Pre-flight: compile + Hardhat tests + Forge tests] --> B[Local Hardhat deploy]
+    B --> C[UI smoke test on local chain]
+    C --> D[Base Sepolia dry run]
+    D --> E{Checklist passed?}
+    E -- No --> B
+    E -- Yes --> F[Base mainnet deploy]
+    F --> G[Publish addresses + verify contracts]
+```
+
+## 2) Hook timing/sequence (buy + refund)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    actor U as User
-    participant R as SubscriptionRouter
+    actor User
+    participant Router as SubscriptionRouter
     participant PM as Uniswap v4 PoolManager
-    participant H as SubscriptionHook
+    participant Hook as SubscriptionHook
     participant SUB as SubscriptionDaysToken
-    participant USDC as USDC Token
+    participant USDC as USDC
 
-    rect rgb(32, 54, 92)
-      Note over U,USDC: BUY (exact output SUB)
-      U->>R: buyExactOut(token, subOut, maxUsdcIn, ...)
-      R->>H: quoteBuyExactOut(subOut)
-      H-->>R: usdcIn
-      R->>PM: sync(USDC) + settle(prepay USDC from user)
-      R->>PM: swap(exactOutput SUB)
-      PM->>H: beforeSwap(...)
-      H->>H: validate pool key + authorized router + mode
-      H->>PM: take(USDC -> Hook reserves)
-      H->>SUB: mint(PoolManager, subOut)
-      H->>PM: settle(SUB funding)
-      H-->>PM: return beforeSwap delta (no-op pool math)
-      PM-->>R: swap complete
-      R->>PM: take(SUB -> user)
-      R-->>U: SUB delivered
+    rect rgb(30,55,90)
+    Note over User,USDC: BUY (exact output SUB)
+    User->>Router: buyExactOut(subOut, maxUsdcIn)
+    Router->>Hook: quoteBuyExactOut(subOut)
+    Router->>PM: sync+settle USDC from user
+    Router->>PM: swap(exact output SUB)
+    PM->>Hook: beforeSwap
+    Hook->>PM: take(USDC) into hook reserves
+    Hook->>SUB: mint(subOut) to PoolManager
+    Hook-->>PM: return custom delta (pool math no-op)
+    PM-->>Router: swap done
+    Router->>PM: take(SUB) to user
     end
 
-    rect rgb(72, 50, 32)
-      Note over U,USDC: REFUND (exact input SUB)
-      U->>R: refundExactIn(...) or refundAll(...)
-      Note over R: refundAll reads live balanceOf(user) in-tx
-      R->>H: quoteRefundExactIn(subIn)
-      H-->>R: usdcOut
-      R->>PM: sync(SUB) + settle(prepay SUB from user)
-      R->>PM: swap(exactInput SUB)
-      PM->>H: beforeSwap(...)
-      H->>H: validate + check USDC reserves
-      H->>PM: sync(USDC) + settle(push USDC payout)
-      H->>PM: take(SUB -> Hook)
-      H->>SUB: burn(subIn)
-      H-->>PM: return beforeSwap delta (no-op pool math)
-      PM-->>R: swap complete
-      R->>PM: take(USDC -> user)
-      R-->>U: USDC delivered
+    rect rgb(90,55,30)
+    Note over User,USDC: REFUND (exact input SUB)
+    User->>Router: refundExactIn(...) or refundAll(...)
+    Note over Router: refundAll reads live balanceOf(user)
+    Router->>Hook: quoteRefundExactIn(subIn)
+    Router->>PM: sync+settle SUB from user
+    Router->>PM: swap(exact input SUB)
+    PM->>Hook: beforeSwap
+    Hook->>Hook: check refund reserves
+    Hook->>PM: settle USDC payout into PoolManager
+    Hook->>PM: take(SUB) from PoolManager
+    Hook->>SUB: burn(subIn)
+    Hook-->>PM: return custom delta (pool math no-op)
+    PM-->>Router: swap done
+    Router->>PM: take(USDC) to user
     end
 ```
 
-## Scope
-- Contracts package: `packages/contracts`
-- Local chain: Hardhat node (`127.0.0.1:8545`)
-- Testnet: Base Sepolia
-- Mainnet: Base
+## Judge reproduction (minimal)
 
-## Prerequisites
-1. Install deps:
-```bash
-pnpm install
-```
-2. Ensure Foundry is installed (`forge --version` works).
-3. Create env file:
-```bash
-cp packages/contracts/.env.example packages/contracts/.env
-```
-
-## 0) Pre-flight checks (always run first)
-```bash
-pnpm --filter @gater/contracts build
-pnpm --filter @gater/contracts test
-pnpm --filter @gater/contracts test:forge
-```
-
----
-
-## 1) Local deploy on Hardhat chain (recommended first)
-
-### 1.1 Start local chain
+### Local (Hardhat)
 ```bash
 pnpm --filter @gater/contracts node:hardhat
-```
-
-### 1.2 Configure local env
-In `packages/contracts/.env`:
-- `PRIVATE_KEY`: first account private key from Hardhat node output
-- optional defaults:
-  - `DEFAULT_FEE=0`
-  - `DEFAULT_TICK_SPACING=1`
-  - `LOCAL_USDC_MINT=2000000000000`
-
-### 1.3 Deploy local core stack
-Deploys: `PoolManager + MockUSDC + Factory + Router`
-```bash
 pnpm --filter @gater/contracts deploy:subs:local:stack
-```
-Copy printed addresses into `packages/contracts/.env`:
-- `POOL_MANAGER`
-- `USDC`
-- `FACTORY`
-- `ROUTER`
-
-### 1.4 Create token
-```bash
 pnpm --filter @gater/contracts deploy:subs:create-token:local
-```
-Copy printed token address into:
-- `SUB_TOKEN`
-
-### 1.5 Mine hook salt
-```bash
 pnpm --filter @gater/contracts mine:hook-salt
-```
-Copy printed salt into:
-- `HOOK_SALT`
-
-### 1.6 Setup pool + hook + token role wiring
-```bash
 pnpm --filter @gater/contracts deploy:subs:create:local
-```
-
-### 1.7 Run buy/refund demo
-```bash
 pnpm --filter @gater/contracts deploy:subs:demo:local
 ```
 
----
+### Promotion gates
+1. Local flow passes end-to-end.
+2. Repeat on Base Sepolia.
+3. Deploy same flow to Base mainnet.
 
-## 2) UI local run (for manual verification)
-
-### 2.1 Configure app env
-```bash
-cp apps/sub-store/.env.example apps/sub-store/.env
-```
-Set in `apps/sub-store/.env`:
-```env
-VITE_CHAIN_ID=31337
-VITE_CHAIN_NAME=Hardhat Local
-VITE_RPC_URL=http://127.0.0.1:8545
-VITE_EXPLORER_URL=
-VITE_FACTORY_ADDRESS=0x...
-VITE_HOOK_ADDRESS=0x...
-VITE_USDC_ADDRESS=0x...
-VITE_SUB_TOKEN_ADDRESS=0x...
-```
-
-### 2.2 Start frontend
-```bash
-pnpm --filter @gater/sub-store dev
-```
-Open `http://localhost:5173`.
-
----
-
-## 3) Base Sepolia dry run
-
-### 3.1 Env setup
-In `packages/contracts/.env` set:
-- `PRIVATE_KEY` (funded on Base Sepolia)
-- `POOL_MANAGER` (v4 pool manager for network)
-- `USDC` (token address for testing path)
-- `FACTORY` / `ROUTER` after infra deploy
-- pricing vars as needed (`BASE_PRICE_USDC`, `REFUND_PRICE_USDC`, etc.)
-
-### 3.2 Deploy infra
-```bash
-pnpm --filter @gater/contracts deploy:subs:infra
-```
-Copy printed `Factory` / `Router` into env.
-
-### 3.3 Create token -> mine salt -> setup
-```bash
-pnpm --filter @gater/contracts deploy:subs:create-token
-pnpm --filter @gater/contracts mine:hook-salt
-pnpm --filter @gater/contracts deploy:subs:create
-pnpm --filter @gater/contracts deploy:subs:demo
-```
-
-### 3.4 Save deployment metadata
-Update `packages/contracts/deployments/subscriptions.json` with final addresses.
-
----
-
-## 4) Base mainnet deploy (only after Sepolia success)
-
-Use the same sequence as Sepolia, but with:
-- Base mainnet RPC and funded deployer
-- intended production `USDC`
-- conservative pricing and refund settings
-
-Order:
-1. `deploy:subs:infra`
-2. `deploy:subs:create-token`
-3. `mine:hook-salt`
-4. `deploy:subs:create`
-5. (optional) `deploy:subs:demo` only if appropriate for funded test wallet
-
-Then:
-1. verify contracts
-2. update `packages/contracts/deployments/subscriptions.json`
-3. sync/announce addresses for consuming apps.
-
----
-
-## Troubleshooting
-
-### `invalid solc version ... =0.8.26`
-- Use current scripts; local stack command already forces `--use 0.8.26`.
-- `foundry.toml` is configured with `auto_detect_solc = true`.
-
-### Hook salt issues
-- Preferred: explicitly set `SUB_TOKEN` before `mine:hook-salt`.
-- Fallback: set `FACTORY`; script can predict token from factory nonce.
-
-### Generated files
-- Foundry broadcast output is ignored via `.gitignore`:
-  - `packages/contracts/broadcast/`
+## Key scripts
+- `packages/contracts/script/DeployLocalSubscriptionsStack.s.sol`
+- `packages/contracts/script/CreateSubscriptionToken.s.sol`
+- `packages/contracts/script/MineHookSalt.s.sol`
+- `packages/contracts/script/CreateSubscriptionProduct.s.sol`
+- `packages/contracts/script/DemoBuyRefund.s.sol`
