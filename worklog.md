@@ -61,6 +61,9 @@
 - Added coupon packet diagram doc for planned `hookData` coupon extension:
   - `docs/COUPON_PACKET_DIAGRAM.md`
   - includes packet field layout, signed payload model, and swap validation flow.
+- Added Mermaid architecture-beta diagram doc:
+  - `docs/TELEGRAM_MINIAPP_CONVEX_ARCHITECTURE_BETA.md`
+  - maps users, Telegram platform, bot/mini-app containers, Convex, and Web3 dependencies.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
