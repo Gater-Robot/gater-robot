@@ -11,8 +11,6 @@ if (!token) {
 }
 
 const bot = new TelegramBot(token, { polling: true });
-// Note: admin mode is stored in-memory and resets on restart.
-const adminModeByUser = new Map();
 
 const adminIds = (process.env.ADMIN_IDS ?? "")
   .split(",")
@@ -24,22 +22,13 @@ const sendMessageSafe = (chatId, text, options) =>
     console.error("Failed to send message:", error);
   });
 
-const buildWebAppUrl = (startParam) => {
-  if (!webAppUrl) return null;
-  const url = new URL(webAppUrl);
-  if (startParam) {
-    url.searchParams.set("startapp", startParam);
-  }
-  return url.href;
-};
-
-const buildStartKeyboard = (url) => ({
+const buildStartKeyboard = () => ({
   reply_markup: {
     inline_keyboard: [
       [
         {
           text: "Open Mini App",
-          web_app: { url },
+          web_app: { url: webAppUrl },
         },
       ],
     ],
@@ -50,7 +39,6 @@ bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const firstName = msg.from?.first_name || "there";
   const message = `Hi ${firstName}! Welcome to Gater Robot.`;
-  const userId = msg.from?.id;
 
   if (!webAppUrl) {
     sendMessageSafe(
@@ -60,54 +48,30 @@ bot.onText(/\/start/, (msg) => {
     return;
   }
 
-  const startParam = userId && adminModeByUser.get(userId) ? "admin" : null;
-  const startUrl = buildWebAppUrl(startParam);
-
   sendMessageSafe(
     chatId,
     `${message} Tap below to open the Mini App.`,
-    buildStartKeyboard(startUrl),
+    buildStartKeyboard(),
   );
 });
 
 bot.onText(/\/admin/, (msg) => {
   const chatId = msg.chat.id;
-  const userId = msg.from?.id;
 
-  if (!userId) {
-    sendMessageSafe(chatId, "Unable to determine your user ID.");
-    return;
+  if (adminIds.length > 0) {
+    const userId = msg.from?.id;
+    if (!userId || !adminIds.includes(String(userId))) {
+      sendMessageSafe(chatId, "You are not authorized to use admin mode.");
+      return;
+    }
   }
 
-  if (adminIds.length === 0) {
-    sendMessageSafe(
-      chatId,
-      "Admin mode is not configured. Please set ADMIN_IDS in the bot environment.",
-    );
-    return;
-  }
-
-  if (!adminIds.includes(String(userId))) {
-    sendMessageSafe(chatId, "You are not authorized to use admin mode.");
-    return;
-  }
-
-  const currentMode = adminModeByUser.get(userId) ?? false;
-  const nextMode = !currentMode;
-
-  adminModeByUser.set(userId, nextMode);
-
-  const status = nextMode ? "enabled" : "disabled";
-  sendMessageSafe(chatId, `Admin mode ${status}. Use /admin again to toggle.`);
-
-  if (!webAppUrl) return;
-
-  const startUrl = buildWebAppUrl(nextMode ? "admin" : null);
-  sendMessageSafe(
-    chatId,
-    "Tap below to open the Mini App.",
-    buildStartKeyboard(startUrl),
-  );
+  const adminUrl = "https://t.me/GaterRobot/admin";
+  sendMessageSafe(chatId, "Tap below to open the admin panel.", {
+    reply_markup: {
+      inline_keyboard: [[{ text: "Open Admin Panel", url: adminUrl }]],
+    },
+  });
 });
 
 const buildHealthKeyboard = () => ({
