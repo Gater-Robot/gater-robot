@@ -45,6 +45,9 @@ jspm_packages/
 artifacts/
 cache/
 
+# Hardhat Ignition deployment state (chain-specific, contains build info & journal)
+**/ignition/deployments/
+
 # Foundry build artifacts
 out/
 
@@ -152,3 +155,4 @@ airdrop-admin-ui-paytiers-opus.zip
 # Backups
 backups/github/
 backups/
+.turbo/

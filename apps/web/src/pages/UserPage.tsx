@@ -28,7 +28,7 @@ import { useAddresses } from '@/hooks/useAddresses'
 import { User, Wallet as WalletIcon, Settings, Shield, ExternalLink } from 'lucide-react'
 import { useAccount } from 'wagmi'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Id } from '../../../../convex/_generated/dataModel'
+type Id<TableName extends string> = string & { __tableName?: TableName }
 
 export function UserPage() {
   const { user, isLoading, isInTelegram, startParam } = useTelegram()

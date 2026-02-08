@@ -323,6 +323,77 @@ export const getUserAddresses = query({
 })
 
 /**
+ * Delete an address
+ * Handles cleanup of defaultAddressId if the deleted address was the default
+ */
+export const deleteAddress = mutation({
+  args: {
+    addressId: v.id('addresses'),
+    initDataRaw: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const authUser = await requireAuth(ctx, args.initDataRaw)
+    const user = await ctx.db
+      .query('users')
+      .withIndex('by_telegram_id', (q) =>
+        q.eq('telegramUserId', authUser.id)
+      )
+      .unique()
+
+    if (!user) throw new Error('User not found')
+
+    const address = await ctx.db.get(args.addressId)
+    if (!address) throw new Error('Address not found')
+    if (address.userId !== user._id) throw new Error('Address does not belong to user')
+
+    const now = Date.now()
+
+    // If deleting the default address, try to reassign to another verified address
+    if (user.defaultAddressId === args.addressId) {
+      const otherAddresses = await ctx.db
+        .query('addresses')
+        .withIndex('by_user', (q) => q.eq('userId', user._id))
+        .collect()
+
+      const nextDefault = otherAddresses.find(
+        (a) => a._id !== args.addressId && a.status === 'verified'
+      )
+
+      if (nextDefault) {
+        await ctx.db.patch(user._id, {
+          defaultAddressId: nextDefault._id,
+          primaryEnsName: nextDefault.ensName,
+          lastSeenAt: now,
+        })
+      } else {
+        // Explicitly clear the default — rebuild user without stale refs
+        await ctx.db.patch(user._id, {
+          defaultAddressId: undefined,
+          primaryEnsName: undefined,
+          lastSeenAt: now,
+        })
+      }
+    }
+
+    // Delete the address
+    await ctx.db.delete(args.addressId)
+
+    // Log the event
+    await ctx.db.insert('events', {
+      userId: user._id,
+      action: 'address_deleted',
+      metadata: {
+        address: address.address,
+        status: address.status,
+      },
+      createdAt: now,
+    })
+
+    return { success: true }
+  },
+})
+
+/**
  * Get user with their default address and ENS
  */
 export const getUserWithEns = query({
@@ -352,46 +423,3 @@ export const getUserWithEns = query({
   },
 })
 
-/**
- * Create or update user from Telegram
- */
-export const upsertUser = mutation({
-  args: {
-    telegramUsername: v.optional(v.string()),
-    telegramFirstName: v.optional(v.string()),
-    telegramLastName: v.optional(v.string()),
-    initDataRaw: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const authUser = await requireAuth(ctx, args.initDataRaw)
-    const existing = await ctx.db
-      .query('users')
-      .withIndex('by_telegram_id', (q) =>
-        q.eq('telegramUserId', authUser.id)
-      )
-      .unique()
-
-    const now = Date.now()
-
-    if (existing) {
-      await ctx.db.patch(existing._id, {
-        telegramUsername: args.telegramUsername,
-        telegramFirstName: args.telegramFirstName,
-        telegramLastName: args.telegramLastName,
-        lastSeenAt: now,
-      })
-      return { userId: existing._id, isNew: false }
-    }
-
-    const userId = await ctx.db.insert('users', {
-      telegramUserId: authUser.id,
-      telegramUsername: args.telegramUsername,
-      telegramFirstName: args.telegramFirstName,
-      telegramLastName: args.telegramLastName,
-      createdAt: now,
-      lastSeenAt: now,
-    })
-
-    return { userId, isNew: true }
-  },
-})

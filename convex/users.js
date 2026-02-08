@@ -60,38 +60,3 @@ export const upsertUserFromTelegram = mutation({
   },
 });
 
-// Alias for validateAndUpsertUser
-export const validateAndUpsertUser = upsertUserFromTelegram;
-
-export const setDefaultAddress = mutation({
-  args: {
-    initDataRaw: v.string(),
-    defaultAddressId: v.optional(v.id("addresses")),
-  },
-  handler: async (ctx, args) => {
-    const authUser = await requireAuth(ctx, args.initDataRaw);
-    // Authorization: caller must own the user record
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_telegram_id", (q) =>
-        q.eq("telegramUserId", authUser.id),
-      )
-      .unique();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    // If setting an address, verify it belongs to this user
-    if (args.defaultAddressId) {
-      const address = await ctx.db.get(args.defaultAddressId);
-      if (!address || address.userId !== user._id) {
-        throw new Error("Address not found or does not belong to user");
-      }
-    }
-
-    await ctx.db.patch(user._id, {
-      defaultAddressId: args.defaultAddressId,
-    });
-  },
-});

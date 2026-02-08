@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { requireAuth } from "./lib/auth";
+import { isSupportedChain } from "./lib/balance";
 
 export const listGatesForOrg = query({
   args: {
@@ -25,7 +26,18 @@ export const listGatesForOrg = query({
 export const listGatesForChannel = query({
   args: { channelId: v.id("channels"), initDataRaw: v.string() },
   handler: async (ctx, args) => {
-    await requireAuth(ctx, args.initDataRaw);
+    const user = await requireAuth(ctx, args.initDataRaw);
+
+    const channel = await ctx.db.get(args.channelId);
+    if (!channel) {
+      throw new Error("Channel not found");
+    }
+
+    const org = await ctx.db.get(channel.orgId);
+    if (!org || org.ownerTelegramUserId !== user.id) {
+      throw new Error("Not authorized to view gates for this channel");
+    }
+
     return ctx.db
       .query("gates")
       .withIndex("by_channel", (q) => q.eq("channelId", args.channelId))
@@ -43,6 +55,7 @@ export const createGate = mutation({
     tokenName: v.optional(v.string()),
     tokenDecimals: v.optional(v.number()),
     threshold: v.string(),
+    thresholdFormatted: v.optional(v.string()),
     initDataRaw: v.string(),
   },
   handler: async (ctx, args) => {
@@ -57,6 +70,10 @@ export const createGate = mutation({
     const channel = await ctx.db.get(args.channelId);
     if (!channel || channel.orgId !== args.orgId) {
       throw new Error("Channel does not belong to this org");
+    }
+
+    if (!isSupportedChain(args.chainId)) {
+      throw new Error(`Unsupported chain: ${args.chainId}`);
     }
 
     // Validate token address format
@@ -76,6 +93,7 @@ export const createGate = mutation({
       tokenName: args.tokenName,
       tokenDecimals: args.tokenDecimals,
       threshold: args.threshold,
+      thresholdFormatted: args.thresholdFormatted,
       active: true,
       createdAt: now,
       updatedAt: now,

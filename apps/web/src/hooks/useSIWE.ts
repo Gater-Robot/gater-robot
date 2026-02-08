@@ -14,7 +14,7 @@ import { useState, useCallback } from 'react'
 import { useAccount, useChainId, useSignMessage } from 'wagmi'
 import { useMutation } from 'convex/react'
 import { createSiweMessage } from 'viem/siwe'
-import { api } from '../../../../convex/_generated/api'
+import { api } from '@/convex/api'
 import { useTelegram } from '@/contexts/TelegramContext'
 
 /**
@@ -78,7 +78,7 @@ export function useSIWE(): UseSIWEReturn {
   const { signMessageAsync } = useSignMessage()
 
   // Telegram context for initDataRaw
-  const { getInitData } = useTelegram()
+  const { getInitData, user: telegramUser } = useTelegram()
 
   // Convex mutations
   const generateNonce = useMutation(api.siwe.generateNonce)
@@ -121,15 +121,27 @@ export function useSIWE(): UseSIWEReturn {
         initDataRaw,
       })
 
-      // Step 2: Create SIWE message
+      // Step 2: Create SIWE message with branded statement + Telegram binding
+      const tgDisplay = telegramUser?.username
+        ? `@${telegramUser.username} (${telegramUser.id})`
+        : `TG User ${telegramUser?.id ?? 'unknown'}`
+
       const message = createSiweMessage({
         domain: window.location.host,
         address,
-        statement: 'Sign in to Gater Robot to verify wallet ownership.',
+        statement: `== GATER ROBOT == verifying wallet ownership for ${tgDisplay}`,
         uri: window.location.origin,
         version: '1',
         chainId,
         nonce: nonceResult.nonce,
+        requestId: '@GaterRobot-SIWE',
+        resources: [
+          `tg:username:${telegramUser?.username || ''}`,
+          `tg:user_id:${telegramUser?.id || ''}`,
+          telegramUser?.username
+            ? `https://t.me/${telegramUser.username}`
+            : undefined,
+        ].filter(Boolean) as string[],
       })
 
       // Step 3: Request signature from wallet
