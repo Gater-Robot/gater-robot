@@ -24,7 +24,7 @@ flowchart TD
     F --> G[Publish addresses + verify contracts]
 ```
 
-## 2) Hook timing/sequence (buy + refund)
+## 2) Hook timing/sequence (readable view)
 
 ```mermaid
 sequenceDiagram
@@ -36,36 +36,43 @@ sequenceDiagram
     participant SUB as SubscriptionDaysToken
     participant USDC as USDC
 
-    rect rgb(30,55,90)
-    Note over User,USDC: BUY (exact output SUB)
+    Note over User,USDC: BUY path (exact output SUB)
     User->>Router: buyExactOut(subOut, maxUsdcIn)
     Router->>Hook: quoteBuyExactOut(subOut)
-    Router->>PM: sync+settle USDC from user
-    Router->>PM: swap(exact output SUB)
+    Router->>PM: prepay USDC (sync + settle)
+    Router->>PM: swap exact output SUB
     PM->>Hook: beforeSwap
-    Hook->>PM: take(USDC) into hook reserves
-    Hook->>SUB: mint(subOut) to PoolManager
-    Hook-->>PM: return custom delta (pool math no-op)
-    PM-->>Router: swap done
-    Router->>PM: take(SUB) to user
-    end
+    Hook->>PM: pull USDC to hook reserve
+    Hook->>SUB: mint SUB to PoolManager
+    Hook-->>PM: return custom delta
+    PM-->>Router: swap complete
+    Router->>PM: take SUB to user
+```
 
-    rect rgb(90,55,30)
-    Note over User,USDC: REFUND (exact input SUB)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Router as SubscriptionRouter
+    participant PM as Uniswap v4 PoolManager
+    participant Hook as SubscriptionHook
+    participant SUB as SubscriptionDaysToken
+    participant USDC as USDC
+
+    Note over User,USDC: REFUND path (exact input SUB)
     User->>Router: refundExactIn(...) or refundAll(...)
-    Note over Router: refundAll reads live balanceOf(user)
+    Note over Router: refundAll reads live balance in-tx
     Router->>Hook: quoteRefundExactIn(subIn)
-    Router->>PM: sync+settle SUB from user
-    Router->>PM: swap(exact input SUB)
+    Router->>PM: prepay SUB (sync + settle)
+    Router->>PM: swap exact input SUB
     PM->>Hook: beforeSwap
-    Hook->>Hook: check refund reserves
-    Hook->>PM: settle USDC payout into PoolManager
-    Hook->>PM: take(SUB) from PoolManager
-    Hook->>SUB: burn(subIn)
-    Hook-->>PM: return custom delta (pool math no-op)
-    PM-->>Router: swap done
-    Router->>PM: take(USDC) to user
-    end
+    Hook->>Hook: check USDC reserves
+    Hook->>PM: fund USDC payout (sync + settle)
+    Hook->>PM: take SUB from PoolManager
+    Hook->>SUB: burn SUB
+    Hook-->>PM: return custom delta
+    PM-->>Router: swap complete
+    Router->>PM: take USDC to user
 ```
 
 ## Judge reproduction (minimal)
