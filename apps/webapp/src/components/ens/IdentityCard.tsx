@@ -1,7 +1,6 @@
 import {
   ChevronRightIcon,
   ExternalLinkIcon,
-  GemIcon,
   GithubIcon,
   GlobeIcon,
   TwitterIcon,
@@ -296,7 +295,11 @@ function ENSCTACard({ className }: { className?: string }) {
       )}
     >
       <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-        <GemIcon className="size-5 text-primary" />
+        <img
+          src="/ens-logo.svg"
+          alt="ENS"
+          className="size-6"
+        />
       </div>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">
