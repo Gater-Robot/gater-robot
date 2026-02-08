@@ -1,8 +1,11 @@
 import { config as loadEnv } from "dotenv";
-import "@nomicfoundation/hardhat-ignition";
-import "@nomicfoundation/hardhat-ignition-viem";
-import "@nomicfoundation/hardhat-viem";
-import { defineConfig, type HardhatUserConfig } from "hardhat/config";
+import hardhatIgnition from "@nomicfoundation/hardhat-ignition";
+import hardhatIgnitionViem from "@nomicfoundation/hardhat-ignition-viem";
+import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
+import hardhatViem from "@nomicfoundation/hardhat-viem";
+import hardhatMocha from "@nomicfoundation/hardhat-mocha";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
+import { configVariable, defineConfig, type HardhatUserConfig } from "hardhat/config";
 
 loadEnv();
 
@@ -31,14 +34,21 @@ if (process.env.ARC_TESTNET_RPC_URL) {
 }
 
 export default defineConfig({
+  plugins: [hardhatIgnition, hardhatIgnitionViem, hardhatNetworkHelpers, hardhatViem, hardhatMocha, hardhatVerify],
   solidity: {
     version: "0.8.24",
     settings: {
       optimizer: {
         enabled: true,
         runs: 200
-      }
+      },
+      viaIR: true
     }
   },
-  networks
+  networks,
+  verify: {
+    etherscan: {
+      apiKey: configVariable("ETHERSCAN_API_KEY"),
+    },
+  },
 });

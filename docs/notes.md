@@ -59,7 +59,7 @@ Next: Frontend integration"
   --click "https://github.com/Gater-Robot/gater-robot/issues/12" \
   "Completed: Initialize monorepo structure
 
-- Created apps/bot, apps/web, convex/
+- Created apps/bot, apps/webapp, convex/
 - Set up pnpm workspace
 - Added turbo.json"
 ```

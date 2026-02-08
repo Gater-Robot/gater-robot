@@ -1,0 +1,25 @@
+import { createConfig, http } from 'wagmi'
+import { injected } from 'wagmi/connectors'
+import { defineChain } from 'viem'
+
+const chainId = Number(import.meta.env.VITE_CHAIN_ID || 8453)
+const chainName = String(import.meta.env.VITE_CHAIN_NAME || 'Base')
+const rpcUrl = String(import.meta.env.VITE_RPC_URL || 'https://mainnet.base.org')
+const explorerUrl = String(import.meta.env.VITE_EXPLORER_URL || 'https://basescan.org')
+
+export const appChain = defineChain({
+  id: chainId,
+  name: chainName,
+  network: chainName.toLowerCase().replace(/\s+/g, '-'),
+  nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  rpcUrls: { default: { http: [rpcUrl] } },
+  blockExplorers: { default: { name: 'Explorer', url: explorerUrl } },
+})
+
+export const wagmiConfig = createConfig({
+  chains: [appChain],
+  connectors: [injected({ shimDisconnect: true })],
+  transports: {
+    [appChain.id]: http(rpcUrl),
+  },
+})

@@ -1,5 +1,62 @@
 # Gater Robot
 
+Run 4 terminals (outside vscode to avoid port forwarding fights with remote-ssh)
+```sh
+cloudflared tunnel run gater
+pnpm convex dev
+pnpm --filter @gater/webapp dev
+pnpm -F @gater/bot
+```
+BEST Token: https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
+
+## Base Mainnet Contracts
+
+- `BEST` token (legacy faucet/community token): https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
+- `SubscriptionFactory` (creates `SubscriptionDaysToken` and initializes product pools/hooks): https://basescan.org/address/0xFe51bfd14338905bbdAC5b247b35e437D032d45B#code
+- `SubscriptionRouter` (user entrypoint for `buyExactOut`, `refundExactIn`, `refundAll`): https://basescan.org/address/0x236E648B7aE896C74d303e1c5d0884cAaA70D136#code
+- `SubscriptionDaysToken` (current SUB days token for demo product): https://basescan.org/address/0xd0280d98B1a67996932f13F8D56cbA556a1ea48B#code
+- `SubscriptionHook` (Uniswap v4 hook enforcing subscription pricing/refund logic): https://basescan.org/address/0x2F16784d3D46f53dE7c01D0A1c067fE29EF78A88#code
+- `MockUSDC` (demo-only payment token, 6 decimals, not real USDC): https://basescan.org/address/0x5302c4F76B202d6CE60B61eA43E3d8A0851ABb93#code
+- `PoolManager` (Uniswap v4 core dependency used by hook/router): https://basescan.org/address/0x498581fF718922c3f8e6A244956aF099B2652b2b#code
+
+## Branching, PR, and release pattern
+
+```mermaid
+gitGraph
+   commit id: "main baseline"
+   branch develop
+   checkout develop
+   commit id: "integration work"
+   branch feat/issue-123
+   checkout feat/issue-123
+   commit id: "feature impl"
+   commit id: "tests + docs"
+   checkout develop
+   merge feat/issue-123 tag: "PR -> develop"
+
+   branch sprint4-beta
+   checkout sprint4-beta
+   commit id: "UAT candidate"
+   branch fix/uat-hotfix
+   checkout fix/uat-hotfix
+   commit id: "uat fix"
+   checkout sprint4-beta
+   merge fix/uat-hotfix tag: "PR -> sprint branch"
+   checkout develop
+   merge fix/uat-hotfix tag: "back-merge fix"
+
+   checkout main
+   merge sprint4-beta tag: "release tag vX.Y.Z"
+   checkout develop
+   merge main tag: "sync from main"
+```
+
+Flow summary:
+- `develop` is the default integration branch
+- feature branches are cut from `develop` and merged to `develop` via PR
+- sprint/release candidate branches (e.g. `sprint4-beta`, `sprint2-rc`) are cut from `develop` for UAT
+- fixes found during UAT are merged to sprint branch and back-merged to `develop`
+- final release is merged from sprint branch to `main` and tagged, then `main` is synced back into `develop`
 
 >**Elevator pitch**
 >
@@ -18,7 +75,7 @@ Open in Telegram [@GaterRobot](https://t.me/gaterrobot)
 
 ---
 
-## Development tunnel (Cloudflare Quick Tunnel)
+## Development tunnel (Cloudflare Tunnel)
 
 Telegram Mini Apps must be served from a **public HTTPS URL** during development. We use Cloudflare Quick Tunnel
 to expose the local Mini App so it can be opened inside Telegram.
@@ -29,17 +86,34 @@ to expose the local Mini App so it can be opened inside Telegram.
 **Run the Mini App and tunnel**
 ```bash
 # terminal 1: run the web app (assumes it starts on :5173)
-pnpm --filter @gater/web dev
+pnpm --filter @gater/webapp dev
 
-# terminal 2: expose it publicly
-cloudflared tunnel --url http://localhost:5173
+# terminal 2: expose it publicly (named tunnel)
+cloudflared tunnel run gater
 ```
 
-Cloudflared will print a public HTTPS URL (e.g. `https://<random>.trycloudflare.com`). Use this URL when
-opening the Mini App in Telegram (and for any `startapp` deep links). Avoid committing personal tunnel URLs.
+Dev URL: `https://gater-dev.agentix.bot`  
+Prod URL: `https://gater-app.agentix.bot`
 
 ---
 
 ## Hackathon plan
 
 See `docs/FINAL_PLAN.md` for the reconciled 5‑day demo plan and where the older planning docs diverge.
+
+---
+
+## Webapp migration
+
+`apps/web` has been removed. `apps/webapp` is the only maintained mini-app.
+See `docs/WEBAPP_MIGRATION_PLAN.md` for historical migration notes.
+
+---
+
+## Credits
+
+- **Scaffold-ETH 2** — multi-chain dapp patterns and tooling inspiration.
+- **ethid.org** / **ethereum-identity-kit** — identity + SIWE UX building blocks.
+- **ENS** — Ethereum identity primitives and ecosystem.
+- **LI.FI** — cross-chain swap/bridge infrastructure and widget.
+- **ETHGlobal Hacker Pass NFT** — hackathon participation and access.

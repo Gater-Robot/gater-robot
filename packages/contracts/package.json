@@ -3,26 +3,66 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
+    }
+  },
   "scripts": {
     "build": "hardhat compile",
     "test": "hardhat test",
     "test:forge": "forge test",
+    "node:hardhat": "hardhat node --hostname 127.0.0.1 --port 8545",
     "deploy": "tsx scripts/deploy.ts",
-    "deploy:base": "hardhat ignition deploy ignition/modules/BestToken.ts --network base",
-    "deploy:arc": "hardhat ignition deploy ignition/modules/BestToken.ts --network arc",
-    "sync:addresses": "node scripts/sync-addresses.mjs"
+    "deploy:subs:hh:01": "hardhat run scripts/subscriptions/01-deploy-mock-usdc.ts",
+    "deploy:subs:hh:02": "hardhat run scripts/subscriptions/02-deploy-infra.ts",
+    "deploy:subs:hh:03": "hardhat run scripts/subscriptions/03-create-token.ts",
+    "deploy:subs:hh:04": "hardhat run scripts/subscriptions/04-mine-hook-salt.ts",
+    "deploy:subs:hh:05": "hardhat run scripts/subscriptions/05-setup-product.ts",
+    "deploy:subs:hh:06": "hardhat run --build-profile default scripts/subscriptions/06-verify.ts",
+    "deploy:subs:base:01": "hardhat run scripts/subscriptions/01-deploy-mock-usdc.ts --network base",
+    "deploy:subs:base:02": "hardhat run scripts/subscriptions/02-deploy-infra.ts --network base",
+    "deploy:subs:base:03": "hardhat run scripts/subscriptions/03-create-token.ts --network base",
+    "deploy:subs:base:04": "hardhat run scripts/subscriptions/04-mine-hook-salt.ts --network base",
+    "deploy:subs:base:05": "hardhat run scripts/subscriptions/05-setup-product.ts --network base",
+    "deploy:subs:base:06": "hardhat run --build-profile default scripts/subscriptions/06-verify.ts --network base",
+    "deploy:subs:infra": "forge script script/DeploySubscriptionsInfra.s.sol:DeploySubscriptionsInfra --broadcast",
+    "deploy:subs:mock-usdc": "forge script script/DeployMockUSDC.s.sol:DeployMockUSDC --broadcast",
+    "deploy:subs:local:stack": "forge script script/DeployLocalSubscriptionsStack.s.sol:DeployLocalSubscriptionsStack --use 0.8.26 --rpc-url http://127.0.0.1:8545 --broadcast",
+    "deploy:subs:create-token": "forge script script/CreateSubscriptionToken.s.sol:CreateSubscriptionToken --broadcast",
+    "deploy:subs:create-token:local": "forge script script/CreateSubscriptionToken.s.sol:CreateSubscriptionToken --rpc-url http://127.0.0.1:8545 --broadcast",
+    "deploy:subs:create": "forge script script/CreateSubscriptionProduct.s.sol:CreateSubscriptionProduct --broadcast",
+    "deploy:subs:create:local": "forge script script/CreateSubscriptionProduct.s.sol:CreateSubscriptionProduct --rpc-url http://127.0.0.1:8545 --broadcast",
+    "deploy:subs:demo": "forge script script/DemoBuyRefund.s.sol:DemoBuyRefund --broadcast",
+    "deploy:subs:demo:local": "forge script script/DemoBuyRefund.s.sol:DemoBuyRefund --rpc-url http://127.0.0.1:8545 --broadcast",
+    "mine:hook-salt": "forge script script/MineHookSalt.s.sol:MineHookSalt -vvvv",
+    "deploy:base": "hardhat ignition deploy ignition/modules/BestEthGlobal2026Token.ts --network base",
+    "deploy:arc": "hardhat ignition deploy ignition/modules/BestEthGlobal2026Token.ts --network arcTestnet",
+    "sync:addresses": "node scripts/sync-addresses.mjs",
+    "sync:subs:addresses": "node scripts/sync-subscription-addresses.mjs"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "3.0.7",
     "@nomicfoundation/hardhat-ignition-viem": "3.0.7",
+    "@nomicfoundation/hardhat-mocha": "3.0.9",
+    "@nomicfoundation/hardhat-network-helpers": "3.0.3",
+    "@nomicfoundation/hardhat-verify": "^3.0.9",
     "@nomicfoundation/hardhat-viem": "3.0.2",
+    "@types/mocha": "10",
+    "@types/node": "20",
     "dotenv": "16.6.1",
     "hardhat": "3.1.6",
+    "mocha": "11",
     "tsx": "4.19.2",
     "typescript": "5.9.2",
     "viem": "2.45.1"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "5.0.2"
+    "@openzeppelin/contracts": "5.0.2",
+    "@uniswap/v4-core": "1.0.2",
+    "@uniswap/v4-periphery": "1.0.3"
   }
 }

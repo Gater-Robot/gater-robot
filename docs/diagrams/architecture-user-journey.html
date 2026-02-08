@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gatekeeper User Journey</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0c10;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px;
+  }
+
+  .diagram {
+    width: 1800px;
+    max-width: 100%;
+  }
+
+  .title-bar {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+
+  .title-bar h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.5px;
+  }
+
+  .title-bar .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 4px;
+  }
+
+  /* Swim lanes */
+  .lanes {
+    position: relative;
+  }
+
+  .lane {
+    display: grid;
+    grid-template-columns: 140px repeat(8, 1fr);
+    gap: 12px;
+    padding: 18px 0;
+    border-bottom: 1px solid #1e293b;
+    min-height: 110px;
+    align-items: center;
+  }
+
+  .lane:nth-child(even) {
+    background: #0d0f14;
+  }
+
+  .lane:nth-child(odd) {
+    background: #0a0c10;
+  }
+
+  .lane:last-child {
+    border-bottom: none;
+  }
+
+  .lane-label {
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .lane-label .name {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .lane-label .tech {
+    font-size: 9px;
+    color: #475569;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .lane-label .icon-char {
+    font-size: 20px;
+    margin-bottom: 2px;
+  }
+
+  /* Lane colors */
+  .lane-user .lane-label .name { color: #60a5fa; }
+  .lane-telegram .lane-label .name { color: #38bdf8; }
+  .lane-convex .lane-label .name { color: #c084fc; }
+  .lane-chain .lane-label .name { color: #fbbf24; }
+
+  /* Step cards */
+  .step {
+    position: relative;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    line-height: 1.4;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .step-active {
+    background: #1a1d27;
+    border: 1px solid #ffffff10;
+  }
+
+  .step-num {
+    position: absolute;
+    top: -8px;
+    left: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    z-index: 5;
+  }
+
+  .step-title {
+    font-weight: 600;
+    font-size: 11px;
+    margin-bottom: 3px;
+  }
+
+  .step-detail {
+    font-size: 10px;
+    color: #94a3b8;
+    line-height: 1.35;
+  }
+
+  /* Status badges */
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 100px;
+    margin-top: 6px;
+    width: fit-content;
+    letter-spacing: 0.3px;
+  }
+
+  .status-red {
+    background: #ef444420;
+    color: #f87171;
+    border: 1px solid #ef444430;
+  }
+
+  .status-green {
+    background: #22c55e20;
+    color: #4ade80;
+    border: 1px solid #22c55e30;
+  }
+
+  .status-yellow {
+    background: #eab30820;
+    color: #fbbf24;
+    border: 1px solid #eab30830;
+  }
+
+  .status-blue {
+    background: #3b82f620;
+    color: #60a5fa;
+    border: 1px solid #3b82f630;
+  }
+
+  /* Step number colors */
+  .num-red { background: #ef4444; color: #fff; }
+  .num-green { background: #22c55e; color: #fff; }
+  .num-yellow { background: #eab308; color: #000; }
+  .num-blue { background: #3b82f6; color: #fff; }
+  .num-purple { background: #8b5cf6; color: #fff; }
+
+  /* Vertical connection lines between lanes */
+  .vline {
+    position: absolute;
+    width: 1.5px;
+    background: linear-gradient(to bottom, transparent, #475569, transparent);
+    z-index: 1;
+    opacity: 0.3;
+  }
+
+  /* Time skip indicator */
+  .time-skip {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .time-skip-label {
+    background: #1e293b;
+    border: 1px dashed #475569;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  /* Arrow between steps */
+  .flow-arrow {
+    position: absolute;
+    top: 50%;
+    right: -10px;
+    transform: translateY(-50%);
+    color: #475569;
+    font-size: 12px;
+    z-index: 3;
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid #1e293b;
+  }
+
+  .footer-left {
+    font-size: 11px;
+    color: #475569;
+  }
+
+  .legend {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #64748b;
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  /* Column headers */
+  .col-headers {
+    display: grid;
+    grid-template-columns: 140px repeat(8, 1fr);
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #1e293b;
+    margin-bottom: 0;
+  }
+
+  .col-header {
+    text-align: center;
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #475569;
+    padding: 0 4px;
+  }
+
+  .col-header .step-label {
+    font-size: 8px;
+    color: #334155;
+    margin-top: 2px;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+</style>
+</head>
+<body>
+<div class="diagram">
+  <div class="title-bar">
+    <h1>User Journey &mdash; Token-Gated Access Flow</h1>
+    <div class="subtitle">From rejection to recovery: the complete Gatekeeper experience</div>
+  </div>
+
+  <!-- Column headers -->
+  <div class="col-headers">
+    <div></div>
+    <div class="col-header">1. Try to Join<div class="step-label">First attempt</div></div>
+    <div class="col-header">2. Rejected<div class="step-label">No tokens</div></div>
+    <div class="col-header">3. Onboard<div class="step-label">Connect + sign</div></div>
+    <div class="col-header">4. Get Tokens<div class="step-label">Mint / buy</div></div>
+    <div class="col-header">5. Eligible<div class="step-label">Balance check</div></div>
+    <div class="col-header">6. Access<div class="step-label">Join group</div></div>
+    <div class="col-header">7. Warning<div class="step-label">24h re-check</div></div>
+    <div class="col-header">8. Recovery<div class="step-label">LiFi cross-chain</div></div>
+  </div>
+
+  <div class="lanes">
+    <!-- LANE 1: User -->
+    <div class="lane lane-user">
+      <div class="lane-label">
+        <div class="icon-char">&#x1F469;</div>
+        <div class="name">User (Amelia)</div>
+        <div class="tech">Wallet + ENS</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-blue">1</span>
+        <div class="step-title">Clicks &ldquo;Join Private Club&rdquo;</div>
+        <div class="step-detail">Pinned message in public chat</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-red">2</span>
+        <div class="step-title">Denied!</div>
+        <div class="step-detail">Friendly rejection with CTA</div>
+        <div class="status status-red">&#x2717; REJECTED</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-blue">3</span>
+        <div class="step-title">Opens Mini-App</div>
+        <div class="step-detail">Connects wallet, signs SIWE message</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-blue">4</span>
+        <div class="step-title">Mints $BEST</div>
+        <div class="step-detail">Claims 2026 tokens from faucet</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-green">5</span>
+        <div class="step-title">Checks eligibility</div>
+        <div class="step-detail">3 wallets summed: 2026 &ge; 1000</div>
+        <div class="status status-green">&#x2713; ELIGIBLE</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-green">6</span>
+        <div class="step-title">Joins private chat</div>
+        <div class="step-detail">Welcome message + hype chat</div>
+        <div class="status status-green">&#x2713; ACCESS</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-yellow">7</span>
+        <div class="step-title">Sells tokens</div>
+        <div class="step-detail">Balance drops below threshold</div>
+        <div class="status status-yellow">&#x26A0; WARNING</div>
+      </div>
+
+      <div class="step step-active">
+        <span class="step-num num-green">8</span>
+        <div class="step-title">Cross-chain swap</div>
+        <div class="step-detail">Arb USDC &rarr; Base $BEST via LiFi</div>
+        <div class="status status-green">&#x2713; RECOVERED</div>
+      </div>
+    </div>
+
+    <!-- LANE 2: Telegram -->
+    <div class="lane lane-telegram">
+      <div class="lane-label">
+        <div class="icon-char">&#x1F4AC;</div>
+        <div class="name">Telegram</div>
+        <div class="tech">Bot + Chats</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Public chat &ldquo;Best Crypto DAO&rdquo; &#x2014; dead chat vibes, bot cast complaining</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Bot sends rejection DM with &ldquo;Get Eligible&rdquo; button linking to mini-app</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Mini-App opens in Telegram webview via deep link</div>
+      </div>
+
+      <div class="step"></div>
+
+      <div class="step"></div>
+
+      <div class="step step-active">
+        <div class="step-detail">Private chat &ldquo;BCD Holders Club&rdquo; &#x2014; hype chat, countdown pinned</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Bot sends WARNING DM: &ldquo;Balance dropped! You need 1000 $BEST&rdquo;</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Bot confirms: &ldquo;Detected 2001 $BEST &#x2014; welcome back!&rdquo;</div>
+      </div>
+    </div>
+
+    <!-- LANE 3: Convex -->
+    <div class="lane lane-convex">
+      <div class="lane-label">
+        <div class="icon-char">&#x26A1;</div>
+        <div class="name">Convex</div>
+        <div class="tech">Backend + DB</div>
+      </div>
+
+      <div class="step"></div>
+
+      <div class="step step-active">
+        <div class="step-detail">checkEligibility() &#x2014; no verified wallets found</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">HMAC validates initData, verifies SIWE signature, stores address</div>
+      </div>
+
+      <div class="step"></div>
+
+      <div class="step step-active">
+        <div class="step-detail">Sum balances across all verified wallets, compare vs threshold</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Create membership record, status: eligible</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Scheduler re-check: eligible &rarr; warned. Grace period started.</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Re-check triggered: warned &rarr; eligible. Membership restored.</div>
+      </div>
+    </div>
+
+    <!-- LANE 4: Blockchain -->
+    <div class="lane lane-chain">
+      <div class="lane-label">
+        <div class="icon-char">&#x26D3;</div>
+        <div class="name">Blockchain</div>
+        <div class="tech">Multi-chain RPC</div>
+      </div>
+
+      <div class="step"></div>
+
+      <div class="step"></div>
+
+      <div class="step step-active">
+        <div class="step-detail">ENS resolution on Ethereum mainnet (name + avatar)</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">Mint tx on Base: $BEST.mint(amelia, 2026e18)</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">balanceOf() reads on Base, Arbitrum, Ethereum</div>
+      </div>
+
+      <div class="step"></div>
+
+      <div class="step step-active">
+        <div class="step-detail">balanceOf() detects drop below 1000 threshold</div>
+      </div>
+
+      <div class="step step-active">
+        <div class="step-detail">LiFi routes: Arb USDC &rarr; Base $BEST (cross-chain swap)</div>
+        <div class="status status-blue">&#x21C4; CROSS-CHAIN</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      EthGlobal HackMoney 2026 &nbsp;&middot;&nbsp; Gatekeeper User Journey
+    </div>
+    <div class="legend">
+      <div class="legend-item"><div class="legend-dot" style="background: #ef4444;"></div> Rejected</div>
+      <div class="legend-item"><div class="legend-dot" style="background: #22c55e;"></div> Success</div>
+      <div class="legend-item"><div class="legend-dot" style="background: #eab308;"></div> Warning</div>
+      <div class="legend-item"><div class="legend-dot" style="background: #3b82f6;"></div> Action</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

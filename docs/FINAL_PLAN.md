@@ -53,12 +53,12 @@ This is a key differentiator and bounty requirement:
 **Morning: Monorepo Setup**
 - [ ] Initialize pnpm + turborepo workspace
 - [ ] Create `apps/bot` (Node.js, grammY or telegraf)
-- [ ] Create `apps/web` (Vite + React Router)
+- [ ] Create `apps/webapp` (Vite + React Router)
 - [ ] Create `convex/` directory with initial schema
 - [ ] Set up environment variables (.env.example)
 
 **Afternoon: ETH Identity Kit Spike**
-- [ ] Install `ethereum-identity-kit` in apps/web
+- [ ] Install `ethereum-identity-kit` in apps/webapp
 - [ ] Test ENS resolution components
 - [ ] Test SIWE integration
 - [ ] **Decision point:** Does it simplify our flow enough to adopt?

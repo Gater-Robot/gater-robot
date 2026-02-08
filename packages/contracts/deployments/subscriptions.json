@@ -1,0 +1,32 @@
+{
+  "base": {
+    "chainId": 8453,
+    "factory": "0xFe51bfd14338905bbdAC5b247b35e437D032d45B",
+    "router": "0x236E648B7aE896C74d303e1c5d0884cAaA70D136",
+    "poolManager": "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+    "usdc": "0x5302c4F76B202d6CE60B61eA43E3d8A0851ABb93",
+    "sampleToken": "0xd0280d98B1a67996932f13F8D56cbA556a1ea48B",
+    "sampleHook": "0x2F16784d3D46f53dE7c01D0A1c067fE29EF78A88",
+    "updatedAt": "2026-02-08T16:09:20.104Z"
+  },
+  "baseSepolia": {
+    "chainId": 84532,
+    "factory": "",
+    "router": "",
+    "poolManager": "",
+    "usdc": "",
+    "sampleToken": "",
+    "sampleHook": "",
+    "updatedAt": ""
+  },
+  "arcTestnet": {
+    "chainId": 5042002,
+    "factory": "",
+    "router": "",
+    "poolManager": "",
+    "usdc": "",
+    "sampleToken": "",
+    "sampleHook": "",
+    "updatedAt": ""
+  }
+}

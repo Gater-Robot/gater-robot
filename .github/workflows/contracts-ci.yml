@@ -1,0 +1,48 @@
+name: Contracts CI
+
+on:
+  push:
+    paths:
+      - "packages/contracts/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/contracts-ci.yml"
+  pull_request:
+    paths:
+      - "packages/contracts/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/contracts-ci.yml"
+
+jobs:
+  contracts:
+    name: Hardhat + Forge
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+
+      - name: Hardhat compile
+        run: pnpm --filter @gater/contracts build
+
+      - name: Hardhat tests
+        run: pnpm --filter @gater/contracts test
+
+      - name: Forge tests
+        run: pnpm --filter @gater/contracts test:forge

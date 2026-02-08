@@ -1,0 +1,81 @@
+# Worklog
+
+## 2026-02-08
+- Started implementation request.
+- Saved approved implementation plan to `docs/SUBSCRIPTIONS_V4_IMPLEMENTATION_PLAN.md`.
+- Created this `worklog.md` and will keep it updated during execution.
+- Added `TODO.md` with active task tracking per your request.
+- Installed pinned v4 dependencies in `@gater/contracts`: `@uniswap/v4-core@1.0.2`, `@uniswap/v4-periphery@1.0.3`.
+- Next: align contract code with installed v4 interfaces and implement subscriptions contracts.
+- Added subscriptions contracts under `packages/contracts/contracts/subscriptions`.
+- Added `burn(uint256)` (MINTER_ROLE gated) to `SubscriptionDaysToken` and corresponding test coverage.
+- Added Foundry script suite: mine salt, deploy infra, create product, demo buy/refund.
+- Resolved v4 type-path compatibility and hardhat stack-depth issues (`viaIR` enabled).
+- `pnpm --filter @gater/contracts build` now passes.
+- Added subscription ABI/address exports in `packages/contracts/src`.
+- Added subscription deployment schema file: `packages/contracts/deployments/subscriptions.json`.
+- Added `scripts/sync-subscription-addresses.mjs` for operational address updates.
+- Added Foundry test files for pricing and minter burn behavior.
+- Hardhat JS/TS tests are not currently runnable due missing Hardhat test-runner plugin configuration; hardhat compile passes.
+- Foundry test execution is currently blocked in this environment (`forge` binary missing).
+- Updated `packages/contracts/README.md` with manual runbook, pre-flight checklist, and UAT checklist.
+- Validation run: hardhat compile passes; hardhat test command runs with no configured JS/TS runner; forge tests/scripts blocked by missing `forge` binary.
+- Attempted completion notification via `ntfy_send`; command failed because binary is not installed in this environment.
+- Starting follow-up execution: Foundry install/run, Hardhat TS test-runner wiring, and local sub-store integration pass.
+- Installed Foundry toolchain (`forge`, `cast`, `anvil`, `chisel`) via `foundryup`.
+- Foundry uncovered mixed v4 type imports between `@uniswap/v4-core` and `@uniswap/v4-periphery/lib/v4-core`; normalizing all subscription imports to `@uniswap/v4-core`.
+- Applying unified import strategy: subscription contracts/scripts use `@uniswap/v4-periphery/lib/v4-core` types, and Foundry remaps `@uniswap/v4-core` to the same tree for BaseHook/SafeCallback compatibility.
+- Enabled Hardhat 3 Mocha test execution by adding `@nomicfoundation/hardhat-mocha` + `@nomicfoundation/hardhat-network-helpers` and wiring plugins in `packages/contracts/hardhat.config.ts`.
+- Fixed JS/TS contract tests for Hardhat 3:
+  - removed invalid `networkHelpers.reset()` usage.
+  - stabilized `SubscriptionDaysToken` decay assertions with same-connection time helpers and bounded bigint tolerance.
+- Validation run (follow-up): `pnpm --filter @gater/contracts test` now passes with 12/12 tests.
+- Validation run: `pnpm --filter @gater/contracts build` passes.
+- Validation run: Forge suite passes (6/6) using `~/.foundry/bin/forge` / PATH-adjusted `pnpm --filter @gater/contracts test:forge`.
+- Added contracts CI workflow `.github/workflows/contracts-ci.yml` to run Hardhat compile/tests plus Forge tests on PR/push for `packages/contracts`.
+- Ran local sub-store verification step: `pnpm --filter @gater/sub-store build` passes (non-blocking Vite chunk-size warning only).
+- Added local-first deployment support for users who prefer Hardhat chain:
+  - `packages/contracts/script/DeployLocalSubscriptionsStack.s.sol`
+  - `packages/contracts/script/DeployMockUSDC.s.sol`
+  - package scripts + `.env.example` + `README.md` updates.
+- Added local convenience script wrappers:
+  - `deploy:subs:create:local`
+  - `deploy:subs:demo:local`
+- Fixed local deployment compiler mismatch reported by user:
+  - Foundry config now auto-detects per-file solc versions.
+  - `deploy:subs:local:stack` explicitly uses solc `0.8.26` for Uniswap `PoolManager.sol`.
+  - Verified with Forge compile/build path including `PoolManager` from v4-core.
+- Added `.gitignore` entry for generated Foundry broadcast artifacts: `packages/contracts/broadcast/`.
+- Improved salt and setup flow:
+  - `MineHookSalt.s.sol` now supports either explicit `SUB_TOKEN` or prediction from `FACTORY` nonce.
+  - `MineHookSalt.s.sol` now defaults deployer to `FACTORY`, supports default fee/tick spacing, and configurable `SALT_SEARCH_MAX`.
+  - Added `CreateSubscriptionToken.s.sol` for explicit token creation step.
+  - `CreateSubscriptionProduct.s.sol` now supports both modes: create new token or use provided `SUB_TOKEN`.
+  - Added package scripts: `deploy:subs:create-token` and `deploy:subs:create-token:local`.
+- Added deployment workflow doc with copy/paste commands:
+  - `docs/SUBSCRIPTIONS_DEPLOY_WORKFLOW.md`
+  - includes local Hardhat, UI local run, Base Sepolia dry run, Base mainnet sequence, and troubleshooting.
+- Added C4 architecture doc focused on Telegram bot + Mini App + Convex:
+  - `docs/TELEGRAM_MINIAPP_CONVEX_C4.md`
+  - includes C4 Level 1 (System Context) and C4 Level 2 (Container) Mermaid diagrams.
+- Added coupon packet diagram doc for planned `hookData` coupon extension:
+  - `docs/COUPON_PACKET_DIAGRAM.md`
+  - includes packet field layout, signed payload model, and swap validation flow.
+- Added Mermaid architecture-beta diagram doc:
+  - `docs/TELEGRAM_MINIAPP_CONVEX_ARCHITECTURE_BETA.md`
+  - maps users, Telegram platform, bot/mini-app containers, Convex, and Web3 dependencies.
+- Added repository branching/PR/release `gitGraph` diagram to root README:
+  - `README.md`
+  - shows feature branch -> PR merge -> release branch -> version tag pattern.
+- Corrected README branching graph to actual repo pattern:
+  - `develop` as integration branch
+  - feature PRs into `develop`
+  - sprint/UAT branches (e.g. `sprint4-beta`, `sprint2-rc`)
+  - release merge to `main` with tag and back-sync to `develop`.
+- Verified contracts stack after updates:
+  - `pnpm --filter @gater/contracts build` passes.
+  - `pnpm --filter @gater/contracts test` passes (12/12).
+  - `pnpm --filter @gater/contracts test:forge` passes (6/6) when Foundry is on PATH.
+- Added local sub-store token tools page (`/tokens`) with wallet add-token actions for:
+  - SUB token using generated base64 SVG (+1 on gold coin).
+  - fake USDC token using Circle official token logo SVG (scaled to 128x128, base64 embedded).
