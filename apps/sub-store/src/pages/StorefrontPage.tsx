@@ -88,6 +88,7 @@ export default function StorefrontPage() {
     abi: SUBSCRIPTION_HOOK_ABI,
     functionName: 'pricing',
   })
+  const refundsEnabledFromPricing = Boolean((pricingData as any)?.refundsEnabled ?? (pricingData as any)?.[6] ?? true)
 
   const { data: reserveUsdc, refetch: refetchReserve } = useReadContract({
     address: hook,
@@ -119,23 +120,27 @@ export default function StorefrontPage() {
     abi: SUBSCRIPTION_HOOK_ABI,
     functionName: 'quoteRefundExactIn',
     args: [toSubUnits(7)],
+    query: { enabled: refundsEnabledFromPricing },
   })
   const { data: refundQuote30, refetch: refetchRefund30 } = useReadContract({
     address: hook,
     abi: SUBSCRIPTION_HOOK_ABI,
     functionName: 'quoteRefundExactIn',
     args: [toSubUnits(30)],
+    query: { enabled: refundsEnabledFromPricing },
   })
   const { data: refundQuote365, refetch: refetchRefund365 } = useReadContract({
     address: hook,
     abi: SUBSCRIPTION_HOOK_ABI,
     functionName: 'quoteRefundExactIn',
     args: [toSubUnits(365)],
+    query: { enabled: refundsEnabledFromPricing },
   })
 
   const pricing = pricingData as any
-  const refundsEnabled = Boolean(pricing?.refundsEnabled ?? pricing?.[6])
+  const refundsEnabled = refundsEnabledFromPricing
   const enforceMinMonthly = Boolean(pricing?.enforceMinMonthly ?? pricing?.[5])
+  const buyTiers = enforceMinMonthly ? [30, 365] : [...BUY_TIERS]
 
   const buyQuotes: Record<number, bigint> = {
     7: buyQuote7 ?? 0n,
@@ -438,7 +443,7 @@ export default function StorefrontPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {BUY_TIERS.map((days) => (
+        {buyTiers.map((days) => (
           <PricingTier
             key={`buy-${days}`}
             title={`${days} days`}
@@ -490,7 +495,7 @@ export default function StorefrontPage() {
           </Button>
         </div>
         <div className="grid gap-2 md:grid-cols-3">
-          {BUY_TIERS.map((days) => (
+          {buyTiers.map((days) => (
             <div key={`fallback-${days}`} className="rounded-xl border border-white/10 bg-black/30 p-3 text-sm">
               <div className="font-bold">{days} days</div>
               <div className="mt-2 flex gap-2">

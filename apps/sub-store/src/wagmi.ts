@@ -2,10 +2,10 @@ import { createConfig, http } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 import { defineChain } from 'viem'
 
-const chainId = Number(import.meta.env.VITE_CHAIN_ID || 11155111)
-const chainName = String(import.meta.env.VITE_CHAIN_NAME || 'Hackathon')
-const rpcUrl = String(import.meta.env.VITE_RPC_URL || 'https://rpc.sepolia.org')
-const explorerUrl = String(import.meta.env.VITE_EXPLORER_URL || 'https://sepolia.etherscan.io')
+const chainId = Number(import.meta.env.VITE_CHAIN_ID || 8453)
+const chainName = String(import.meta.env.VITE_CHAIN_NAME || 'Base')
+const rpcUrl = String(import.meta.env.VITE_RPC_URL || 'https://mainnet.base.org')
+const explorerUrl = String(import.meta.env.VITE_EXPLORER_URL || 'https://basescan.org')
 
 export const appChain = defineChain({
   id: chainId,
