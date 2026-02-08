@@ -155,6 +155,50 @@ export const SUBSCRIPTION_ROUTER_ABI = [
 export const SUBSCRIPTION_HOOK_ABI = [
   {
     type: "function",
+    name: "owner",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }]
+  },
+  {
+    type: "function",
+    name: "router",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }]
+  },
+  {
+    type: "function",
+    name: "subToken",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }]
+  },
+  {
+    type: "function",
+    name: "usdcToken",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [{ name: "", type: "address" }]
+  },
+  {
+    type: "function",
+    name: "pricing",
+    stateMutability: "view",
+    inputs: [],
+    outputs: [
+      { name: "basePriceUsdc", type: "uint64" },
+      { name: "monthlyBundleTokens", type: "uint32" },
+      { name: "monthlyBundlePriceUsdc", type: "uint64" },
+      { name: "yearlyBundleTokens", type: "uint32" },
+      { name: "yearlyBundlePriceUsdc", type: "uint64" },
+      { name: "enforceMinMonthly", type: "bool" },
+      { name: "refundsEnabled", type: "bool" },
+      { name: "refundPriceUsdc", type: "uint64" }
+    ]
+  },
+  {
+    type: "function",
     name: "quoteBuyExactOut",
     stateMutability: "view",
     inputs: [{ name: "subOutAmount", type: "uint256" }],

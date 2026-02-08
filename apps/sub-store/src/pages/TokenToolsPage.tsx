@@ -3,13 +3,10 @@ import { isAddress } from 'viem'
 import { useAccount, useReadContract } from 'wagmi'
 import { Button, Card, Input, Label, Pill } from '../components/ui'
 import { erc20Abi } from '../lib/abi'
-import { mustGetAddress, getOptionalAddress } from '../lib/env'
+import { contractsConfig } from '../lib/contracts'
 import { loadProducts } from '../lib/storage'
 import { appChain } from '../wagmi'
 import { SUB_ICON_DATA_URI, USDC_ICON_DATA_URI } from '../lib/tokenIcons'
-
-const USDC = mustGetAddress('VITE_USDC_ADDRESS')
-const DEFAULT_SUB = getOptionalAddress('VITE_SUB_TOKEN_ADDRESS')
 
 type WatchAsset = {
   address: `0x${string}`
@@ -51,6 +48,12 @@ async function watchAssetInWallet(asset: WatchAsset) {
 }
 
 export default function TokenToolsPage() {
+  if (!contractsConfig) {
+    return null
+  }
+
+  const USDC = contractsConfig.usdc
+  const DEFAULT_SUB = contractsConfig.subToken
   const { address, isConnected } = useAccount()
   const [subTokenInput, setSubTokenInput] = useState<string>(DEFAULT_SUB ?? '')
   const [status, setStatus] = useState<string | null>(null)

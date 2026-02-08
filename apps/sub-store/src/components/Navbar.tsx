@@ -18,6 +18,8 @@ export function Navbar() {
         </Link>
 
         <div className="ml-2 flex items-center gap-2 text-sm text-white/70">
+          <NavLink to="/product" className={({isActive}) => isActive ? 'text-white' : ''}>Storefront</NavLink>
+          <span className="text-white/20">/</span>
           <NavLink to="/create" className={({isActive}) => isActive ? 'text-white' : ''}>Create</NavLink>
           <span className="text-white/20">/</span>
           <NavLink to="/manage" className={({isActive}) => isActive ? 'text-white' : ''}>Manage</NavLink>

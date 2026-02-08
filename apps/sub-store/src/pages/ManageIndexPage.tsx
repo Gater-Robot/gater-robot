@@ -1,48 +1,46 @@
-import { Link, useNavigate } from 'react-router-dom'
-import { useAccount } from 'wagmi'
-import { useMemo, useState } from 'react'
-import { Card, Button, Input, Label } from '../components/ui'
-import { appChain } from '../wagmi'
-import { loadProducts } from '../lib/storage'
+import { Link } from 'react-router-dom'
+import { Button, Card, Pill } from '../components/ui'
+import { contractsConfig, getContractsConfigSummary } from '../lib/contracts'
 
 export default function ManageIndexPage() {
-  const { address } = useAccount()
-  const navigate = useNavigate()
-  const [poolId, setPoolId] = useState('')
-
-  const products = useMemo(() => loadProducts(appChain.id, address), [address])
+  if (!contractsConfig) {
+    return null
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-black">Manage products</h1>
-        <p className="mt-1 text-white/70">Edit settings + deposit refund reserves.</p>
+        <p className="mt-1 text-white/70">
+          Single-product mode. Use the direct manage page for pricing and reserve operations.
+        </p>
       </div>
 
-      <Card>
-        <Label>Open by PoolId</Label>
-        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
-          <Input value={poolId} onChange={(e) => setPoolId(e.target.value)} placeholder="0x… bytes32 poolId" />
-          <Button onClick={() => navigate(`/manage/${poolId}`)} disabled={!poolId}>Open</Button>
+      <Card className="space-y-3">
+        <div className="flex items-center gap-2">
+          <Pill>Chain: {contractsConfig.chainId}</Pill>
+          <Pill>Router: {contractsConfig.router}</Pill>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/manage">
+            <Button>Open Manage</Button>
+          </Link>
+          <Link to="/product">
+            <Button variant="ghost">Open Storefront</Button>
+          </Link>
         </div>
       </Card>
 
-      {products.length > 0 && (
-        <div className="grid gap-4 md:grid-cols-2">
-          {products.map(p => (
-            <Card key={p.poolId} className="flex items-start justify-between gap-4">
-              <div>
-                <div className="font-bold">{p.name ?? 'SUB Product'}</div>
-                <div className="mt-1 text-sm text-white/60 font-mono">{p.poolId}</div>
-              </div>
-              <div className="flex gap-2">
-                <Link to={`/manage/${p.poolId}`}><Button variant="ghost">Manage</Button></Link>
-                <Link to={`/product/${p.poolId}`}><Button>Storefront</Button></Link>
-              </div>
-            </Card>
+      <Card>
+        <div className="font-bold">Address summary</div>
+        <div className="mt-3 grid gap-2 text-sm text-white/70">
+          {getContractsConfigSummary().map((row) => (
+            <div key={row.label} className="font-mono">
+              {row.label}: {row.address} ({row.source})
+            </div>
           ))}
         </div>
-      )}
+      </Card>
     </div>
   )
 }
