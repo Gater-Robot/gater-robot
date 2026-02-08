@@ -177,4 +177,27 @@ describe("SubscriptionDaysToken", () => {
       parseEther("3")
     );
   });
+
+  it("allows minter role holder to burn from its own balance", async () => {
+    const [admin, minter] = await hre.viem.getWalletClients();
+
+    const contract = await hre.viem.deployContract(
+      "SubscriptionDaysToken",
+      [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
+      { account: admin.account }
+    );
+
+    await contract.write.mint([minter.account.address, parseEther("5")], {
+      account: minter.account
+    });
+
+    await contract.write.burn([parseEther("2")], {
+      account: minter.account
+    });
+
+    assert.equal(
+      await contract.read.balanceOf([minter.account.address]),
+      parseEther("3")
+    );
+  });
 });

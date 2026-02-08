@@ -46,6 +46,10 @@ contract SubscriptionDaysToken is ERC20, AccessControlDefaultAdminRules {
         _mint(to, value);
     }
 
+    function burn(uint256 value) external onlyRole(MINTER_ROLE) {
+        _burn(msg.sender, value);
+    }
+
     function setDecayExempt(address account, bool isExempt) external onlyRole(DEFAULT_ADMIN_ROLE) {
         if (account == address(0)) {
             revert InvalidExemptAccount(account);

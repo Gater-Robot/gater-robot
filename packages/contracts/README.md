@@ -1,57 +1,104 @@
 # @gater/contracts
 
-BEST token contracts, tests, and deployment tooling.
+Contracts, tests, and deployment tooling for:
+- existing BEST token flows (Hardhat + Ignition)
+- new v4 subscription protocol (Foundry-first scripts, shared package exports)
 
-## Quick start
-
+## Quick Start
 ```bash
 pnpm install
 pnpm --filter @gater/contracts build
+pnpm --filter @gater/contracts test
 ```
 
 ## Environment
-
-Copy the example env file and fill in keys:
-
+Copy and configure:
 ```bash
-cp .env.example .env
+cp packages/contracts/.env.example packages/contracts/.env
 ```
 
-Required variables:
+Core vars for legacy Hardhat deploys:
 - `DEPLOYER_PRIVATE_KEY`
 - `BASE_RPC_URL`
 - `ARC_CHAIN_ID`
 - `ARC_TESTNET_RPC_URL`
 
-## Deployments (Hardhat Ignition)
+Core vars for subscription v4 scripts:
+- `PRIVATE_KEY`
+- `POOL_MANAGER`
+- `USDC`
+- `FACTORY`
+- `ROUTER`
+- `HOOK_SALT`
 
+## Legacy Deployments (Hardhat Ignition)
 ```bash
 pnpm --filter @gater/contracts deploy:base
 pnpm --filter @gater/contracts deploy:arc
 pnpm --filter @gater/contracts sync:addresses
 ```
 
-Ignition writes deployment state to `ignition/deployments/` and will reuse it unless you pass `--reset`, which helps avoid redeploying unnecessarily.
+## Subscription v4 Deploy Flow (Foundry)
+Install Foundry + forge-std first:
+```bash
+cd packages/contracts
+forge install foundry-rs/forge-std
+```
+
+Mine hook salt:
+```bash
+pnpm --filter @gater/contracts mine:hook-salt
+```
+
+Deploy factory/router infra:
+```bash
+pnpm --filter @gater/contracts deploy:subs:infra
+```
+
+Create token + setup pool + wire token roles:
+```bash
+pnpm --filter @gater/contracts deploy:subs:create
+```
+
+Run end-to-end demo (buy + refundAll):
+```bash
+pnpm --filter @gater/contracts deploy:subs:demo
+```
+
+Sync subscription addresses artifact:
+```bash
+pnpm --filter @gater/contracts sync:subs:addresses
+```
 
 ## Tests
-
-Hardhat tests:
-
+Hardhat:
 ```bash
 pnpm --filter @gater/contracts test
 ```
 
-Foundry tests:
-
+Foundry:
 ```bash
-forge install OpenZeppelin/openzeppelin-contracts
 pnpm --filter @gater/contracts test:forge
 ```
 
-## Typechain
+## Pre-Flight Checklist
+- [ ] `pnpm --filter @gater/contracts build` passes.
+- [ ] Uniswap v4 dependencies are installed and imports resolve.
+- [ ] `SubscriptionDaysToken` includes role-gated `burn(uint256)`.
+- [ ] Router uses directional `sqrtPriceLimitX96` bounds (`MIN+1` / `MAX-1`).
+- [ ] Hook rejects add/remove liquidity attempts.
+- [ ] Scripts exist for mine/deploy/create/demo.
+- [ ] `deployments/subscriptions.json` is present and writable.
+- [ ] Base Sepolia RPC + funded deployer wallet are configured.
 
-```bash
-pnpm --filter @gater/contracts typechain
-```
-
-Generated types will be written to `packages/contracts/typechain` for consumption by the Mini App.
+## UAT Checklist
+- [ ] Token creation + pool setup script succeeds.
+- [ ] Buy exact out works at 7, 30, 365 token amounts.
+- [ ] Bundle pricing applies only at exact 30/365 amounts.
+- [ ] Refund exact in supports fractional token amounts.
+- [ ] `refundAll` succeeds after waiting for decay progression.
+- [ ] `refundUpTo` clamps to live balance.
+- [ ] Refund fails clearly if hook USDC reserve is insufficient.
+- [ ] Unauthorized swap sender to hook is rejected.
+- [ ] Liquidity modification attempts are rejected by hook.
+- [ ] Existing BEST token compile/test behavior is unchanged.

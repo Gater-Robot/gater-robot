@@ -8,15 +8,21 @@
     "test": "hardhat test",
     "test:forge": "forge test",
     "deploy": "tsx scripts/deploy.ts",
+    "deploy:subs:infra": "forge script script/DeploySubscriptionsInfra.s.sol:DeploySubscriptionsInfra --broadcast",
+    "deploy:subs:create": "forge script script/CreateSubscriptionProduct.s.sol:CreateSubscriptionProduct --broadcast",
+    "deploy:subs:demo": "forge script script/DemoBuyRefund.s.sol:DemoBuyRefund --broadcast",
+    "mine:hook-salt": "forge script script/MineHookSalt.s.sol:MineHookSalt -vvvv",
     "deploy:base": "hardhat ignition deploy ignition/modules/BestEthGlobal2026Token.ts --network base",
     "deploy:arc": "hardhat ignition deploy ignition/modules/BestEthGlobal2026Token.ts --network arcTestnet",
-    "sync:addresses": "node scripts/sync-addresses.mjs"
+    "sync:addresses": "node scripts/sync-addresses.mjs",
+    "sync:subs:addresses": "node scripts/sync-subscription-addresses.mjs"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-ignition": "3.0.7",
     "@nomicfoundation/hardhat-ignition-viem": "3.0.7",
     "@nomicfoundation/hardhat-verify": "^3.0.9",
     "@nomicfoundation/hardhat-viem": "3.0.2",
+    "@types/node": "20",
     "dotenv": "16.6.1",
     "hardhat": "3.1.6",
     "tsx": "4.19.2",
@@ -24,6 +30,8 @@
     "viem": "2.45.1"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "5.0.2"
+    "@openzeppelin/contracts": "5.0.2",
+    "@uniswap/v4-core": "1.0.2",
+    "@uniswap/v4-periphery": "1.0.3"
   }
 }

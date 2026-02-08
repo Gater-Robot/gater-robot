@@ -1,0 +1,32 @@
+{
+  "base": {
+    "chainId": 8453,
+    "factory": "",
+    "router": "",
+    "poolManager": "",
+    "usdc": "",
+    "sampleToken": "",
+    "sampleHook": "",
+    "updatedAt": ""
+  },
+  "baseSepolia": {
+    "chainId": 84532,
+    "factory": "",
+    "router": "",
+    "poolManager": "",
+    "usdc": "",
+    "sampleToken": "",
+    "sampleHook": "",
+    "updatedAt": ""
+  },
+  "arcTestnet": {
+    "chainId": 5042002,
+    "factory": "",
+    "router": "",
+    "poolManager": "",
+    "usdc": "",
+    "sampleToken": "",
+    "sampleHook": "",
+    "updatedAt": ""
+  }
+}
