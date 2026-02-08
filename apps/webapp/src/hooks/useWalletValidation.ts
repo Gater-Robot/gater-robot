@@ -35,23 +35,38 @@ export function useWalletValidation(
     }
 
     // Check duplicates
-    const normalized = getAddress(debouncedValue)
-    const isDuplicate = existingAddresses.some(
-      (a) => getAddress(a.address) === normalized,
-    )
+    try {
+      const normalized = getAddress(debouncedValue)
+      const isDuplicate = existingAddresses.some((a) => {
+        try {
+          return getAddress(a.address) === normalized
+        } catch {
+          // Corrupted address in DB - log and skip
+          console.error(`[gater] Corrupted address in database: ${a.address}`)
+          return false
+        }
+      })
 
-    if (isDuplicate) {
+      if (isDuplicate) {
+        return {
+          isValid: false,
+          error: "Wallet already linked",
+          isDuplicate: true,
+        }
+      }
+
+      return {
+        isValid: true,
+        error: null,
+        isDuplicate: false,
+      }
+    } catch (err) {
+      // Shouldn't happen since isAddress() passed, but protect anyway
       return {
         isValid: false,
-        error: "Wallet already linked",
-        isDuplicate: true,
+        error: "Invalid address format",
+        isDuplicate: false,
       }
-    }
-
-    return {
-      isValid: true,
-      error: null,
-      isDuplicate: false,
     }
   }, [debouncedValue, existingAddresses])
 

@@ -325,10 +325,10 @@ export const deleteAddress = mutation({
 
     // 5. Log event
     await ctx.db.insert('events', {
-      type: 'address_deleted',
+      action: 'address_deleted',
       userId: user._id,
       metadata: { address: address.address },
-      timestamp: Date.now(),
+      createdAt: Date.now(),
     })
 
     return { success: true }

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useMutation } from "convex/react"
 import { CheckIcon, XIcon, Loader2Icon, PlusIcon } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import { Field, FieldError } from "@/components/ui/field"
@@ -22,16 +23,23 @@ export function AddWalletInput({ onAdded }: { onAdded?: () => void }) {
   const { isValid, error, isValidating } = useWalletValidation(value, addresses)
   const addAddressMutation = useMutation(api.ens.addAddress)
   const [isAdding, setIsAdding] = useState(false)
+  const [addError, setAddError] = useState<string | null>(null)
 
   const handleAdd = async () => {
     if (!isValid || !initDataRaw) return
 
     setIsAdding(true)
+    setAddError(null)
     try {
       await addAddressMutation({ address: value.trim(), initDataRaw })
       setValue("") // Clear input on success
+      toast.success("Wallet added successfully")
       onAdded?.()
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to add wallet"
+      setAddError(errorMessage)
+      toast.error(errorMessage)
       console.error("Failed to add wallet:", err)
     } finally {
       setIsAdding(false)
@@ -85,6 +93,7 @@ export function AddWalletInput({ onAdded }: { onAdded?: () => void }) {
       </InputGroup>
 
       {error && <FieldError errors={[{ message: error }]} />}
+      {addError && <FieldError errors={[{ message: addError }]} />}
     </Field>
   )
 }

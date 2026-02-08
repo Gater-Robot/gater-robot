@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useEffect, useMemo, useRef, useState } from "react";
 // `IconCloud` is a client component; use the browser-safe server renderer entry.
 // This avoids TS resolving `react-dom/server` to the Node build (`server.node.js`) under
