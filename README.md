@@ -9,6 +9,30 @@ pnpm -F @gater/bot
 ```
 BEST Token: https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17F14#code
 
+## Branching, PR, and release pattern
+
+```mermaid
+gitGraph
+   commit id: "main"
+   branch feat/issue-123
+   checkout feat/issue-123
+   commit id: "build feature"
+   commit id: "tests/docs"
+   checkout main
+   merge feat/issue-123 tag: "PR merged"
+   commit id: "stabilize"
+   branch release/2026-02-xx
+   checkout release/2026-02-xx
+   commit id: "release fixes"
+   checkout main
+   merge release/2026-02-xx tag: "vX.Y.Z"
+```
+
+Flow summary:
+- branch from `main` -> open PR -> merge back to `main`
+- cut `release/*` branch only when preparing a versioned release
+- merge release branch to `main` and tag the merge commit
+
 >**Elevator pitch**
 >
 >We’re building **Telegram’s missing identity + access layer for crypto communities**: a bot and mini-app that lets admins create **token-gated private channels** in under a minute, and lets users join in seconds.

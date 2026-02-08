@@ -4,6 +4,7 @@
 - [ ] Send completion notification via `ntfy_send`
 
 ## Done
+- [x] Add Mermaid `gitGraph` branching/PR/release pattern to root README
 - [x] Add Mermaid `architecture-beta` diagram for Telegram bot + Mini App + Convex
 - [x] Add coupon packet/data-structure diagram doc for future `hookData` extension
 - [x] Add C4 architecture diagram doc for Telegram bot + Mini App + Convex

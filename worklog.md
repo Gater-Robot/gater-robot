@@ -64,6 +64,9 @@
 - Added Mermaid architecture-beta diagram doc:
   - `docs/TELEGRAM_MINIAPP_CONVEX_ARCHITECTURE_BETA.md`
   - maps users, Telegram platform, bot/mini-app containers, Convex, and Web3 dependencies.
+- Added repository branching/PR/release `gitGraph` diagram to root README:
+  - `README.md`
+  - shows feature branch -> PR merge -> release branch -> version tag pattern.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
