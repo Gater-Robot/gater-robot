@@ -18,6 +18,7 @@ import {
 } from '../lib/contracts'
 import { getExplorerTxUrl } from '../lib/env'
 import { formatUnits } from '../lib/format'
+import { parseHookPricing } from '../lib/pricing'
 import { buildUniswapSwapUrl } from '../lib/uniswap'
 import { appChain } from '../wagmi'
 
@@ -88,7 +89,8 @@ export default function StorefrontPage() {
     abi: SUBSCRIPTION_HOOK_ABI,
     functionName: 'pricing',
   })
-  const refundsEnabledFromPricing = Boolean((pricingData as any)?.refundsEnabled ?? (pricingData as any)?.[6] ?? true)
+  const parsedPricing = useMemo(() => parseHookPricing(pricingData), [pricingData])
+  const refundsEnabledFromPricing = parsedPricing.refundsEnabled
 
   const { data: reserveUsdc, refetch: refetchReserve } = useReadContract({
     address: hook,
@@ -137,9 +139,8 @@ export default function StorefrontPage() {
     query: { enabled: refundsEnabledFromPricing },
   })
 
-  const pricing = pricingData as any
   const refundsEnabled = refundsEnabledFromPricing
-  const enforceMinMonthly = Boolean(pricing?.enforceMinMonthly ?? pricing?.[5])
+  const enforceMinMonthly = parsedPricing.enforceMinMonthly
   const buyTiers = enforceMinMonthly ? [30, 365] : [...BUY_TIERS]
 
   const buyQuotes: Record<number, bigint> = {

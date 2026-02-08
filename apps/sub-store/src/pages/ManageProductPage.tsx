@@ -11,6 +11,7 @@ import {
 } from '../lib/contracts'
 import { getExplorerAddressUrl, getExplorerTxUrl } from '../lib/env'
 import { formatUnits, parseUsdcToUnits } from '../lib/format'
+import { parseHookPricing } from '../lib/pricing'
 import { appChain } from '../wagmi'
 
 export default function ManageProductPage() {
@@ -64,6 +65,7 @@ export default function ManageProductPage() {
     abi: SUBSCRIPTION_HOOK_ABI,
     functionName: 'pricing',
   })
+  const parsedPricing = useMemo(() => parseHookPricing(pricingData), [pricingData])
 
   const { data: subSymbol } = useReadContract({
     address: subToken,
@@ -89,26 +91,15 @@ export default function ManageProductPage() {
     !!address && !!hookOwner && address.toLowerCase() === (hookOwner as string).toLowerCase()
 
   useEffect(() => {
-    if (!pricingData) return
-    const pricing = pricingData as any
-    const base = BigInt(pricing.basePriceUsdc ?? pricing[0] ?? 0)
-    const monthlyBundleTokens = Number(pricing.monthlyBundleTokens ?? pricing[1] ?? 30)
-    const monthlyBundlePriceUsdc = BigInt(pricing.monthlyBundlePriceUsdc ?? pricing[2] ?? 0)
-    const yearlyBundleTokens = Number(pricing.yearlyBundleTokens ?? pricing[3] ?? 365)
-    const yearlyBundlePriceUsdc = BigInt(pricing.yearlyBundlePriceUsdc ?? pricing[4] ?? 0)
-    const enforceMin = Boolean(pricing.enforceMinMonthly ?? pricing[5] ?? false)
-    const refunds = Boolean(pricing.refundsEnabled ?? pricing[6] ?? true)
-    const refund = BigInt(pricing.refundPriceUsdc ?? pricing[7] ?? 0)
-
-    setBasePrice(formatUnits(base, USDC_DECIMALS, 6))
-    setMonthlyTokens(String(monthlyBundleTokens))
-    setMonthlyPrice(formatUnits(monthlyBundlePriceUsdc, USDC_DECIMALS, 6))
-    setYearlyTokens(String(yearlyBundleTokens))
-    setYearlyPrice(formatUnits(yearlyBundlePriceUsdc, USDC_DECIMALS, 6))
-    setEnforceMinMonthly(enforceMin)
-    setRefundsEnabled(refunds)
-    setRefundPrice(formatUnits(refund, USDC_DECIMALS, 6))
-  }, [pricingData])
+    setBasePrice(formatUnits(parsedPricing.basePriceUsdc, USDC_DECIMALS, 6))
+    setMonthlyTokens(String(parsedPricing.monthlyBundleTokens))
+    setMonthlyPrice(formatUnits(parsedPricing.monthlyBundlePriceUsdc, USDC_DECIMALS, 6))
+    setYearlyTokens(String(parsedPricing.yearlyBundleTokens))
+    setYearlyPrice(formatUnits(parsedPricing.yearlyBundlePriceUsdc, USDC_DECIMALS, 6))
+    setEnforceMinMonthly(parsedPricing.enforceMinMonthly)
+    setRefundsEnabled(parsedPricing.refundsEnabled)
+    setRefundPrice(formatUnits(parsedPricing.refundPriceUsdc, USDC_DECIMALS, 6))
+  }, [parsedPricing])
 
   async function runWrite(tx: Promise<`0x${string}`>) {
     if (!publicClient) {

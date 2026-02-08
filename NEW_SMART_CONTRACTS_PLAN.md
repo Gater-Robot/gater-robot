@@ -811,6 +811,7 @@ import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 import {PoolKey} from "v4-core/src/types/PoolKey.sol";
 import {Currency} from "v4-core/src/types/Currency.sol";
 import {BalanceDelta} from "v4-core/src/types/BalanceDelta.sol";
+import {TickMath} from "v4-core/src/libraries/TickMath.sol";
 
 contract SubscriptionRouter is SafeCallback {
     using SafeTransferLib for address;
@@ -1018,7 +1019,9 @@ contract SubscriptionRouter is SafeCallback {
             IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
                 zeroForOne: zeroForOne,
                 amountSpecified: int256(d.subAmount),
-                sqrtPriceLimitX96: 0
+                sqrtPriceLimitX96: zeroForOne
+                    ? TickMath.MIN_SQRT_PRICE + 1
+                    : TickMath.MAX_SQRT_PRICE - 1
             });
 
             BalanceDelta _ = poolManager.swap(key, params, d.hookData);
@@ -1040,7 +1043,9 @@ contract SubscriptionRouter is SafeCallback {
             IPoolManager.SwapParams memory params = IPoolManager.SwapParams({
                 zeroForOne: zeroForOne,
                 amountSpecified: -int256(d.subAmount),
-                sqrtPriceLimitX96: 0
+                sqrtPriceLimitX96: zeroForOne
+                    ? TickMath.MIN_SQRT_PRICE + 1
+                    : TickMath.MAX_SQRT_PRICE - 1
             });
 
             BalanceDelta _ = poolManager.swap(key, params, d.hookData);
@@ -1221,6 +1226,7 @@ import "forge-std/Script.sol";
 import {SubscriptionFactory} from "../src/factory/SubscriptionFactory.sol";
 import {SubscriptionRouter} from "../src/router/SubscriptionRouter.sol";
 import {SubPricing} from "../src/libraries/SubPricing.sol";
+import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 
 contract DeploySystem is Script {
     function run() external {
@@ -1252,8 +1258,6 @@ contract DeploySystem is Script {
         vm.stopBroadcast();
     }
 }
-
-import {IPoolManager} from "v4-core/src/interfaces/IPoolManager.sol";
 ```
 
 ---
@@ -1269,6 +1273,7 @@ pragma solidity ^0.8.26;
 import "forge-std/Script.sol";
 import {SubscriptionFactory} from "../src/factory/SubscriptionFactory.sol";
 import {SubscriptionRouter} from "../src/router/SubscriptionRouter.sol";
+import {SubPricing} from "../src/libraries/SubPricing.sol";
 import {MockUSDC} from "../src/mocks/MockUSDC.sol";
 import {DecayingSubscriptionToken} from "../src/tokens/DecayingSubscriptionToken.sol";
 
