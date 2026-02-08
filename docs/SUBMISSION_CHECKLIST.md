@@ -1,7 +1,7 @@
 # Hackathon Submission Checklist
 
 **Event:** EthGlobal HackMoney 2026
-**Deadline:** February 8, 2026 5:00 PM ET (VERIFY — may differ from internal "noon Feb 9" target)
+**Deadline:** Sunday, February 8, 2026 12:00 PM ET (CONFIRMED via email + dashboard countdown)
 **Judging:** February 9–11, 2026 (async partner judging + finalist live judging)
 
 > **Video limit from EthGlobal: max 3 minutes for partner tracks.**
