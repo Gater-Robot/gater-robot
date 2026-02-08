@@ -20,7 +20,8 @@ export const getOrgById = query({
   handler: async (ctx, args) => {
     const user = await requireAuth(ctx, args.initDataRaw);
     const org = await ctx.db.get(args.orgId);
-    if (!org || org.ownerTelegramUserId !== user.id) {
+    if (!org) return null;
+    if (org.ownerTelegramUserId !== user.id) {
       throw new Error("Not authorized to view this org");
     }
     return org;

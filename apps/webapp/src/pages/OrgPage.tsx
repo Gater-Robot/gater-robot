@@ -12,7 +12,7 @@ import {
   XCircleIcon,
 } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { parseUnits } from "viem"
 import { toast } from "sonner"
 import { useQuery } from "convex/react"
@@ -60,6 +60,7 @@ type CreateGateValues = z.infer<typeof createGateSchema>
 
 export function OrgPage() {
   const params = useParams()
+  const navigate = useNavigate()
   const orgId = params.orgId ?? null
 
   const telegram = useTelegram()
@@ -79,6 +80,13 @@ export function OrgPage() {
   } = useChannels(orgId)
 
   const [selectedChannelId, setSelectedChannelId] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (org === null) {
+      toast.error("Organization not found")
+      navigate("/orgs", { replace: true })
+    }
+  }, [org, navigate])
 
   React.useEffect(() => {
     if (selectedChannelId) return
@@ -212,21 +220,7 @@ export function OrgPage() {
     )
   }
 
-  if (!org) {
-    return (
-      <Card className="py-0">
-        <CardContent className="pt-6">
-          <div className="py-8 text-center">
-            <CircleSlash2Icon className="mx-auto mb-4 size-12 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">Organization not found</h2>
-            <p className="text-muted-foreground">
-              You may not have access to this organization.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  if (!org) return null
 
   return (
     <div className="space-y-6">
