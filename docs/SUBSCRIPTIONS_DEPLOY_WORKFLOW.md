@@ -2,6 +2,58 @@
 
 This runbook is the canonical flow for deploying and validating the v4 subscriptions stack in this repo.
 
+## Hook Swap Sequence (Judge View)
+
+This is the core runtime behavior for buy/refund with custom v4 hook accounting.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor U as User
+    participant R as SubscriptionRouter
+    participant PM as Uniswap v4 PoolManager
+    participant H as SubscriptionHook
+    participant SUB as SubscriptionDaysToken
+    participant USDC as USDC Token
+
+    rect rgb(32, 54, 92)
+      Note over U,USDC: BUY (exact output SUB)
+      U->>R: buyExactOut(token, subOut, maxUsdcIn, ...)
+      R->>H: quoteBuyExactOut(subOut)
+      H-->>R: usdcIn
+      R->>PM: sync(USDC) + settle(prepay USDC from user)
+      R->>PM: swap(exactOutput SUB)
+      PM->>H: beforeSwap(...)
+      H->>H: validate pool key + authorized router + mode
+      H->>PM: take(USDC -> Hook reserves)
+      H->>SUB: mint(PoolManager, subOut)
+      H->>PM: settle(SUB funding)
+      H-->>PM: return beforeSwap delta (no-op pool math)
+      PM-->>R: swap complete
+      R->>PM: take(SUB -> user)
+      R-->>U: SUB delivered
+    end
+
+    rect rgb(72, 50, 32)
+      Note over U,USDC: REFUND (exact input SUB)
+      U->>R: refundExactIn(...) or refundAll(...)
+      Note over R: refundAll reads live balanceOf(user) in-tx
+      R->>H: quoteRefundExactIn(subIn)
+      H-->>R: usdcOut
+      R->>PM: sync(SUB) + settle(prepay SUB from user)
+      R->>PM: swap(exactInput SUB)
+      PM->>H: beforeSwap(...)
+      H->>H: validate + check USDC reserves
+      H->>PM: sync(USDC) + settle(push USDC payout)
+      H->>PM: take(SUB -> Hook)
+      H->>SUB: burn(subIn)
+      H-->>PM: return beforeSwap delta (no-op pool math)
+      PM-->>R: swap complete
+      R->>PM: take(USDC -> user)
+      R-->>U: USDC delivered
+    end
+```
+
 ## Scope
 - Contracts package: `packages/contracts`
 - Local chain: Hardhat node (`127.0.0.1:8545`)
@@ -169,4 +221,3 @@ Then:
 ### Generated files
 - Foundry broadcast output is ignored via `.gitignore`:
   - `packages/contracts/broadcast/`
-
