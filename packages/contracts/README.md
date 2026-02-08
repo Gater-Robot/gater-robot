@@ -45,6 +45,25 @@ cd packages/contracts
 forge install foundry-rs/forge-std
 ```
 
+### Local Hardhat Chain (recommended if you prefer Hardhat over Anvil)
+Start local chain:
+```bash
+pnpm --filter @gater/contracts node:hardhat
+```
+
+Use the first Hardhat dev account private key as `PRIVATE_KEY`, then deploy local stack (PoolManager + MockUSDC + Factory + Router):
+```bash
+pnpm --filter @gater/contracts deploy:subs:local:stack
+```
+
+If you want a standalone fake USDC deployment on any network:
+```bash
+pnpm --filter @gater/contracts deploy:subs:mock-usdc
+```
+
+Then continue with normal product setup scripts using the emitted addresses.
+
+### Existing Network Flow (Base / Base Sepolia / custom RPC)
 Mine hook salt:
 ```bash
 pnpm --filter @gater/contracts mine:hook-salt
@@ -83,6 +102,7 @@ pnpm --filter @gater/contracts test:forge
 
 ## Pre-Flight Checklist
 - [ ] `pnpm --filter @gater/contracts build` passes.
+- [ ] `pnpm --filter @gater/contracts node:hardhat` works if using local chain.
 - [ ] Uniswap v4 dependencies are installed and imports resolve.
 - [ ] `SubscriptionDaysToken` includes role-gated `burn(uint256)`.
 - [ ] Router uses directional `sqrtPriceLimitX96` bounds (`MIN+1` / `MAX-1`).

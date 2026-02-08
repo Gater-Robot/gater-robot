@@ -4,6 +4,9 @@
 - [ ] Send completion notification via `ntfy_send`
 
 ## Done
+- [x] Add Hardhat-local subscription stack deployment support (PoolManager + MockUSDC + Factory + Router)
+- [x] Add standalone mock USDC deployment script for local/Base demo networks
+- [x] Add local sub-store token tools page for MetaMask add-token buttons (SUB + fake USDC)
 - [x] Install/configure Foundry and run Forge test suite
 - [x] Enable Hardhat JS/TS test runner and make existing tests execute in CI
 - [x] Perform local `apps/sub-store` integration pass for direct router checkout + equal Uniswap links

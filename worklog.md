@@ -34,3 +34,14 @@
 - Validation run: Forge suite passes (6/6) using `~/.foundry/bin/forge` / PATH-adjusted `pnpm --filter @gater/contracts test:forge`.
 - Added contracts CI workflow `.github/workflows/contracts-ci.yml` to run Hardhat compile/tests plus Forge tests on PR/push for `packages/contracts`.
 - Ran local sub-store verification step: `pnpm --filter @gater/sub-store build` passes (non-blocking Vite chunk-size warning only).
+- Added local-first deployment support for users who prefer Hardhat chain:
+  - `packages/contracts/script/DeployLocalSubscriptionsStack.s.sol`
+  - `packages/contracts/script/DeployMockUSDC.s.sol`
+  - package scripts + `.env.example` + `README.md` updates.
+- Verified contracts stack after updates:
+  - `pnpm --filter @gater/contracts build` passes.
+  - `pnpm --filter @gater/contracts test` passes (12/12).
+  - `pnpm --filter @gater/contracts test:forge` passes (6/6) when Foundry is on PATH.
+- Added local sub-store token tools page (`/tokens`) with wallet add-token actions for:
+  - SUB token using generated base64 SVG (+1 on gold coin).
+  - fake USDC token using Circle official token logo SVG (scaled to 128x128, base64 embedded).
