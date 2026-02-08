@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gatekeeper Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0f1117;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+
+  .diagram {
+    width: 1800px;
+    max-width: 100%;
+    position: relative;
+  }
+
+  .title-bar {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .title-bar h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #f8fafc;
+    letter-spacing: -0.5px;
+  }
+
+  .title-bar .subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 6px;
+  }
+
+  .flow {
+    display: grid;
+    grid-template-columns: 200px 180px 320px 280px 220px;
+    gap: 0;
+    align-items: start;
+    position: relative;
+    min-height: 520px;
+  }
+
+  /* Columns */
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    position: relative;
+    z-index: 2;
+  }
+
+  .col-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #475569;
+    margin-bottom: 4px;
+  }
+
+  /* Boxes */
+  .box {
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    background: #1a1d27;
+    border: 1.5px solid;
+  }
+
+  .box-header {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .box-header .icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .box-item {
+    font-size: 12px;
+    color: #94a3b8;
+    padding: 3px 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .box-item::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Color themes */
+  .telegram { border-color: #2563eb40; }
+  .telegram .box-header { color: #60a5fa; }
+  .telegram .icon { background: #2563eb30; }
+  .telegram .box-item::before { background: #3b82f6; }
+
+  .bot { border-color: #6366f140; }
+  .bot .box-header { color: #a78bfa; }
+  .bot .icon { background: #6366f130; }
+  .bot .box-item::before { background: #818cf8; }
+
+  .convex { border-color: #8b5cf640; }
+  .convex .box-header { color: #c084fc; }
+  .convex .icon { background: #8b5cf630; }
+  .convex .box-item::before { background: #a78bfa; }
+
+  .miniapp { border-color: #10b98140; }
+  .miniapp .box-header { color: #34d399; }
+  .miniapp .icon { background: #10b98130; }
+  .miniapp .box-item::before { background: #34d399; }
+
+  .chain { border-color: #f59e0b40; }
+  .chain .box-header { color: #fbbf24; }
+  .chain .icon { background: #f59e0b30; }
+  .chain .box-item::before { background: #fbbf24; }
+
+  /* Sub-boxes inside convex */
+  .sub-box {
+    background: #12141c;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 6px;
+    border: 1px solid #ffffff08;
+  }
+
+  .sub-box-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin-bottom: 4px;
+  }
+
+  .sub-box .box-item {
+    font-size: 11px;
+    padding: 2px 0;
+  }
+
+  /* Badge / pill callouts */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 100px;
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+  }
+
+  .badge-green {
+    background: #10b98118;
+    color: #34d399;
+    border: 1px solid #10b98130;
+  }
+
+  .badge-blue {
+    background: #3b82f618;
+    color: #60a5fa;
+    border: 1px solid #3b82f630;
+  }
+
+  .badge-amber {
+    background: #f59e0b18;
+    color: #fbbf24;
+    border: 1px solid #f59e0b30;
+  }
+
+  .badge-purple {
+    background: #8b5cf618;
+    color: #c084fc;
+    border: 1px solid #8b5cf630;
+  }
+
+  .badges-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Arrows — drawn with SVG overlay */
+  .arrows-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  .arrows-layer svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* Arrow labels */
+  .arrow-label {
+    position: absolute;
+    font-size: 9px;
+    font-weight: 500;
+    color: #64748b;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e293b;
+  }
+
+  .footer-left {
+    font-size: 11px;
+    color: #475569;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 16px;
+  }
+
+  .prize-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .prize-ens {
+    background: #3b82f615;
+    color: #60a5fa;
+    border: 1px solid #3b82f625;
+  }
+
+  .prize-lifi {
+    background: #10b98115;
+    color: #34d399;
+    border: 1px solid #10b98125;
+  }
+
+  .prize-uni {
+    background: #ec489915;
+    color: #f472b6;
+    border: 1px solid #ec489925;
+  }
+</style>
+</head>
+<body>
+<div class="diagram">
+  <div class="title-bar">
+    <h1>Gatekeeper &mdash; System Architecture</h1>
+    <div class="subtitle">Token-gated Telegram communities with on-chain identity &amp; cross-chain onboarding</div>
+  </div>
+
+  <div class="flow">
+    <!-- ARROWS SVG -->
+    <div class="arrows-layer">
+      <svg viewBox="0 0 1800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="#3b82f6" opacity="0.6"/>
+          </marker>
+          <marker id="arrow-purple" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="#8b5cf6" opacity="0.6"/>
+          </marker>
+          <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="#10b981" opacity="0.6"/>
+          </marker>
+          <marker id="arrow-amber" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <path d="M0,0 L8,3 L0,6" fill="#f59e0b" opacity="0.6"/>
+          </marker>
+        </defs>
+
+        <!-- Telegram → Bot -->
+        <path d="M 200 120 L 260 120" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4" marker-end="url(#arrow-blue)"/>
+        <text x="215" y="112" fill="#475569" font-size="8" font-family="Inter" font-weight="500" letter-spacing="0.5">COMMANDS</text>
+
+        <!-- Telegram → Mini-App (deep link, curved) -->
+        <path d="M 200 60 Q 400 10 560 30" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.35" marker-end="url(#arrow-green)"/>
+        <text x="360" y="16" fill="#475569" font-size="8" font-family="Inter" font-weight="500" letter-spacing="0.5">DEEP LINK</text>
+
+        <!-- Bot → Convex -->
+        <path d="M 440 140 L 500 140" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4" marker-end="url(#arrow-purple)"/>
+        <text x="445" y="132" fill="#475569" font-size="8" font-family="Inter" font-weight="500" letter-spacing="0.5">WEBHOOK</text>
+
+        <!-- Mini-App → Convex -->
+        <path d="M 780 180 L 780 210" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4" marker-end="url(#arrow-purple)"/>
+        <text x="790" y="200" fill="#475569" font-size="8" font-family="Inter" font-weight="500" letter-spacing="0.5">QUERIES + MUTATIONS</text>
+
+        <!-- Convex → Blockchain (RPC) -->
+        <path d="M 900 300 L 980 300" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.4" marker-end="url(#arrow-amber)"/>
+        <text x="910" y="292" fill="#475569" font-size="8" font-family="Inter" font-weight="500" letter-spacing="0.5">RPC READS</text>
+
+        <!-- Mini-App → Blockchain (LiFi) -->
+        <path d="M 900 100 Q 1000 80 1050 160" stroke="#10b981" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.35" marker-end="url(#arrow-green)"/>
+        <text x="960" y="90" fill="#475569" font-size="8" font-family="Inter" font-weight="500" letter-spacing="0.5">LIFI WIDGET</text>
+      </svg>
+    </div>
+
+    <!-- COL 1: Telegram -->
+    <div class="col" style="padding-top: 20px;">
+      <div class="col-label">Client</div>
+      <div class="box telegram">
+        <div class="box-header">
+          <span class="icon">&#x2708;</span>
+          Telegram
+        </div>
+        <div class="box-item">Public chat &ldquo;Best Crypto DAO&rdquo;</div>
+        <div class="box-item">Private chat &ldquo;BCD Holders Club&rdquo;</div>
+        <div class="box-item">Pinned join message + QR</div>
+        <div class="box-item">Bot cast (5 scripted bots)</div>
+      </div>
+
+      <div class="box telegram" style="margin-top: 8px;">
+        <div class="box-header">
+          <span class="icon">&#x1F464;</span>
+          Users
+        </div>
+        <div class="box-item">Admin (Devon)</div>
+        <div class="box-item">Member (Amelia)</div>
+        <div class="box-item">Wallet + ENS identity</div>
+      </div>
+    </div>
+
+    <!-- COL 2: Bot -->
+    <div class="col" style="padding-top: 70px;">
+      <div class="col-label">Bot</div>
+      <div class="box bot">
+        <div class="box-header">
+          <span class="icon">&#x1F916;</span>
+          Telegram Bot
+        </div>
+        <div class="box-item">/start &mdash; open mini-app</div>
+        <div class="box-item">/admin &mdash; toggle mode</div>
+        <div class="box-item">Warning DMs</div>
+        <div class="box-item">Kick notifications</div>
+        <div class="box-item">node-telegram-bot-api</div>
+      </div>
+    </div>
+
+    <!-- COL 3: Convex (tallest) -->
+    <div class="col">
+      <div class="col-label">Backend</div>
+
+      <!-- Mini-App sits above Convex in this column -->
+      <div class="box miniapp" style="margin-bottom: 8px;">
+        <div class="box-header">
+          <span class="icon">&#x1F4F1;</span>
+          Mini-App
+        </div>
+        <div class="box-item">Vite + React Router + shadcn</div>
+        <div class="box-item">SIWE wallet verification</div>
+        <div class="box-item">ENS identity display</div>
+        <div class="box-item">LiFi &ldquo;Get Eligible&rdquo; widget</div>
+        <div class="box-item">Faucet &amp; token mint</div>
+        <div class="box-item">Admin gate configuration</div>
+      </div>
+
+      <div class="box convex">
+        <div class="box-header">
+          <span class="icon">&#x26A1;</span>
+          Convex Cloud
+        </div>
+
+        <div class="sub-box">
+          <div class="sub-box-label">Auth</div>
+          <div class="box-item">Telegram initData HMAC-SHA256</div>
+          <div class="box-item">Secure mutations + public queries</div>
+        </div>
+
+        <div class="sub-box">
+          <div class="sub-box-label">Data</div>
+          <div class="box-item">Users &middot; Addresses &middot; Orgs</div>
+          <div class="box-item">Channels &middot; Gates &middot; Memberships</div>
+          <div class="box-item">Events (audit log)</div>
+        </div>
+
+        <div class="sub-box">
+          <div class="sub-box-label">Eligibility Engine</div>
+          <div class="box-item">Sum balances across verified wallets</div>
+          <div class="box-item">Compare against gate threshold</div>
+          <div class="box-item">eligible &rarr; warned &rarr; kicked</div>
+        </div>
+
+        <div class="sub-box">
+          <div class="sub-box-label">Scheduler</div>
+          <div class="box-item">24h periodic re-check</div>
+          <div class="box-item">Batch eligibility processing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 4: (spacer / badges column) -->
+    <div class="col" style="padding-top: 40px; justify-content: center;">
+      <div style="display: flex; flex-direction: column; gap: 24px; padding: 20px 0;">
+        <div class="badge badge-blue">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Multi-wallet identity
+        </div>
+        <div class="badge badge-green">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M8 3v3a2 2 0 0 1-2 2H3"/><path d="M21 8h-3a2 2 0 0 1-2-2V3"/><path d="M3 16h3a2 2 0 0 1 2 2v3"/><path d="M16 21v-3a2 2 0 0 1 2-2h3"/></svg>
+          Cross-chain remediation
+        </div>
+        <div class="badge badge-purple">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 6v6l4 2"/></svg>
+          Automatic enforcement
+        </div>
+        <div class="badge badge-amber">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          ENS identity layer
+        </div>
+      </div>
+    </div>
+
+    <!-- COL 5: Blockchain -->
+    <div class="col" style="padding-top: 20px;">
+      <div class="col-label">Blockchain</div>
+
+      <div class="box chain">
+        <div class="box-header">
+          <span class="icon">&#x1F30D;</span>
+          Ethereum
+        </div>
+        <div class="box-item">ENS name resolution</div>
+        <div class="box-item">ENS avatar + text records</div>
+        <div class="box-item">Reverse lookups</div>
+      </div>
+
+      <div class="box chain">
+        <div class="box-header">
+          <span class="icon">&#x1F535;</span>
+          Base
+        </div>
+        <div class="box-item">$BEST token (ERC-20)</div>
+        <div class="box-item">balanceOf reads</div>
+        <div class="box-item">Faucet mint transactions</div>
+      </div>
+
+      <div class="box chain">
+        <div class="box-header">
+          <span class="icon">&#x1F7E0;</span>
+          Arbitrum
+        </div>
+        <div class="box-item">Cross-chain source</div>
+        <div class="box-item">LiFi swap origin</div>
+      </div>
+
+      <div class="box chain" style="border-style: dashed; opacity: 0.6;">
+        <div class="box-header">
+          <span class="icon">+</span>
+          25+ Chains
+        </div>
+        <div class="box-item">Configurable via LiFi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      EthGlobal HackMoney 2026 &nbsp;&middot;&nbsp; Gatekeeper by Gater Robot
+    </div>
+    <div class="footer-right">
+      <span class="prize-tag prize-ens">ENS Prize</span>
+      <span class="prize-tag prize-lifi">LI.FI Prize</span>
+      <span class="prize-tag prize-uni">Uniswap Prize</span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

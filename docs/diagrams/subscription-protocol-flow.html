@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Protocol Flow</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #07090d;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+
+  .diagram {
+    width: 1600px;
+    max-width: 100%;
+  }
+
+  .title-bar {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .title-bar h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: -0.5px;
+  }
+
+  .title-bar .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 6px;
+  }
+
+  .title-bar .tech-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 600;
+    background: #ec489912;
+    color: #f472b6;
+    border: 1px solid #ec489925;
+    letter-spacing: 0.3px;
+  }
+
+  /* Main layout: 2x2 grid of quadrants around a center */
+  .protocol {
+    display: grid;
+    grid-template-columns: 1fr 200px 1fr;
+    grid-template-rows: auto 200px auto;
+    gap: 0;
+    position: relative;
+  }
+
+  /* Center nucleus */
+  .center {
+    grid-column: 2;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  .nucleus {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #1e1b3a, #0d0b1a);
+    border: 2px solid #8b5cf640;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    box-shadow: 0 0 60px #8b5cf615, 0 0 120px #8b5cf608;
+  }
+
+  .nucleus-icon {
+    font-size: 28px;
+  }
+
+  .nucleus-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #c084fc;
+    letter-spacing: -0.2px;
+  }
+
+  .nucleus-sub {
+    font-size: 9px;
+    color: #7c3aed;
+    font-weight: 500;
+  }
+
+  /* Quadrants */
+  .quadrant {
+    padding: 24px;
+    border-radius: 16px;
+    position: relative;
+  }
+
+  .q-buy {
+    grid-column: 1;
+    grid-row: 1;
+    background: linear-gradient(135deg, #022c2208, #07090d);
+    border: 1px solid #10b98115;
+  }
+
+  .q-hold {
+    grid-column: 3;
+    grid-row: 1;
+    background: linear-gradient(225deg, #7c2d1208, #07090d);
+    border: 1px solid #f59e0b15;
+  }
+
+  .q-gate {
+    grid-column: 3;
+    grid-row: 3;
+    background: linear-gradient(315deg, #1e1b4b08, #07090d);
+    border: 1px solid #6366f115;
+  }
+
+  .q-refund {
+    grid-column: 1;
+    grid-row: 3;
+    background: linear-gradient(45deg, #4a001e08, #07090d);
+    border: 1px solid #ec489915;
+  }
+
+  /* Connector strips (between quadrants and center) */
+  .connector-top {
+    grid-column: 2;
+    grid-row: 1;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 10px;
+  }
+
+  .connector-right {
+    grid-column: 3;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 10px;
+  }
+
+  .connector-bottom {
+    grid-column: 2;
+    grid-row: 3;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 10px;
+  }
+
+  .connector-left {
+    grid-column: 1;
+    grid-row: 2;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+  }
+
+  /* Quadrant headers */
+  .q-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .q-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+  }
+
+  .q-title {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .q-subtitle {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 1px;
+  }
+
+  /* Flow steps inside quadrants */
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: #ffffff04;
+    border: 1px solid #ffffff06;
+  }
+
+  .flow-step-arrow {
+    font-size: 14px;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .flow-step-text {
+    font-size: 12px;
+    line-height: 1.45;
+    color: #cbd5e1;
+  }
+
+  .flow-step-text strong {
+    color: #f1f5f9;
+    font-weight: 600;
+  }
+
+  .flow-step-text code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: #1e293b;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: #94a3b8;
+  }
+
+  /* Color themes */
+  .q-buy .q-num { background: #10b98125; color: #34d399; }
+  .q-buy .q-title { color: #34d399; }
+  .q-buy .flow-step-arrow { color: #10b981; }
+
+  .q-hold .q-num { background: #f59e0b25; color: #fbbf24; }
+  .q-hold .q-title { color: #fbbf24; }
+  .q-hold .flow-step-arrow { color: #f59e0b; }
+
+  .q-gate .q-num { background: #6366f125; color: #818cf8; }
+  .q-gate .q-title { color: #818cf8; }
+  .q-gate .flow-step-arrow { color: #6366f1; }
+
+  .q-refund .q-num { background: #ec489925; color: #f472b6; }
+  .q-refund .q-title { color: #f472b6; }
+  .q-refund .flow-step-arrow { color: #ec4899; }
+
+  /* Special elements */
+  .decay-visual {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    margin: 12px 0 8px;
+    height: 40px;
+  }
+
+  .decay-bar {
+    width: 16px;
+    border-radius: 3px 3px 0 0;
+    transition: height 0.3s;
+  }
+
+  .formula-box {
+    background: #0d0f14;
+    border: 1px solid #1e293b;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.6;
+  }
+
+  .formula-box .highlight {
+    color: #fbbf24;
+    font-weight: 500;
+  }
+
+  /* Pricing table */
+  .pricing-table {
+    margin-top: 12px;
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .pricing-table th {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #475569;
+    text-align: left;
+    padding: 4px 8px;
+    border-bottom: 1px solid #1e293b;
+  }
+
+  .pricing-table td {
+    font-size: 11px;
+    padding: 5px 8px;
+    color: #94a3b8;
+    border-bottom: 1px solid #ffffff06;
+  }
+
+  .pricing-table td:last-child {
+    text-align: right;
+  }
+
+  .pricing-table .best-value {
+    color: #34d399;
+    font-weight: 600;
+  }
+
+  /* Decision diamond */
+  .decision {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 12px 0;
+  }
+
+  .diamond {
+    width: 40px;
+    height: 40px;
+    transform: rotate(45deg);
+    border: 2px solid #818cf8;
+    background: #1e1b4b20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border-radius: 4px;
+  }
+
+  .diamond-inner {
+    transform: rotate(-45deg);
+    font-size: 10px;
+    font-weight: 700;
+    color: #818cf8;
+  }
+
+  .decision-outcomes {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .outcome {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .outcome-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Outer annotations */
+  .annotation {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #475569;
+    z-index: 5;
+  }
+
+  .annotation-line {
+    width: 30px;
+    height: 1px;
+    background: #334155;
+  }
+
+  /* Circular flow arrows between quadrants */
+  .flow-indicator {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #475569;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .flow-indicator svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e293b;
+  }
+
+  .footer-left {
+    font-size: 11px;
+    color: #475569;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 12px;
+  }
+
+  .token-legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+
+  .token-usdc {
+    background: #10b98112;
+    color: #34d399;
+    border: 1px solid #10b98120;
+  }
+
+  .token-sub {
+    background: #f59e0b12;
+    color: #fbbf24;
+    border: 1px solid #f59e0b20;
+  }
+
+  /* Revenue callout */
+  .revenue-callout {
+    margin-top: 14px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: #10b98108;
+    border: 1px solid #10b98115;
+  }
+
+  .revenue-label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #10b981;
+    margin-bottom: 4px;
+  }
+
+  .revenue-detail {
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.4;
+  }
+</style>
+</head>
+<body>
+<div class="diagram">
+  <div class="title-bar">
+    <h1>Subscription Protocol &mdash; Transaction Lifecycle</h1>
+    <div class="subtitle">Decaying ERC-20 subscriptions powered by Uniswap v4 custom hooks</div>
+    <div class="tech-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Uniswap v4 Hook Architecture
+    </div>
+  </div>
+
+  <div class="protocol">
+
+    <!-- ===== QUADRANT 1: BUY (top-left) ===== -->
+    <div class="quadrant q-buy">
+      <div class="q-header">
+        <div class="q-num">1</div>
+        <div>
+          <div class="q-title">Buy Subscription</div>
+          <div class="q-subtitle">USDC &rarr; SUB tokens</div>
+        </div>
+      </div>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-arrow">&rarr;</div>
+          <div class="flow-step-text">
+            User calls <code>Router.buyExactOut(30 SUB)</code>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-arrow">&rarr;</div>
+          <div class="flow-step-text">
+            Router calls <code>poolManager.unlock()</code> + swap
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-arrow">&rarr;</div>
+          <div class="flow-step-text">
+            <strong>Hook.beforeSwap()</strong> intercepts: takes USDC, mints SUB
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-arrow">&rarr;</div>
+          <div class="flow-step-text">
+            User receives <strong>30 SUB tokens</strong> (= 30 days of access)
+          </div>
+        </div>
+      </div>
+
+      <table class="pricing-table">
+        <thead>
+          <tr><th>Tier</th><th>Days</th><th>Price</th><th>Per Day</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Daily</td><td>1</td><td>$1.00</td><td>$1.00</td></tr>
+          <tr><td class="best-value">Monthly</td><td class="best-value">30</td><td class="best-value">$20</td><td class="best-value">$0.67</td></tr>
+          <tr><td>Annual</td><td>365</td><td>$200</td><td>$0.55</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Top connector -->
+    <div class="connector-top">
+      <div class="flow-indicator">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- ===== QUADRANT 2: HOLD & DECAY (top-right) ===== -->
+    <div class="quadrant q-hold">
+      <div class="q-header">
+        <div class="q-num">2</div>
+        <div>
+          <div class="q-title">Hold &amp; Decay</div>
+          <div class="q-subtitle">1 token = 1 day of access</div>
+        </div>
+      </div>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-arrow">&#x1F4B0;</div>
+          <div class="flow-step-text">
+            User holds 30 SUB tokens. Each second, <strong>balanceOf()</strong> returns a smaller number.
+          </div>
+        </div>
+      </div>
+
+      <!-- Decay bars visualization -->
+      <div class="decay-visual">
+        <div class="decay-bar" style="height: 40px; background: linear-gradient(to top, #b45309, #fbbf24);" title="Day 0: 30"></div>
+        <div class="decay-bar" style="height: 36px; background: linear-gradient(to top, #b45309, #fbbf24);" title="Day 3"></div>
+        <div class="decay-bar" style="height: 32px; background: linear-gradient(to top, #b45309, #fbbf24);" title="Day 6"></div>
+        <div class="decay-bar" style="height: 27px; background: linear-gradient(to top, #b45309, #fbbf24);" title="Day 10"></div>
+        <div class="decay-bar" style="height: 22px; background: linear-gradient(to top, #b45309, #fbbf24);" title="Day 14"></div>
+        <div class="decay-bar" style="height: 17px; background: linear-gradient(to top, #92400e, #f59e0b);" title="Day 18"></div>
+        <div class="decay-bar" style="height: 12px; background: linear-gradient(to top, #92400e, #f59e0b);" title="Day 22"></div>
+        <div class="decay-bar" style="height: 7px; background: linear-gradient(to top, #78350f, #d97706);" title="Day 26"></div>
+        <div class="decay-bar" style="height: 3px; background: linear-gradient(to top, #78350f, #b45309);" title="Day 29"></div>
+        <div class="decay-bar" style="height: 1px; background: #78350f;" title="Day 30: 0"></div>
+        <span style="font-size: 9px; color: #78350f; margin-left: 4px; align-self: flex-end;">expired</span>
+      </div>
+
+      <div class="formula-box">
+        <span class="highlight">balanceOf</span>(user) =<br>
+        &nbsp;&nbsp;rawBalance - (<span class="highlight">elapsed</span> / 86400) * 1e18<br>
+        <br>
+        <span style="color: #475569;">// No gas cost &mdash; pure view function</span><br>
+        <span style="color: #475569;">// Decay rate: 1.0 token per day</span>
+      </div>
+    </div>
+
+    <!-- Left connector -->
+    <div class="connector-left">
+      <div class="flow-indicator" style="transform: rotate(-90deg);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- CENTER: PoolManager -->
+    <div class="center">
+      <div class="nucleus">
+        <div class="nucleus-icon">&#x1F300;</div>
+        <div class="nucleus-label">v4 PoolManager</div>
+        <div class="nucleus-sub">Singleton</div>
+      </div>
+    </div>
+
+    <!-- Right connector -->
+    <div class="connector-right">
+      <div class="flow-indicator" style="transform: rotate(90deg);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- ===== QUADRANT 3: REFUND (bottom-left) ===== -->
+    <div class="quadrant q-refund">
+      <div class="q-header">
+        <div class="q-num">4</div>
+        <div>
+          <div class="q-title">Refund</div>
+          <div class="q-subtitle">SUB tokens &rarr; USDC (partial refund)</div>
+        </div>
+      </div>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-arrow">&larr;</div>
+          <div class="flow-step-text">
+            User calls <code>Router.refundExactIn(10 SUB)</code>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-arrow">&larr;</div>
+          <div class="flow-step-text">
+            <strong>Hook.beforeSwap()</strong> intercepts: burns SUB, returns USDC
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="flow-step-arrow">&larr;</div>
+          <div class="flow-step-text">
+            User receives USDC from hook reserves at <strong>$0.10/day</strong> refund rate
+          </div>
+        </div>
+      </div>
+
+      <div class="revenue-callout">
+        <div class="revenue-label">Revenue Model</div>
+        <div class="revenue-detail">
+          Buy: $1.00/day &nbsp;&middot;&nbsp; Refund: $0.10/day<br>
+          <strong>Spread retained by protocol = $0.90/day</strong><br>
+          Admin withdraws surplus USDC from hook reserves.
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom connector -->
+    <div class="connector-bottom">
+      <div class="flow-indicator" style="transform: rotate(180deg);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#475569" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+
+    <!-- ===== QUADRANT 4: GATE CHECK (bottom-right) ===== -->
+    <div class="quadrant q-gate">
+      <div class="q-header">
+        <div class="q-num">3</div>
+        <div>
+          <div class="q-title">Gate Check</div>
+          <div class="q-subtitle">Continuous access enforcement</div>
+        </div>
+      </div>
+
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="flow-step-arrow">&#x1F50D;</div>
+          <div class="flow-step-text">
+            Convex scheduler reads <code>subToken.balanceOf(user)</code> on-chain
+          </div>
+        </div>
+      </div>
+
+      <div class="decision">
+        <div class="diamond">
+          <div class="diamond-inner">?</div>
+        </div>
+        <div class="decision-outcomes">
+          <div class="outcome">
+            <div class="outcome-dot" style="background: #22c55e;"></div>
+            <span style="color: #4ade80; font-weight: 600;">balance &gt; 0</span>
+            <span style="color: #64748b;">&rarr; Access maintained</span>
+          </div>
+          <div class="outcome">
+            <div class="outcome-dot" style="background: #ef4444;"></div>
+            <span style="color: #f87171; font-weight: 600;">balance = 0</span>
+            <span style="color: #64748b;">&rarr; Subscription expired, access revoked</span>
+          </div>
+          <div class="outcome">
+            <div class="outcome-dot" style="background: #eab308;"></div>
+            <span style="color: #fbbf24; font-weight: 600;">balance &lt; 3</span>
+            <span style="color: #64748b;">&rarr; Warning sent: &ldquo;Renew soon&rdquo;</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-steps" style="margin-top: 12px;">
+        <div class="flow-step">
+          <div class="flow-step-arrow">&#x1F504;</div>
+          <div class="flow-step-text">
+            Re-check runs every <strong>24 hours</strong> via Convex scheduler. No user action needed.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      EthGlobal HackMoney 2026 &nbsp;&middot;&nbsp; Gatekeeper Subscription Protocol
+    </div>
+    <div class="footer-right">
+      <div class="token-legend token-usdc">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+        USDC (payment)
+      </div>
+      <div class="token-legend token-sub">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+        SUB (access token)
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

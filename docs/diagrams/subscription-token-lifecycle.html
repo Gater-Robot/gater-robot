@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Token Lifecycle Timeline</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #07090d;
+    color: #e2e8f0;
+    font-family: 'Inter', system-ui, sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 40px;
+  }
+
+  .diagram {
+    width: 1700px;
+    max-width: 100%;
+  }
+
+  .title-bar {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .title-bar h1 {
+    font-size: 28px;
+    font-weight: 800;
+    color: #f8fafc;
+    letter-spacing: -0.5px;
+  }
+
+  .title-bar .subtitle {
+    font-size: 13px;
+    color: #64748b;
+    margin-top: 6px;
+  }
+
+  /* Section containers */
+  .section {
+    margin-bottom: 20px;
+    border-radius: 14px;
+    padding: 24px 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+
+  .section-subtitle {
+    font-size: 10px;
+    color: #64748b;
+    margin-left: auto;
+    font-weight: 500;
+  }
+
+  /* ===== SECTION 1: User View (Decay Curve) ===== */
+  .s-user {
+    background: linear-gradient(180deg, #12141c, #0d0f14);
+    border: 1px solid #f59e0b15;
+  }
+
+  .s-user .section-num { background: #f59e0b25; color: #fbbf24; }
+  .s-user .section-title { color: #fbbf24; }
+
+  /* Timeline / chart area */
+  .chart-area {
+    position: relative;
+    height: 200px;
+    margin: 0 40px;
+  }
+
+  /* Y-axis */
+  .y-axis {
+    position: absolute;
+    left: -36px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .y-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: #475569;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* X-axis */
+  .x-axis {
+    position: absolute;
+    bottom: -24px;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .x-label {
+    font-size: 9px;
+    font-weight: 500;
+    color: #475569;
+    font-family: 'JetBrains Mono', monospace;
+    text-align: center;
+  }
+
+  /* Grid lines */
+  .grid-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #1e293b;
+  }
+
+  /* The decay curve - SVG */
+  .curve-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Event markers on timeline */
+  .event-marker {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 5;
+  }
+
+  .event-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+    background: #07090d;
+    z-index: 2;
+  }
+
+  .event-line {
+    width: 1px;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 1;
+  }
+
+  .event-card {
+    position: absolute;
+    width: 140px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #1a1d27;
+    border: 1px solid #ffffff10;
+    z-index: 3;
+  }
+
+  .event-card-title {
+    font-size: 10px;
+    font-weight: 700;
+    margin-bottom: 2px;
+  }
+
+  .event-card-detail {
+    font-size: 9px;
+    color: #94a3b8;
+    line-height: 1.35;
+  }
+
+  /* ===== SECTION 2: On-Chain View ===== */
+  .s-onchain {
+    background: linear-gradient(180deg, #0f1117, #0b0d12);
+    border: 1px solid #8b5cf615;
+  }
+
+  .s-onchain .section-num { background: #8b5cf625; color: #c084fc; }
+  .s-onchain .section-title { color: #c084fc; }
+
+  .onchain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-top: 4px;
+  }
+
+  .onchain-card {
+    padding: 16px;
+    border-radius: 10px;
+    background: #12141c;
+    border: 1px solid #ffffff08;
+  }
+
+  .onchain-card-header {
+    font-size: 11px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .onchain-card-header .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Mini bar chart in onchain cards */
+  .mini-chart {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 48px;
+    margin: 8px 0;
+  }
+
+  .mini-bar {
+    flex: 1;
+    border-radius: 2px 2px 0 0;
+    min-width: 4px;
+  }
+
+  .onchain-formula {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: #94a3b8;
+    background: #0a0c10;
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  .onchain-formula .hl-gold { color: #fbbf24; font-weight: 500; }
+  .onchain-formula .hl-purple { color: #c084fc; font-weight: 500; }
+  .onchain-formula .hl-green { color: #34d399; font-weight: 500; }
+  .onchain-formula .hl-dim { color: #475569; }
+
+  .onchain-note {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .onchain-note .spark {
+    color: #fbbf24;
+    font-size: 12px;
+  }
+
+  .onchain-note strong {
+    color: #94a3b8;
+  }
+
+  /* ===== SECTION 3: Revenue & Pricing ===== */
+  .s-revenue {
+    background: linear-gradient(180deg, #0d100f, #0a0c10);
+    border: 1px solid #10b98115;
+  }
+
+  .s-revenue .section-num { background: #10b98125; color: #34d399; }
+  .s-revenue .section-title { color: #34d399; }
+
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  /* Revenue flow bar */
+  .revenue-flow {
+    padding: 16px;
+    border-radius: 10px;
+    background: #12141c;
+    border: 1px solid #ffffff08;
+  }
+
+  .revenue-flow-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #34d399;
+    margin-bottom: 12px;
+  }
+
+  .flow-bar-container {
+    position: relative;
+    height: 36px;
+    background: #0a0c10;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .flow-bar {
+    height: 100%;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  .flow-bar-income {
+    background: linear-gradient(90deg, #10b98130, #10b98118);
+    border: 1px solid #10b98130;
+    color: #34d399;
+    width: 100%;
+  }
+
+  .flow-bar-refund {
+    background: linear-gradient(90deg, #ef444430, #ef444418);
+    border: 1px solid #ef444430;
+    color: #f87171;
+    width: 5%;
+    right: 0;
+    left: auto;
+    min-width: 60px;
+  }
+
+  .flow-bar-net {
+    background: linear-gradient(90deg, #22c55e30, #22c55e18);
+    border: 1px solid #22c55e30;
+    color: #4ade80;
+    width: 95%;
+  }
+
+  .flow-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 9px;
+    color: #64748b;
+    margin-top: 4px;
+  }
+
+  .flow-label strong {
+    color: #94a3b8;
+  }
+
+  /* Pricing comparison */
+  .pricing-section {
+    padding: 16px;
+    border-radius: 10px;
+    background: #12141c;
+    border: 1px solid #ffffff08;
+  }
+
+  .pricing-header {
+    font-size: 11px;
+    font-weight: 700;
+    color: #fbbf24;
+    margin-bottom: 12px;
+  }
+
+  .tier-cards {
+    display: flex;
+    gap: 10px;
+  }
+
+  .tier-card {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    background: #0a0c10;
+    border: 1px solid #ffffff08;
+    text-align: center;
+    position: relative;
+  }
+
+  .tier-card.featured {
+    border-color: #10b98130;
+    background: #10b98108;
+  }
+
+  .tier-card.featured::before {
+    content: 'BEST VALUE';
+    position: absolute;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 7px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    background: #10b981;
+    color: #000;
+  }
+
+  .tier-name {
+    font-size: 10px;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 6px;
+  }
+
+  .tier-days {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fbbf24;
+    line-height: 1;
+  }
+
+  .tier-days-label {
+    font-size: 9px;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+
+  .tier-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+
+  .tier-per-day {
+    font-size: 10px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .tier-savings {
+    font-size: 9px;
+    font-weight: 600;
+    margin-top: 6px;
+    padding: 2px 8px;
+    border-radius: 100px;
+    display: inline-block;
+  }
+
+  .tier-savings-green {
+    background: #22c55e18;
+    color: #4ade80;
+    border: 1px solid #22c55e25;
+  }
+
+  .tier-savings-none {
+    background: #47556910;
+    color: #475569;
+    border: 1px solid #47556920;
+  }
+
+  /* Token stacks */
+  .token-stack {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: center;
+    gap: 1px;
+    margin: 8px auto;
+    height: 40px;
+    justify-content: flex-start;
+  }
+
+  .token-coin {
+    width: 20px;
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, #b45309, #fbbf24);
+    opacity: 0.7;
+  }
+
+  /* Footer */
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding-top: 16px;
+    border-top: 1px solid #1e293b;
+  }
+
+  .footer-left {
+    font-size: 11px;
+    color: #475569;
+  }
+
+  .footer-right {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+  }
+
+  .footer-badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 6px;
+    letter-spacing: 0.3px;
+  }
+
+  .fb-uni {
+    background: #ec489912;
+    color: #f472b6;
+    border: 1px solid #ec489920;
+  }
+
+  .fb-hook {
+    background: #8b5cf612;
+    color: #c084fc;
+    border: 1px solid #8b5cf620;
+  }
+</style>
+</head>
+<body>
+<div class="diagram">
+  <div class="title-bar">
+    <h1>SubscriptionDaysToken &mdash; Lifecycle &amp; Economics</h1>
+    <div class="subtitle">Time-decaying ERC-20: 1 token = 1 day of access. No cron jobs. No gas for decay.</div>
+  </div>
+
+  <!-- SECTION 1: User View -->
+  <div class="section s-user">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">What the user sees</div>
+      <div class="section-subtitle">balanceOf() returns a declining value each second</div>
+    </div>
+
+    <div class="chart-area">
+      <!-- Grid lines -->
+      <div class="grid-line" style="top: 0;"></div>
+      <div class="grid-line" style="top: 25%;"></div>
+      <div class="grid-line" style="top: 50%;"></div>
+      <div class="grid-line" style="top: 75%;"></div>
+      <div class="grid-line" style="top: 100%;"></div>
+
+      <!-- Y-axis labels -->
+      <div class="y-axis">
+        <div class="y-label">30</div>
+        <div class="y-label">22.5</div>
+        <div class="y-label">15</div>
+        <div class="y-label">7.5</div>
+        <div class="y-label">0</div>
+      </div>
+
+      <!-- X-axis labels -->
+      <div class="x-axis">
+        <div class="x-label">Day 0</div>
+        <div class="x-label">Day 5</div>
+        <div class="x-label">Day 10</div>
+        <div class="x-label">Day 15</div>
+        <div class="x-label">Day 20</div>
+        <div class="x-label">Day 25</div>
+        <div class="x-label">Day 30</div>
+      </div>
+
+      <!-- Decay curve SVG -->
+      <svg class="curve-svg" viewBox="0 0 1600 200" preserveAspectRatio="none">
+        <defs>
+          <linearGradient id="decay-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#fbbf24"/>
+            <stop offset="60%" stop-color="#f59e0b"/>
+            <stop offset="100%" stop-color="#78350f"/>
+          </linearGradient>
+          <linearGradient id="fill-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.01"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Area fill under curve -->
+        <path d="M 0 0 L 1490 193 L 1490 200 L 0 200 Z" fill="url(#fill-grad)"/>
+
+        <!-- The main decay line -->
+        <line x1="0" y1="0" x2="1490" y2="193" stroke="url(#decay-grad)" stroke-width="3" stroke-linecap="round"/>
+
+        <!-- Refund event: at day 28, drops from ~6.7 to ~4.7 then continues to 0 -->
+        <!-- Optional: dashed continuation if no refund -->
+        <line x1="1390" y1="143" x2="1600" y2="200" stroke="#78350f" stroke-width="2" stroke-dasharray="6 4" opacity="0.4"/>
+      </svg>
+
+      <!-- Event markers -->
+      <!-- Day 0: Purchase -->
+      <div class="event-marker" style="left: 0%; top: 0;">
+        <div class="event-dot" style="border-color: #22c55e; background: #22c55e;"></div>
+        <div class="event-card" style="top: -72px; left: 0;">
+          <div class="event-card-title" style="color: #4ade80;">Bought 30 days</div>
+          <div class="event-card-detail">$20 USDC &rarr; 30 SUB tokens<br>Monthly bundle discount</div>
+        </div>
+      </div>
+
+      <!-- Day 15: Midpoint -->
+      <div class="event-marker" style="left: 50%; top: 50%;">
+        <div class="event-dot" style="border-color: #fbbf24;"></div>
+        <div class="event-card" style="top: -56px; left: -70px;">
+          <div class="event-card-title" style="color: #fbbf24;">Day 15</div>
+          <div class="event-card-detail">balanceOf = 15.0<br>Half remaining</div>
+        </div>
+      </div>
+
+      <!-- Day 25: Warning -->
+      <div class="event-marker" style="left: 83.3%; top: 83.3%;">
+        <div class="event-dot" style="border-color: #eab308; background: #eab308;"></div>
+        <div class="event-card" style="top: -56px; left: -70px;">
+          <div class="event-card-title" style="color: #fbbf24;">Low balance warning</div>
+          <div class="event-card-detail">balanceOf &lt; 5<br>Bot sends renewal reminder</div>
+        </div>
+      </div>
+
+      <!-- Day 28: Refund option -->
+      <div class="event-marker" style="left: 93.3%; top: 93.3%;">
+        <div class="event-dot" style="border-color: #ec4899;"></div>
+        <div class="event-card" style="bottom: -56px; left: -140px;">
+          <div class="event-card-title" style="color: #f472b6;">Refund 2 days</div>
+          <div class="event-card-detail">2 SUB &rarr; $0.20 USDC<br>Or: renew for more time</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: On-Chain View -->
+  <div class="section s-onchain">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <div class="section-title">What happens on-chain</div>
+      <div class="section-subtitle">Raw storage vs computed view &mdash; the innovation</div>
+    </div>
+
+    <div class="onchain-grid">
+      <!-- Card 1: rawBalanceOf -->
+      <div class="onchain-card">
+        <div class="onchain-card-header">
+          <div class="dot" style="background: #c084fc;"></div>
+          rawBalanceOf()
+        </div>
+
+        <div class="mini-chart">
+          <!-- stays constant at 30 until settle/transfer -->
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+          <div class="mini-bar" style="height: 100%; background: #8b5cf640;"></div>
+        </div>
+
+        <div class="onchain-formula">
+          <span class="hl-purple">Storage</span>: stays at 30e18<br>
+          <span class="hl-dim">// Only changes on transfer, mint, or settleDecay()</span>
+        </div>
+      </div>
+
+      <!-- Card 2: pendingDecay -->
+      <div class="onchain-card">
+        <div class="onchain-card-header">
+          <div class="dot" style="background: #f87171;"></div>
+          pendingDecay()
+        </div>
+
+        <div class="mini-chart">
+          <!-- grows linearly from 0 to 30 -->
+          <div class="mini-bar" style="height: 10%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 20%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 30%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 40%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 50%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 60%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 70%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 80%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 90%; background: #ef444440;"></div>
+          <div class="mini-bar" style="height: 100%; background: #ef444440;"></div>
+        </div>
+
+        <div class="onchain-formula">
+          <span class="hl-gold">elapsed</span> = now - lastUpdate<br>
+          decay = (<span class="hl-gold">elapsed</span> / 86400) * 1e18<br>
+          <span class="hl-dim">// Computed, never stored</span>
+        </div>
+      </div>
+
+      <!-- Card 3: balanceOf (the result) -->
+      <div class="onchain-card" style="border-color: #10b98120;">
+        <div class="onchain-card-header">
+          <div class="dot" style="background: #34d399;"></div>
+          balanceOf() <span style="font-size: 9px; color: #10b981; font-weight: 400;">&mdash; what users see</span>
+        </div>
+
+        <div class="mini-chart">
+          <!-- declines linearly from 30 to 0 -->
+          <div class="mini-bar" style="height: 100%; background: linear-gradient(to top, #065f46, #34d399);"></div>
+          <div class="mini-bar" style="height: 90%; background: linear-gradient(to top, #065f46, #34d399);"></div>
+          <div class="mini-bar" style="height: 80%; background: linear-gradient(to top, #065f46, #34d399);"></div>
+          <div class="mini-bar" style="height: 70%; background: linear-gradient(to top, #065f46, #34d399);"></div>
+          <div class="mini-bar" style="height: 60%; background: linear-gradient(to top, #065f46, #10b981);"></div>
+          <div class="mini-bar" style="height: 50%; background: linear-gradient(to top, #065f46, #10b981);"></div>
+          <div class="mini-bar" style="height: 40%; background: linear-gradient(to top, #064e3b, #059669);"></div>
+          <div class="mini-bar" style="height: 30%; background: linear-gradient(to top, #064e3b, #059669);"></div>
+          <div class="mini-bar" style="height: 20%; background: linear-gradient(to top, #064e3b, #047857);"></div>
+          <div class="mini-bar" style="height: 10%; background: linear-gradient(to top, #064e3b, #047857);"></div>
+        </div>
+
+        <div class="onchain-formula">
+          <span class="hl-green">balanceOf</span> = <span class="hl-purple">raw</span> - <span class="hl-gold">decay</span><br>
+          = 30e18 - (days * 1e18)<br>
+          <span class="hl-dim">// Pure view function = zero gas</span>
+        </div>
+
+        <div class="onchain-note">
+          <span class="spark">&#x2728;</span>
+          <strong>No gas cost for decay.</strong> It's a view function that computes on read.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Revenue & Pricing -->
+  <div class="section s-revenue">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <div class="section-title">Revenue flow &amp; bundle pricing</div>
+      <div class="section-subtitle">USDC flows through Uniswap v4 Hook reserves</div>
+    </div>
+
+    <div class="revenue-grid">
+      <!-- Left: Revenue bars -->
+      <div class="revenue-flow">
+        <div class="revenue-flow-header">30-Day Subscription Revenue Flow</div>
+
+        <div style="font-size: 9px; color: #64748b; margin-bottom: 6px; font-weight: 500;">INCOME (Day 0)</div>
+        <div class="flow-bar-container">
+          <div class="flow-bar flow-bar-income">$20.00 USDC &rarr; Hook Reserves</div>
+        </div>
+        <div class="flow-label">
+          <span>User pays monthly bundle price</span>
+          <strong style="color: #34d399;">+$20.00</strong>
+        </div>
+
+        <div style="font-size: 9px; color: #64748b; margin: 12px 0 6px; font-weight: 500;">REFUND (Day 28 &mdash; optional)</div>
+        <div class="flow-bar-container">
+          <div class="flow-bar flow-bar-refund">$0.20</div>
+        </div>
+        <div class="flow-label">
+          <span>User refunds 2 remaining days @ $0.10/day</span>
+          <strong style="color: #f87171;">-$0.20</strong>
+        </div>
+
+        <div style="font-size: 9px; color: #64748b; margin: 12px 0 6px; font-weight: 500;">NET RETAINED</div>
+        <div class="flow-bar-container">
+          <div class="flow-bar flow-bar-net">$19.80 net &mdash; admin can withdraw</div>
+        </div>
+        <div class="flow-label">
+          <span>Buy/refund spread = 10x margin</span>
+          <strong style="color: #4ade80;">$19.80</strong>
+        </div>
+      </div>
+
+      <!-- Right: Pricing tiers -->
+      <div class="pricing-section">
+        <div class="pricing-header">Bundle Pricing Tiers</div>
+
+        <div class="tier-cards">
+          <div class="tier-card">
+            <div class="tier-name">Daily</div>
+            <div class="token-stack">
+              <div class="token-coin"></div>
+            </div>
+            <div class="tier-days">1</div>
+            <div class="tier-days-label">day</div>
+            <div class="tier-price">$1.00</div>
+            <div class="tier-per-day">$1.00/day</div>
+            <div class="tier-savings tier-savings-none">base rate</div>
+          </div>
+
+          <div class="tier-card">
+            <div class="tier-name">Weekly</div>
+            <div class="token-stack">
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+            </div>
+            <div class="tier-days">7</div>
+            <div class="tier-days-label">days</div>
+            <div class="tier-price">$7.00</div>
+            <div class="tier-per-day">$1.00/day</div>
+            <div class="tier-savings tier-savings-none">base rate</div>
+          </div>
+
+          <div class="tier-card featured">
+            <div class="tier-name">Monthly</div>
+            <div class="token-stack">
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+            </div>
+            <div class="tier-days">30</div>
+            <div class="tier-days-label">days</div>
+            <div class="tier-price">$20</div>
+            <div class="tier-per-day">$0.67/day</div>
+            <div class="tier-savings tier-savings-green">save 33%</div>
+          </div>
+
+          <div class="tier-card">
+            <div class="tier-name">Annual</div>
+            <div class="token-stack">
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+              <div class="token-coin"></div>
+            </div>
+            <div class="tier-days">365</div>
+            <div class="tier-days-label">days</div>
+            <div class="tier-price">$200</div>
+            <div class="tier-per-day">$0.55/day</div>
+            <div class="tier-savings tier-savings-green">save 45%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <div class="footer-left">
+      EthGlobal HackMoney 2026 &nbsp;&middot;&nbsp; Gatekeeper Subscription Protocol
+    </div>
+    <div class="footer-right">
+      <div class="footer-badge fb-uni">Uniswap v4 Hooks</div>
+      <div class="footer-badge fb-hook">Custom Curve AMM</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
