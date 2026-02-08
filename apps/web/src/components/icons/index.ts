@@ -1,1 +1,0 @@
-export { GoldMedalIcon } from './GoldMedalIcon'

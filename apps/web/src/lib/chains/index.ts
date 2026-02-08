@@ -1,1 +1,0 @@
-export { arcTestnet } from './arcTestnet'
