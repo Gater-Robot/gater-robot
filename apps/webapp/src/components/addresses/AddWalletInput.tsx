@@ -3,7 +3,6 @@ import { useMutation } from "convex/react"
 import { CheckIcon, XIcon, Loader2Icon, PlusIcon } from "lucide-react"
 import { toast } from "sonner"
 
-import { Button } from "@/components/ui/button"
 import { Field, FieldError } from "@/components/ui/field"
 import {
   InputGroup,
@@ -76,19 +75,18 @@ export function AddWalletInput({ onAdded }: { onAdded?: () => void }) {
           </InputGroupAddon>
         )}
 
-        <InputGroupButton>
-          <Button
-            size="sm"
-            onClick={handleAdd}
-            disabled={!isValid || isAdding}
-          >
-            {isAdding ? (
-              <Loader2Icon className="size-4 animate-spin" />
-            ) : (
-              <PlusIcon className="size-4" />
-            )}
-            Add
-          </Button>
+        <InputGroupButton
+          size="sm"
+          variant="default"
+          onClick={handleAdd}
+          disabled={!isValid || isAdding}
+        >
+          {isAdding ? (
+            <Loader2Icon className="size-4 animate-spin" />
+          ) : (
+            <PlusIcon className="size-4" />
+          )}
+          Add
         </InputGroupButton>
       </InputGroup>
 
