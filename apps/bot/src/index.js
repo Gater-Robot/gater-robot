@@ -24,13 +24,22 @@ const sendMessageSafe = (chatId, text, options) =>
     console.error("Failed to send message:", error);
   });
 
-const buildStartKeyboard = () => ({
+const buildWebAppUrl = (startParam) => {
+  if (!webAppUrl) return null;
+  const url = new URL(webAppUrl);
+  if (startParam) {
+    url.searchParams.set("startapp", startParam);
+  }
+  return url.href;
+};
+
+const buildStartKeyboard = (url) => ({
   reply_markup: {
     inline_keyboard: [
       [
         {
           text: "Open Mini App",
-          web_app: { url: webAppUrl },
+          web_app: { url },
         },
       ],
     ],
@@ -41,6 +50,7 @@ bot.onText(/\/start/, (msg) => {
   const chatId = msg.chat.id;
   const firstName = msg.from?.first_name || "there";
   const message = `Hi ${firstName}! Welcome to Gater Robot.`;
+  const userId = msg.from?.id;
 
   if (!webAppUrl) {
     sendMessageSafe(
@@ -50,10 +60,13 @@ bot.onText(/\/start/, (msg) => {
     return;
   }
 
+  const startParam = userId && adminModeByUser.get(userId) ? "admin" : null;
+  const startUrl = buildWebAppUrl(startParam);
+
   sendMessageSafe(
     chatId,
     `${message} Tap below to open the Mini App.`,
-    buildStartKeyboard(),
+    buildStartKeyboard(startUrl),
   );
 });
 
@@ -86,6 +99,15 @@ bot.onText(/\/admin/, (msg) => {
 
   const status = nextMode ? "enabled" : "disabled";
   sendMessageSafe(chatId, `Admin mode ${status}. Use /admin again to toggle.`);
+
+  if (!webAppUrl) return;
+
+  const startUrl = buildWebAppUrl(nextMode ? "admin" : null);
+  sendMessageSafe(
+    chatId,
+    "Tap below to open the Mini App.",
+    buildStartKeyboard(startUrl),
+  );
 });
 
 const buildHealthKeyboard = () => ({
