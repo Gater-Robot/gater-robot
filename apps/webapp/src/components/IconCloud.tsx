@@ -86,7 +86,6 @@ export function IconCloud({
 }: IconCloudProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [iconPositions, setIconPositions] = useState<Icon[]>([]);
-  const [rotation, setRotation] = useState({ x: 0, y: 0 });
   const isDraggingRef = useRef(false);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const mousePosRef = useRef({ x: 0, y: 0 });
@@ -100,7 +99,7 @@ export function IconCloud({
     duration: number;
   } | null>(null);
   const animationFrameRef = useRef<number>(0);
-  const rotationRef = useRef(rotation);
+  const rotationRef = useRef({ x: 0, y: 0 });
   const iconCanvasesRef = useRef<HTMLCanvasElement[]>([]);
   const imagesLoadedRef = useRef<boolean[]>([]);
   const iconPositionsRef = useRef<Icon[]>([]);
@@ -240,7 +239,7 @@ export function IconCloud({
     const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    iconPositionsRef.current.forEach(icon => {
+    for (const icon of iconPositionsRef.current) {
       const cosX = Math.cos(rotationRef.current.x);
       const sinX = Math.sin(rotationRef.current.x);
       const cosY = Math.cos(rotationRef.current.y);
@@ -281,7 +280,7 @@ export function IconCloud({
         };
         return;
       }
-    });
+    }
 
     isDraggingRef.current = true;
     lastMousePosRef.current = { x: e.clientX, y: e.clientY };

@@ -76,7 +76,7 @@ export function UserPage() {
   const { address, isConnected } = useAccount()
   const { addresses, isLoading: isLoadingAddresses } = useAddresses()
   const hasLinkedAddresses = addresses.length > 0
-  const hasVerifiedAddress = addresses.some((a: any) => a.verifiedAt)
+  const hasVerifiedAddress = addresses.some((a) => a.verifiedAt)
   const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0]
   const [searchParams] = useSearchParams()
 
