@@ -1,13 +1,13 @@
 {
   "base": {
     "chainId": 8453,
-    "factory": "",
-    "router": "",
-    "poolManager": "",
-    "usdc": "",
-    "sampleToken": "",
-    "sampleHook": "",
-    "updatedAt": ""
+    "factory": "0xFe51bfd14338905bbdAC5b247b35e437D032d45B",
+    "router": "0x236e648b7ae896c74d303e1c5d0884caaa70d136",
+    "poolManager": "0x498581fF718922c3f8e6A244956aF099B2652b2b",
+    "usdc": "0x5302c4F76B202d6CE60B61eA43E3d8A0851ABb93",
+    "sampleToken": "0xE1247a671f1596DdF26cE61CCAe18329f4eCCbC4",
+    "sampleHook": "0xE145b20B1597D6D91dcB0844Cdb0b9398ccD8a88",
+    "updatedAt": "2026-02-08T13:51:18.098Z"
   },
   "baseSepolia": {
     "chainId": 84532,

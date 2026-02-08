@@ -2,7 +2,7 @@
 
 Contracts, tests, and deployment tooling for:
 - existing BEST token flows (Hardhat + Ignition)
-- new v4 subscription protocol (Foundry-first scripts, shared package exports)
+- new v4 subscription protocol (Foundry + Hardhat step-by-step scripts, shared package exports)
 
 ## Quick Start
 ```bash
@@ -10,6 +10,10 @@ pnpm install
 pnpm --filter @gater/contracts build
 pnpm --filter @gater/contracts test
 ```
+
+Frontend imports can use:
+- ABIs + addresses from `@gater/contracts`
+- Typed viem contract helper types from `@gater/contracts` (`BestTokenContract`, `SubscriptionFactoryContract`, etc.)
 
 ## Environment
 Copy and configure:
@@ -23,13 +27,23 @@ Core vars for legacy Hardhat deploys:
 - `ARC_CHAIN_ID`
 - `ARC_TESTNET_RPC_URL`
 
-Core vars for subscription v4 scripts:
+Core vars for subscription v4 Foundry scripts:
 - `PRIVATE_KEY`
 - `POOL_MANAGER`
 - `USDC`
 - `FACTORY`
 - `ROUTER`
 - `HOOK_SALT`
+
+Core vars for subscription v4 Hardhat numbered scripts:
+- `DEPLOYER_PRIVATE_KEY`
+- `BASE_RPC_URL` (or target network RPC)
+- `POOL_MANAGER`
+- `USDC` (if skipping step 1)
+- `FACTORY` (if skipping step 2)
+- `ROUTER` (if skipping step 2)
+- `SUB_TOKEN` (if skipping step 3)
+- `HOOK_SALT` (step 5)
 
 ## Legacy Deployments (Hardhat Ignition)
 ```bash
@@ -104,6 +118,29 @@ pnpm --filter @gater/contracts deploy:subs:demo
 Sync subscription addresses artifact:
 ```bash
 pnpm --filter @gater/contracts sync:subs:addresses
+```
+
+## Subscription v4 Deploy Flow (Hardhat, numbered)
+Run each step with `--network base` (or use the `:base:*` commands):
+
+```bash
+# 1) Deploy MockUSDC and save as deployments/subscriptions.json -> network.usdc
+pnpm --filter @gater/contracts deploy:subs:base:01
+
+# 2) Deploy factory + router and save addresses
+pnpm --filter @gater/contracts deploy:subs:base:02
+
+# 3) Create SUB token and save sampleToken
+pnpm --filter @gater/contracts deploy:subs:base:03
+
+# 4) Mine HOOK_SALT offline (copy FOUND_SALT_HEX into HOOK_SALT in .env)
+pnpm --filter @gater/contracts deploy:subs:base:04
+
+# 5) Setup pool + hook + role grants, save sampleHook
+pnpm --filter @gater/contracts deploy:subs:base:05
+
+# 6) Verify deployed contracts on Basescan
+pnpm --filter @gater/contracts deploy:subs:base:06
 ```
 
 ## Tests

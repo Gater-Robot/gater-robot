@@ -11,6 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@gater/contracts": "workspace:*",
     "@gater/chain-registry": "workspace:*",
     "@base-ui/react": "^1.1.0",
     "@hookform/resolvers": "^5.2.2",

@@ -6,3 +6,9 @@ export {
   SUBSCRIPTION_ROUTER_ABI
 } from "./subscriptions-abi";
 export { SUBSCRIPTION_ADDRESSES } from "./subscription-addresses";
+export type {
+  BestTokenContract,
+  SubscriptionFactoryContract,
+  SubscriptionHookContract,
+  SubscriptionRouterContract
+} from "./contract-types";
