@@ -1,6 +1,6 @@
 /// <reference types="vite/client" />
 
-// Type declaration for ethereum-identity-kit CSS import (used by apps/web parity)
+// Type declaration for ethereum-identity-kit CSS import.
 declare module 'ethereum-identity-kit/css'
 
 interface ImportMetaEnv {
@@ -25,4 +25,3 @@ declare global {
     ethereum?: EthereumProvider
   }
 }
-

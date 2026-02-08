@@ -7,7 +7,6 @@
   },
   "scripts": {
     "dev": "turbo run dev --parallel",
-    "dev:old-web": "pnpm --filter @gater/web run dev:old",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "test": "turbo run test"

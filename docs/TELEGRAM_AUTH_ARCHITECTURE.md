@@ -670,7 +670,7 @@ export const updateGate = mutation({
 ### 4.5 Mini App Client Integration
 
 ```typescript
-// apps/web/src/lib/telegram.ts
+// apps/webapp/src/lib/telegram.ts
 
 /**
  * Get raw initData from Telegram WebApp SDK
@@ -707,7 +707,7 @@ export function getTelegramInitDataUnsafe(): {
   return tg?.initDataUnsafe || null;
 }
 
-// apps/web/src/hooks/useTelegramAuth.ts
+// apps/webapp/src/hooks/useTelegramAuth.ts (example)
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { getTelegramInitData } from "../lib/telegram";

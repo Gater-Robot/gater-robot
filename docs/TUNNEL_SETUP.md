@@ -152,7 +152,7 @@ After first deploy, you'll get a URL like `https://gater-robot.vercel.app`
 2. Import your GitHub repo
 3. Configure:
    - Framework: Vite
-   - Root Directory: `apps/web` (if monorepo)
+   - Root Directory: `apps/webapp` (if monorepo)
    - Build Command: `pnpm build`
    - Output Directory: `dist`
 
@@ -388,7 +388,7 @@ cloudflared tunnel login
 ### Vercel deploy failing
 
 1. Check build logs in Vercel dashboard
-2. Ensure `apps/web/package.json` has correct build script
+2. Ensure `apps/webapp/package.json` has correct build script
 3. Verify Node version matches (check `.nvmrc` or `package.json` engines)
 
 ---
@@ -407,7 +407,7 @@ cloudflared tunnel login
 After setting up your tunnel:
 
 1. Run the bot: `pnpm --filter @gater/bot dev`
-2. Run the web app: `pnpm --filter @gater/web dev`
+2. Run the web app: `pnpm --filter @gater/webapp dev`
 3. Start the tunnel: `cloudflared tunnel --url http://localhost:5173`
 4. Open Telegram → Your Bot → Menu Button
 5. Mini App should load!

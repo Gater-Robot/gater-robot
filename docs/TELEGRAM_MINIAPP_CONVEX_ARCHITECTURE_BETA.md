@@ -19,11 +19,11 @@ architecture-beta
     service bot(server)[Bot Service] in gater
     service mini(server)[Mini App Frontend] in gater
 
-    service cxApi(server)[Functions / Actions] in convex
+    service cxApi(server)[Functions and Actions] in convex
     service cxDb(database)[Convex DB] in convex
 
     service rpc(internet)[RPC Providers] in web3
-    service lifi(internet)[LI.FI] in web3
+    service lifi(internet)[LIFI] in web3
     service ens(internet)[ENS] in web3
 
     admin:R --> L:tgBot

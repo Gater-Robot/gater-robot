@@ -1,8 +1,10 @@
 # Web Mini-App → Webapp Migration Plan & Tracker
 
-**Status:** Draft  
+**Status:** Completed (historical)  
 **Owners:** TBD  
-**Last updated:** 2026-02-04
+**Last updated:** 2026-02-08
+
+> Note: `apps/web` has been removed from the repository. This document is kept as migration history.
 
 ## Context
 

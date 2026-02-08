@@ -1,6 +1,6 @@
 # Release Gate — apps/webapp Mini-App
 
-This doc defines the minimum “release gate” criteria to cut over from `apps/web` to `apps/webapp`.
+This doc defines the minimum release-gate criteria for shipping `apps/webapp`.
 
 ## Must-pass
 
@@ -16,4 +16,3 @@ This doc defines the minimum “release gate” criteria to cut over from `apps/
 
 - `/health` diagnostics available in dev and Telegram admin mode.
 - `/get-eligible` code-split so LI.FI widget doesn’t slow initial load.
-

@@ -93,9 +93,10 @@ See `docs/FINAL_PLAN.md` for the reconciled 5‑day demo plan and where the olde
 
 ---
 
-## Webapp migration (apps/web → apps/webapp)
+## Webapp migration
 
-See `docs/WEBAPP_MIGRATION_PLAN.md` for the parity definition, phased migration plan, and tracker.
+`apps/web` has been removed. `apps/webapp` is the only maintained mini-app.
+See `docs/WEBAPP_MIGRATION_PLAN.md` for historical migration notes.
 
 ---
 

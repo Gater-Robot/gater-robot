@@ -4,7 +4,7 @@ This doc is the “do we ship?” checklist for the `apps/webapp` migration.
 
 ## Goals
 
-- Confirm **feature parity** vs `apps/web` for the mini-app routes.
+- Confirm **feature completeness** for the mini-app routes.
 - Confirm **security posture** for Telegram auth + SIWE.
 - Confirm **prod readiness** on the real Telegram Mini App URLs.
 
@@ -70,4 +70,3 @@ Manual mode:
 - Verify Telegram Mini App points to the correct URL (dev/prod).
 - Validate SIWE on the production domain (domain allowlist on backend must match).
 - Validate `DISABLE_INSECURE_MUTATIONS=true` and core secure admin actions still work.
-
