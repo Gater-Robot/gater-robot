@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { useSIWE, type SIWEStatus } from "@/hooks/useSIWE"
 
 export interface SIWEButtonProps {
+  /** The wallet address to verify. If not provided, uses currently connected wallet. */
+  address?: string
   onSuccess?: () => void
   onError?: (error: string) => void
   className?: string
@@ -55,8 +57,8 @@ function getStatusVariant(status: SIWEStatus): "default" | "success" | "destruct
   }
 }
 
-export function SIWEButton({ onSuccess, onError, className }: SIWEButtonProps) {
-  const { status, error, verify, reset, isVerifying, isSuccess, isError } = useSIWE()
+export function SIWEButton({ address, onSuccess, onError, className }: SIWEButtonProps) {
+  const { status, error, verify, reset, isVerifying, isSuccess, isError } = useSIWE(address)
 
   React.useEffect(() => {
     if (isSuccess && onSuccess) onSuccess()

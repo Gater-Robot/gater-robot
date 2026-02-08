@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner"
 import { WalletToolbar } from "@/components/wallet/WalletToolbar"
 import { useTelegram } from "@/contexts/TelegramContext"
 import { getAdminStartParamRedirect } from "@/lib/adminMode"
+import { cn } from "@/lib/utils"
 
 function getPageKey(pathname: string) {
   if (pathname.startsWith("/user")) return "user"
@@ -22,6 +23,7 @@ function getPageKey(pathname: string) {
 export function RootLayout() {
   const location = useLocation()
   const pageKey = getPageKey(location.pathname)
+  const isFaucetPage = pageKey === "faucet"
   const navigate = useNavigate()
   const { isInitialized, isInTelegram, setBackButton, startParam } = useTelegram()
   const [searchParams] = useSearchParams()
@@ -67,11 +69,16 @@ export function RootLayout() {
       className="flex min-h-[100svh] flex-col bg-flux-gradient bg-dots text-foreground"
     >
       <WalletToolbar />
-      <main className="mx-auto max-w-2xl flex-1 px-4 pt-4 pb-20 sm:max-w-4xl sm:pr-20">
+      <main
+        className={cn(
+          "mx-auto max-w-2xl flex-1 px-4 pt-4 sm:max-w-4xl",
+          isFaucetPage ? "pb-4" : "pb-20 sm:pr-20",
+        )}
+      >
         <Outlet />
       </main>
 
-      <AppNav />
+      {!isFaucetPage && <AppNav />}
       <Toaster />
       <TelegramThemeSync />
     </div>

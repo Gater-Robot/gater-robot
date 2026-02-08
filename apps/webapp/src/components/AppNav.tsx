@@ -1,6 +1,5 @@
 import * as React from "react"
 import {
-  DropletIcon,
   FlaskConicalIcon,
   HomeIcon,
   LayoutGridIcon,
@@ -25,7 +24,6 @@ type NavItem = {
 const NAV_ITEMS: NavItem[] = [
   { to: "/user", label: "Home", Icon: HomeIcon },
   { to: "/get-eligible", label: "Check", Icon: ShieldCheckIcon },
-  { to: "/faucet", label: "Faucet", Icon: DropletIcon },
   { to: "/ens-eth-id", label: "Workshop", Icon: FlaskConicalIcon },
   { to: "/orgs", label: "Manage", Icon: LayoutGridIcon, adminOnly: true },
 ]

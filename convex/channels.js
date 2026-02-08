@@ -11,7 +11,8 @@ export const listChannelsForOrg = query({
     const user = await requireAuth(ctx, args.initDataRaw);
     // Authorization: verify caller owns the org
     const org = await ctx.db.get(args.orgId);
-    if (!org || org.ownerTelegramUserId !== user.id) {
+    if (!org) return [];
+    if (org.ownerTelegramUserId !== user.id) {
       throw new Error("Not authorized to view channels for this org");
     }
 

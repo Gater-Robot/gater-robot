@@ -12,6 +12,10 @@ import { wagmiAdapter, enabledChains, WALLET_CONNECT_PROJECT_ID } from "./wagmi"
 // MetaMask WalletConnect Explorer ID
 const METAMASK_WALLET_ID =
   "c57ca95b47569778a828d19178114f4db188b89b763c899ba0be274e97267d96"
+const appUrl =
+  (import.meta.env.VITE_APP_URL as string | undefined)?.trim() ||
+  window.location.origin
+const appIconUrl = new URL("/icon.png", appUrl).toString()
 
 createAppKit({
   adapters: [wagmiAdapter],
@@ -20,12 +24,11 @@ createAppKit({
   metadata: {
     name: "Gater Robot",
     description: "Token-gated Telegram groups",
-    url: "https://gater-app.agentix.bot",
-    icons: ["https://gater-app.agentix.bot/icon.png"],
+    url: appUrl,
+    icons: [appIconUrl],
   },
   featuredWalletIds: [METAMASK_WALLET_ID],
-  includeWalletIds: [METAMASK_WALLET_ID],
-  allWallets: "HIDE",
+  allWallets: "SHOW",
   themeMode: document.documentElement.classList.contains("dark") ? "dark" : "light",
   themeVariables: {
     "--w3m-accent": "#2dd4bf",

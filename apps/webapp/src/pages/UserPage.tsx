@@ -11,9 +11,9 @@ import {
 import { StatusBanner } from "@/components/ui/status-banner"
 import { useAccount } from "wagmi"
 
-import { AddressList } from "@/components/addresses/AddressList"
+import { WalletTable } from "@/components/addresses/WalletTable"
 import { EligibilityChecker } from "@/components/eligibility/EligibilityChecker"
-import { ENSIdentityCard } from "@/components/ens"
+import { IdentityCard } from "@/components/ens"
 import { ConnectWallet } from "@/components/wallet/ConnectWallet"
 import { TelegramLinkVerify } from "@/components/ens/TelegramLinkVerify"
 import { SIWEButton } from "@/components/wallet/SIWEButton"
@@ -74,9 +74,10 @@ function UserStatusBanner({
 export function UserPage() {
   const { user, isLoading, isInTelegram } = useTelegram()
   const { address, isConnected } = useAccount()
-  const { addresses } = useAddresses()
+  const { addresses, isLoading: isLoadingAddresses } = useAddresses()
   const hasLinkedAddresses = addresses.length > 0
-  const hasVerifiedAddress = addresses.some((a: any) => a.verifiedAt)
+  const hasVerifiedAddress = addresses.some((a) => a.verifiedAt)
+  const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0]
   const [searchParams] = useSearchParams()
 
   const urlChannelId = searchParams.get("channelId")
@@ -168,32 +169,14 @@ export function UserPage() {
         </CollapsibleContent>
       </Collapsible>
 
-      {/* Identity card - compact */}
-      <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-4 fade-up stagger-2">
-        <div className="flex items-center gap-2">
-          <div className={cn(
-            "flex size-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/80 to-primary text-sm font-bold text-primary-foreground",
-            hasVerifiedAddress && "ring-2 ring-primary/20 shadow-[0_0_12px_var(--color-glow)]"
-          )}>
-            {user.firstName.charAt(0)}
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-medium">
-              {user.firstName}
-              {user.lastName ? ` ${user.lastName}` : ""}
-            </p>
-            {user.username && (
-              <p className="truncate text-sm text-muted-foreground">
-                @{user.username}
-              </p>
-            )}
-          </div>
-          <div className="flex shrink-0 gap-1.5">
-            <Badge variant="flux" size="sm">{user.id}</Badge>
-            {user.isPremium && <Badge variant="ens" size="sm">PRO</Badge>}
-          </div>
-        </div>
-      </div>
+      {/* Identity card - ENS profile or Telegram fallback */}
+      <IdentityCard
+        className="fade-up stagger-2"
+        telegramUser={user}
+        defaultAddress={defaultAddress?.address as `0x${string}` | undefined}
+        isLoadingAddresses={isLoadingAddresses}
+        hasVerifiedAddress={hasVerifiedAddress}
+      />
 
       {/* Primary action - contextual */}
       {!isConnected ? (
@@ -226,27 +209,19 @@ export function UserPage() {
             )}
           </div>
           <div className="rounded-xl border border-border bg-[var(--color-surface-alt)] p-3">
-            <AddressList />
+            <WalletTable />
           </div>
-        </section>
-      )}
-
-      {/* ENS Identity - expandable section */}
-      {isConnected && address && (
-        <section className="space-y-1.5 fade-up stagger-4">
-          <SectionHeader>ENS Identity</SectionHeader>
-          <ENSIdentityCard address={address} compact />
         </section>
       )}
 
       {/* Channel eligibility */}
       {urlChannelId ? (
-        <section className="space-y-1.5 fade-up stagger-5">
+        <section className="space-y-1.5 fade-up stagger-4">
           <SectionHeader>Channel Eligibility</SectionHeader>
           <EligibilityChecker channelId={urlChannelId as Id<"channels">} compact />
         </section>
       ) : (
-        <section className="fade-up stagger-5">
+        <section className="fade-up stagger-4">
           <Link
             to="/get-eligible"
             className="group flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-[0_0_16px_var(--color-glow)]"

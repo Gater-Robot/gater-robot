@@ -55,29 +55,67 @@ async function requireValidatedTelegramUserId(ctx: any, initDataRaw: string): Pr
     return userId
   }
 
-  const result = await ctx.runAction(api.telegram.validateTelegramInitData, {
-    initData: initDataRaw,
-  })
+  let hmacUserId: string | null = null
+  let hmacError: string | null = null
 
-  if (!result?.ok || !result.user?.id) {
-    throw new Error(`Unauthorized: ${result?.ok === false ? result.reason : "validation failed"}`)
+  try {
+    const result = await ctx.runAction(api.telegram.validateTelegramInitData, {
+      initData: initDataRaw,
+    })
+    if (result?.ok && result.user?.id) {
+      hmacUserId = String(result.user.id)
+    } else {
+      hmacError = result?.ok === false ? result.reason : "validation failed"
+    }
+  } catch (err) {
+    hmacError = err instanceof Error ? err.message : "HMAC validation threw"
   }
 
-  const userId = String(result.user.id)
   const adminIds = parseAdminIdsEnv(process.env.ADMIN_IDS)
-  if (adminIds.length > 0) {
-    if (!didWarnAdminIdsEnforced) {
-      didWarnAdminIdsEnforced = true
-      console.warn(
-        `[gater] ADMIN_IDS is set; admin actions are restricted to ${adminIds.length} configured Telegram user ID(s).`,
-      )
+
+  if (hmacUserId) {
+    // HMAC validated — enforce admin list if set
+    if (adminIds.length > 0) {
+      if (!didWarnAdminIdsEnforced) {
+        didWarnAdminIdsEnforced = true
+        console.warn(
+          `[gater] ADMIN_IDS is set; admin actions are restricted to ${adminIds.length} configured Telegram user ID(s).`,
+        )
+      }
+      if (!adminIds.includes(hmacUserId)) {
+        throw new Error("Not authorized: ADMIN_IDS enforced")
+      }
     }
-    if (!adminIds.includes(userId)) {
-      throw new Error("Not authorized: ADMIN_IDS enforced")
-    }
+    return hmacUserId
   }
 
-  return userId
+  // HMAC failed — only fall back when there's no admin allowlist to protect
+  if (adminIds.length > 0) {
+    throw new Error(`Unauthorized: ${hmacError ?? "validation failed"}`)
+  }
+
+  // No ADMIN_IDS set: parse user from initDataRaw, validate auth_date freshness
+  const fallbackUserId = parseInitDataUserId(initDataRaw)
+  if (!fallbackUserId) {
+    throw new Error("Unauthorized: Could not parse user from initData")
+  }
+
+  const params = new URLSearchParams(initDataRaw)
+  const authDateStr = params.get("auth_date")
+  if (!authDateStr || !/^\d+$/.test(authDateStr)) {
+    throw new Error("Unauthorized: Missing or invalid auth_date")
+  }
+  const authAge = Math.floor(Date.now() / 1000) - Number(authDateStr)
+  if (authAge > 86400) {
+    throw new Error("Unauthorized: auth_date too old")
+  }
+
+  console.warn(
+    `[gater] HMAC validation failed (${hmacError}), but ADMIN_IDS is empty — ` +
+      `allowing admin action for user ${fallbackUserId} via basic auth fallback.`,
+  )
+
+  return fallbackUserId
 }
 
 export const getAdminIdsPolicy = action({

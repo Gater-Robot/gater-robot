@@ -26,6 +26,37 @@ Open in Telegram [@GaterRobot](https://t.me/gaterrobot)
 
 ---
 
+## Telegram Direct Links
+
+- Main Mini App: `https://t.me/GaterRobot/app`
+- BEST Faucet: `https://t.me/GaterRobot/faucet`
+- Admin: `https://t.me/GaterRobot/admin`
+- LiFi Get Eligible: `https://t.me/GaterRobot/lifi`
+
+---
+
+## QR Codes
+
+### Main Mini App
+
+[<img src="docs/assets/qr/gaterrobot-telegram-qr.png" alt="QR code for Gater Robot mini app direct link" width="220" />](https://t.me/GaterRobot/app)
+
+Direct link: `https://t.me/GaterRobot/app`
+
+### BEST Faucet
+
+[<img src="docs/assets/qr/gaterrobot-faucet-deeplink-qr.png" alt="QR code for Gater Robot mini app BEST Faucet direct link" width="220" />](https://t.me/GaterRobot/faucet)
+
+Direct link: `https://t.me/GaterRobot/faucet`
+
+### Admin
+
+[<img src="docs/assets/qr/gaterrobot-admin-qr.png" alt="QR code for Gater Robot mini app admin direct link" width="220" />](https://t.me/GaterRobot/admin)
+
+Direct link: `https://t.me/GaterRobot/admin`
+
+---
+
 ## Development tunnel (Cloudflare Tunnel)
 
 Telegram Mini Apps must be served from a **public HTTPS URL** during development. We use Cloudflare Quick Tunnel

@@ -1,6 +1,6 @@
 ---
-name: impl-pr-review-triage
-description: Implement a plan, create PR, run parallel code reviews, and triage feedback. Use after discussing and approving a plan that needs implementation.
+name: impl-pr-review-triage-wt
+description: Implement a plan in a git worktree, create PR, run parallel code reviews, and triage feedback. Use after discussing and approving a plan that needs implementation.
 argument-hint: creates feat/[branch-name], otherwise name is auto-generated
 disable-model-invocation: true
 allowed-tools: Bash(git status *), Bash(git log *), Bash(git diff *), Bash(git branch --show-current), Bash(git branch -l *), Bash(git show *), Bash(git remote *), Bash(git worktree list), Bash(gh pr list *), Bash(gh pr view *), Bash(gh pr diff *), Bash(gh pr checks *), Bash(gh pr comment *), Bash(gh issue list *), Bash(gh issue view *), Bash(gh issue comment *), Bash(gh api *)
@@ -13,10 +13,13 @@ allowed-tools: Bash(git status *), Bash(git log *), Bash(git diff *), Bash(git b
 Current branch: !`git branch --show-current`
 Repository: !`git remote get-url origin 2>/dev/null || echo "local"`
 
-## 1: Setup Branch
+good plan. please do this, but do it in a work tree. 
 
-1. Create a new branch `feat/$ARGUMENTS` (or generate a descriptive branch name if no argument provided)
-2. Branch from the current branch: !`git branch --show-current`
+## 1: Setup Worktree & Branch
+
+1. Create a new git worktree with branch `feat/$ARGUMENTS` (or generate a descriptive branch name if no argument provided)
+2. The worktree should branch from the current branch: !`git branch --show-current`
+3. Change to the worktree directory
 
 ## 2: Agent Implementation
 

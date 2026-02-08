@@ -15,3 +15,12 @@ export {
 
 export { ENSLookup } from "./ENSLookup"
 
+export {
+  IdentityCard,
+  IdentityCardSkeleton,
+  ENSCTACard,
+  ENSProfileCard,
+  TelegramIdentityCard,
+  type IdentityCardProps,
+} from "./IdentityCard"
+

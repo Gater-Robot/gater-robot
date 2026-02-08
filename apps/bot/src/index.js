@@ -11,8 +11,6 @@ if (!token) {
 }
 
 const bot = new TelegramBot(token, { polling: true });
-// Note: admin mode is stored in-memory and resets on restart.
-const adminModeByUser = new Map();
 
 const adminIds = (process.env.ADMIN_IDS ?? "")
   .split(",")
@@ -59,33 +57,21 @@ bot.onText(/\/start/, (msg) => {
 
 bot.onText(/\/admin/, (msg) => {
   const chatId = msg.chat.id;
-  const userId = msg.from?.id;
 
-  if (!userId) {
-    sendMessageSafe(chatId, "Unable to determine your user ID.");
-    return;
+  if (adminIds.length > 0) {
+    const userId = msg.from?.id;
+    if (!userId || !adminIds.includes(String(userId))) {
+      sendMessageSafe(chatId, "You are not authorized to use admin mode.");
+      return;
+    }
   }
 
-  if (adminIds.length === 0) {
-    sendMessageSafe(
-      chatId,
-      "Admin mode is not configured. Please set ADMIN_IDS in the bot environment.",
-    );
-    return;
-  }
-
-  if (!adminIds.includes(String(userId))) {
-    sendMessageSafe(chatId, "You are not authorized to use admin mode.");
-    return;
-  }
-
-  const currentMode = adminModeByUser.get(userId) ?? false;
-  const nextMode = !currentMode;
-
-  adminModeByUser.set(userId, nextMode);
-
-  const status = nextMode ? "enabled" : "disabled";
-  sendMessageSafe(chatId, `Admin mode ${status}. Use /admin again to toggle.`);
+  const adminUrl = "https://t.me/GaterRobot/admin";
+  sendMessageSafe(chatId, "Tap below to open the admin panel.", {
+    reply_markup: {
+      inline_keyboard: [[{ text: "Open Admin Panel", url: adminUrl }]],
+    },
+  });
 });
 
 const buildHealthKeyboard = () => ({

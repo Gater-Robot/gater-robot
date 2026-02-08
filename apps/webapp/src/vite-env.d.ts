@@ -4,6 +4,7 @@
 declare module 'ethereum-identity-kit/css'
 
 interface ImportMetaEnv {
+  readonly VITE_APP_URL?: string
   readonly VITE_CONVEX_URL?: string
   readonly VITE_WALLET_CONNECT_PROJECT_ID?: string
   readonly VITE_BEST_TOKEN_ADDRESS?: string
@@ -25,4 +26,3 @@ declare global {
     ethereum?: EthereumProvider
   }
 }
-

@@ -12,7 +12,7 @@ import {
   XCircleIcon,
 } from "lucide-react"
 import { useForm } from "react-hook-form"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { parseUnits } from "viem"
 import { toast } from "sonner"
 import { useQuery } from "convex/react"
@@ -31,6 +31,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TelegramAuthDebugPanel } from "@/components/debug/TelegramAuthDebugPanel"
 
 type OrgDoc = {
   _id: string
@@ -60,14 +61,16 @@ type CreateGateValues = z.infer<typeof createGateSchema>
 
 export function OrgPage() {
   const params = useParams()
+  const navigate = useNavigate()
   const orgId = params.orgId ?? null
 
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
+  const canLoadOrg = Boolean(initDataRaw && orgId)
 
   const org = useQuery(
     api.orgs.getOrgById,
-    initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
+    canLoadOrg && initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
   ) as OrgDoc | null | undefined
 
   const {
@@ -79,6 +82,13 @@ export function OrgPage() {
   } = useChannels(orgId)
 
   const [selectedChannelId, setSelectedChannelId] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (org === null) {
+      toast.error("Organization not found")
+      navigate("/orgs", { replace: true })
+    }
+  }, [org, navigate])
 
   React.useEffect(() => {
     if (selectedChannelId) return
@@ -184,7 +194,7 @@ export function OrgPage() {
     }
   }
 
-  if (telegram.isLoading || org === undefined) {
+  if (telegram.isLoading || (canLoadOrg && org === undefined)) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
@@ -194,7 +204,7 @@ export function OrgPage() {
     )
   }
 
-  if (!telegram.user) {
+  if (!telegram.user || !initDataRaw) {
     return (
       <Card className="py-0">
         <CardContent className="pt-6">
@@ -203,30 +213,17 @@ export function OrgPage() {
             <h2 className="mb-2 text-xl font-semibold">Authentication Required</h2>
             <p className="text-muted-foreground">
               {telegram.isInTelegram
-                ? "Unable to load user data from Telegram."
+                ? "Unable to validate your Telegram session. Please reopen the Mini App."
                 : "Please open this app in Telegram to manage organizations."}
             </p>
+            <TelegramAuthDebugPanel />
           </div>
         </CardContent>
       </Card>
     )
   }
 
-  if (!org) {
-    return (
-      <Card className="py-0">
-        <CardContent className="pt-6">
-          <div className="py-8 text-center">
-            <CircleSlash2Icon className="mx-auto mb-4 size-12 text-muted-foreground" />
-            <h2 className="mb-2 text-xl font-semibold">Organization not found</h2>
-            <p className="text-muted-foreground">
-              You may not have access to this organization.
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    )
-  }
+  if (!org) return null
 
   return (
     <div className="space-y-6">
