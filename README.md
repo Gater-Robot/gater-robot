@@ -13,25 +13,40 @@ BEST Token: https://basescan.org/address/0x8a0B10A0164CDfd633b914eFb36D338C3CD17
 
 ```mermaid
 gitGraph
-   commit id: "main"
+   commit id: "main baseline"
+   branch develop
+   checkout develop
+   commit id: "integration work"
    branch feat/issue-123
    checkout feat/issue-123
-   commit id: "build feature"
-   commit id: "tests/docs"
+   commit id: "feature impl"
+   commit id: "tests + docs"
+   checkout develop
+   merge feat/issue-123 tag: "PR -> develop"
+
+   branch sprint4-beta
+   checkout sprint4-beta
+   commit id: "UAT candidate"
+   branch fix/uat-hotfix
+   checkout fix/uat-hotfix
+   commit id: "uat fix"
+   checkout sprint4-beta
+   merge fix/uat-hotfix tag: "PR -> sprint branch"
+   checkout develop
+   merge fix/uat-hotfix tag: "back-merge fix"
+
    checkout main
-   merge feat/issue-123 tag: "PR merged"
-   commit id: "stabilize"
-   branch release/2026-02-xx
-   checkout release/2026-02-xx
-   commit id: "release fixes"
-   checkout main
-   merge release/2026-02-xx tag: "vX.Y.Z"
+   merge sprint4-beta tag: "release tag vX.Y.Z"
+   checkout develop
+   merge main tag: "sync from main"
 ```
 
 Flow summary:
-- branch from `main` -> open PR -> merge back to `main`
-- cut `release/*` branch only when preparing a versioned release
-- merge release branch to `main` and tag the merge commit
+- `develop` is the default integration branch
+- feature branches are cut from `develop` and merged to `develop` via PR
+- sprint/release candidate branches (e.g. `sprint4-beta`, `sprint2-rc`) are cut from `develop` for UAT
+- fixes found during UAT are merged to sprint branch and back-merged to `develop`
+- final release is merged from sprint branch to `main` and tagged, then `main` is synced back into `develop`
 
 >**Elevator pitch**
 >

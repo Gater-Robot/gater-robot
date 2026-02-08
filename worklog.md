@@ -67,6 +67,11 @@
 - Added repository branching/PR/release `gitGraph` diagram to root README:
   - `README.md`
   - shows feature branch -> PR merge -> release branch -> version tag pattern.
+- Corrected README branching graph to actual repo pattern:
+  - `develop` as integration branch
+  - feature PRs into `develop`
+  - sprint/UAT branches (e.g. `sprint4-beta`, `sprint2-rc`)
+  - release merge to `main` with tag and back-sync to `develop`.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
