@@ -1,6 +1,9 @@
 export function getAdminStartParamRedirect(startParam?: string | null): string | null {
   if (!startParam) return null
 
+  // Non-admin deep-link payload for the faucet route.
+  if (startParam === "faucet") return "/faucet"
+
   if (startParam === "admin") return "/orgs"
 
   if (startParam.startsWith("org_")) {
@@ -30,4 +33,3 @@ export function getIsAdminMode(args: {
 
   return false
 }
-
