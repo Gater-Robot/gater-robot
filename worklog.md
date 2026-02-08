@@ -58,6 +58,9 @@
 - Added C4 architecture doc focused on Telegram bot + Mini App + Convex:
   - `docs/TELEGRAM_MINIAPP_CONVEX_C4.md`
   - includes C4 Level 1 (System Context) and C4 Level 2 (Container) Mermaid diagrams.
+- Added coupon packet diagram doc for planned `hookData` coupon extension:
+  - `docs/COUPON_PACKET_DIAGRAM.md`
+  - includes packet field layout, signed payload model, and swap validation flow.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).
