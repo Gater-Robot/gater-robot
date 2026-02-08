@@ -21,3 +21,16 @@
 - Updated `packages/contracts/README.md` with manual runbook, pre-flight checklist, and UAT checklist.
 - Validation run: hardhat compile passes; hardhat test command runs with no configured JS/TS runner; forge tests/scripts blocked by missing `forge` binary.
 - Attempted completion notification via `ntfy_send`; command failed because binary is not installed in this environment.
+- Starting follow-up execution: Foundry install/run, Hardhat TS test-runner wiring, and local sub-store integration pass.
+- Installed Foundry toolchain (`forge`, `cast`, `anvil`, `chisel`) via `foundryup`.
+- Foundry uncovered mixed v4 type imports between `@uniswap/v4-core` and `@uniswap/v4-periphery/lib/v4-core`; normalizing all subscription imports to `@uniswap/v4-core`.
+- Applying unified import strategy: subscription contracts/scripts use `@uniswap/v4-periphery/lib/v4-core` types, and Foundry remaps `@uniswap/v4-core` to the same tree for BaseHook/SafeCallback compatibility.
+- Enabled Hardhat 3 Mocha test execution by adding `@nomicfoundation/hardhat-mocha` + `@nomicfoundation/hardhat-network-helpers` and wiring plugins in `packages/contracts/hardhat.config.ts`.
+- Fixed JS/TS contract tests for Hardhat 3:
+  - removed invalid `networkHelpers.reset()` usage.
+  - stabilized `SubscriptionDaysToken` decay assertions with same-connection time helpers and bounded bigint tolerance.
+- Validation run (follow-up): `pnpm --filter @gater/contracts test` now passes with 12/12 tests.
+- Validation run: `pnpm --filter @gater/contracts build` passes.
+- Validation run: Forge suite passes (6/6) using `~/.foundry/bin/forge` / PATH-adjusted `pnpm --filter @gater/contracts test:forge`.
+- Added contracts CI workflow `.github/workflows/contracts-ci.yml` to run Hardhat compile/tests plus Forge tests on PR/push for `packages/contracts`.
+- Ran local sub-store verification step: `pnpm --filter @gater/sub-store build` passes (non-blocking Vite chunk-size warning only).

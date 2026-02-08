@@ -4,6 +4,11 @@ import hre from "hardhat";
 
 const SUB_UNIT = 10n ** 18n;
 
+async function getViem() {
+  const { viem } = await hre.network.connect();
+  return viem;
+}
+
 function defaultCfg(overrides: Partial<any> = {}) {
   return {
     basePriceUsdc: 1_000_000,
@@ -20,8 +25,9 @@ function defaultCfg(overrides: Partial<any> = {}) {
 
 describe("SubPricing", () => {
   it("applies monthly and yearly bundle pricing at exact bundle amounts", async () => {
-    const [deployer] = await hre.viem.getWalletClients();
-    const harness = await hre.viem.deployContract("SubPricingHarness", [], {
+    const viem = await getViem();
+    const [deployer] = await viem.getWalletClients();
+    const harness = await viem.deployContract("SubPricingHarness", [], {
       account: deployer.account,
     });
 
@@ -35,8 +41,9 @@ describe("SubPricing", () => {
   });
 
   it("uses ceil rounding for exact output buy on fractional amounts", async () => {
-    const [deployer] = await hre.viem.getWalletClients();
-    const harness = await hre.viem.deployContract("SubPricingHarness", [], {
+    const viem = await getViem();
+    const [deployer] = await viem.getWalletClients();
+    const harness = await viem.deployContract("SubPricingHarness", [], {
       account: deployer.account,
     });
 
@@ -50,8 +57,9 @@ describe("SubPricing", () => {
   });
 
   it("uses floor rounding for refunds on fractional amounts", async () => {
-    const [deployer] = await hre.viem.getWalletClients();
-    const harness = await hre.viem.deployContract("SubPricingHarness", [], {
+    const viem = await getViem();
+    const [deployer] = await viem.getWalletClients();
+    const harness = await viem.deployContract("SubPricingHarness", [], {
       account: deployer.account,
     });
 
@@ -65,8 +73,9 @@ describe("SubPricing", () => {
   });
 
   it("reverts below monthly minimum when enforceMinMonthly is enabled", async () => {
-    const [deployer] = await hre.viem.getWalletClients();
-    const harness = await hre.viem.deployContract("SubPricingHarness", [], {
+    const viem = await getViem();
+    const [deployer] = await viem.getWalletClients();
+    const harness = await viem.deployContract("SubPricingHarness", [], {
       account: deployer.account,
     });
 

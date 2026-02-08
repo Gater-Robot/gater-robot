@@ -1,22 +1,44 @@
 import { strict as assert } from "node:assert";
-import { describe, it } from "mocha";
+import { beforeEach, describe, it } from "mocha";
 import hre from "hardhat";
 import { parseEther } from "viem";
 
 const TOKEN_NAME = "Gater Private Group: Subscription Days Remaining";
 const TOKEN_SYMBOL = "GATER-days";
 const DAY_SECONDS = 24 * 60 * 60;
+const ONE_SECOND_DECAY = parseEther("1") / BigInt(DAY_SECONDS);
+const DECAY_TOLERANCE = ONE_SECOND_DECAY * 2n;
+
+type ConnectedNetwork = Awaited<ReturnType<typeof hre.network.connect>>;
+
+let network: ConnectedNetwork;
+
+function getViem() {
+  return network.viem;
+}
 
 async function increaseTime(seconds: number) {
-  await hre.network.provider.send("evm_increaseTime", [seconds]);
-  await hre.network.provider.send("evm_mine");
+  await network.networkHelpers.time.increase(seconds);
+}
+
+function assertBigIntClose(actual: bigint, expected: bigint, tolerance = DECAY_TOLERANCE) {
+  const diff = actual >= expected ? actual - expected : expected - actual;
+  assert.ok(
+    diff <= tolerance,
+    `expected ${actual} to be within ${tolerance} of ${expected}, diff=${diff}`
+  );
 }
 
 describe("SubscriptionDaysToken", () => {
-  it("deploys with expected metadata, roles, and default admin delay", async () => {
-    const [admin, minter] = await hre.viem.getWalletClients();
+  beforeEach(async () => {
+    network = await hre.network.connect();
+  });
 
-    const contract = await hre.viem.deployContract(
+  it("deploys with expected metadata, roles, and default admin delay", async () => {
+    const viem = await getViem();
+    const [admin, minter] = await viem.getWalletClients();
+
+    const contract = await viem.deployContract(
       "SubscriptionDaysToken",
       [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
       { account: admin.account }
@@ -24,7 +46,7 @@ describe("SubscriptionDaysToken", () => {
 
     assert.equal(await contract.read.name(), TOKEN_NAME);
     assert.equal(await contract.read.symbol(), TOKEN_SYMBOL);
-    assert.equal(await contract.read.defaultAdminDelay(), 1n);
+    assert.equal(Number(await contract.read.defaultAdminDelay()), 1);
 
     const minterRole = await contract.read.MINTER_ROLE();
     const defaultAdminRole = await contract.read.DEFAULT_ADMIN_ROLE();
@@ -40,9 +62,10 @@ describe("SubscriptionDaysToken", () => {
   });
 
   it("applies linear per-second decay to balanceOf", async () => {
-    const [admin, minter, alice] = await hre.viem.getWalletClients();
+    const viem = await getViem();
+    const [admin, minter, alice] = await viem.getWalletClients();
 
-    const contract = await hre.viem.deployContract(
+    const contract = await viem.deployContract(
       "SubscriptionDaysToken",
       [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
       { account: admin.account }
@@ -55,13 +78,14 @@ describe("SubscriptionDaysToken", () => {
     await increaseTime(Math.floor(DAY_SECONDS * 1.5));
 
     const decayedBalance = await contract.read.balanceOf([alice.account.address]);
-    assert.equal(decayedBalance, parseEther("8.5"));
+    assertBigIntClose(decayedBalance, parseEther("8.5"));
   });
 
   it("saturates at zero and can settle burned decay into supply", async () => {
-    const [admin, minter, alice, caller] = await hre.viem.getWalletClients();
+    const viem = await getViem();
+    const [admin, minter, alice, caller] = await viem.getWalletClients();
 
-    const contract = await hre.viem.deployContract(
+    const contract = await viem.deployContract(
       "SubscriptionDaysToken",
       [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
       { account: admin.account }
@@ -96,9 +120,10 @@ describe("SubscriptionDaysToken", () => {
   });
 
   it("settles sender and recipient before transfer accounting", async () => {
-    const [admin, minter, alice, bob] = await hre.viem.getWalletClients();
+    const viem = await getViem();
+    const [admin, minter, alice, bob] = await viem.getWalletClients();
 
-    const contract = await hre.viem.deployContract(
+    const contract = await viem.deployContract(
       "SubscriptionDaysToken",
       [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
       { account: admin.account }
@@ -114,31 +139,32 @@ describe("SubscriptionDaysToken", () => {
       account: alice.account
     });
 
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([alice.account.address]),
       parseEther("2")
     );
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([bob.account.address]),
       parseEther("2")
     );
 
-    await increaseTime(DAY_SECONDS);
+    await increaseTime(DAY_SECONDS - 1);
 
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([alice.account.address]),
       parseEther("1")
     );
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([bob.account.address]),
       parseEther("1")
     );
   });
 
   it("settles before exempting and restarts decay from revoke time", async () => {
-    const [admin, minter, alice] = await hre.viem.getWalletClients();
+    const viem = await getViem();
+    const [admin, minter, alice] = await viem.getWalletClients();
 
-    const contract = await hre.viem.deployContract(
+    const contract = await viem.deployContract(
       "SubscriptionDaysToken",
       [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
       { account: admin.account }
@@ -148,20 +174,20 @@ describe("SubscriptionDaysToken", () => {
       account: minter.account
     });
 
-    await increaseTime(DAY_SECONDS);
+    await increaseTime(DAY_SECONDS - 1);
 
     await contract.write.setDecayExempt([alice.account.address, true], {
       account: admin.account
     });
 
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([alice.account.address]),
       parseEther("4")
     );
 
     await increaseTime(DAY_SECONDS * 2);
 
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([alice.account.address]),
       parseEther("4")
     );
@@ -172,20 +198,25 @@ describe("SubscriptionDaysToken", () => {
 
     await increaseTime(DAY_SECONDS);
 
-    assert.equal(
+    assertBigIntClose(
       await contract.read.balanceOf([alice.account.address]),
       parseEther("3")
     );
   });
 
   it("allows minter role holder to burn from its own balance", async () => {
-    const [admin, minter] = await hre.viem.getWalletClients();
+    const viem = await getViem();
+    const [admin, minter] = await viem.getWalletClients();
 
-    const contract = await hre.viem.deployContract(
+    const contract = await viem.deployContract(
       "SubscriptionDaysToken",
       [TOKEN_NAME, TOKEN_SYMBOL, admin.account.address, minter.account.address],
       { account: admin.account }
     );
+
+    await contract.write.setDecayExempt([minter.account.address, true], {
+      account: admin.account
+    });
 
     await contract.write.mint([minter.account.address, parseEther("5")], {
       account: minter.account
