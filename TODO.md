@@ -4,6 +4,8 @@
 - [ ] Send completion notification via `ntfy_send`
 
 ## Done
+- [x] Ignore Foundry generated deployment artifacts (`packages/contracts/broadcast/`)
+- [x] Fix hook salt workflow (predict from factory nonce or use explicit SUB token)
 - [x] Fix Foundry/Uniswap local deploy compiler mismatch (`PoolManager.sol` =0.8.26)
 - [x] Add Hardhat-local subscription stack deployment support (PoolManager + MockUSDC + Factory + Router)
 - [x] Add standalone mock USDC deployment script for local/Base demo networks

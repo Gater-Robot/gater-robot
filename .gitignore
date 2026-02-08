@@ -50,6 +50,7 @@ cache/
 
 # Foundry build artifacts
 out/
+packages/contracts/broadcast/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/

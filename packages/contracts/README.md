@@ -61,12 +61,24 @@ If you want a standalone fake USDC deployment on any network:
 pnpm --filter @gater/contracts deploy:subs:mock-usdc
 ```
 
-Then continue with local product setup and demo scripts using the emitted addresses:
+Then continue with local product setup and demo scripts:
 ```bash
+# 1) Create token first (prints SUB token address)
+pnpm --filter @gater/contracts deploy:subs:create-token:local
+
+# 2) Set SUB_TOKEN from previous step, then mine salt
 pnpm --filter @gater/contracts mine:hook-salt
+
+# 3) Setup pool + hook (uses SUB_TOKEN + HOOK_SALT)
 pnpm --filter @gater/contracts deploy:subs:create:local
+
+# 4) Buy/refund demo
 pnpm --filter @gater/contracts deploy:subs:demo:local
 ```
+
+`mine:hook-salt` supports two modes:
+- safest: set `SUB_TOKEN` to your real created token address
+- convenience: omit `SUB_TOKEN` and set `FACTORY`; script predicts next token address from factory nonce
 
 ### Existing Network Flow (Base / Base Sepolia / custom RPC)
 Mine hook salt:

@@ -45,6 +45,13 @@
   - Foundry config now auto-detects per-file solc versions.
   - `deploy:subs:local:stack` explicitly uses solc `0.8.26` for Uniswap `PoolManager.sol`.
   - Verified with Forge compile/build path including `PoolManager` from v4-core.
+- Added `.gitignore` entry for generated Foundry broadcast artifacts: `packages/contracts/broadcast/`.
+- Improved salt and setup flow:
+  - `MineHookSalt.s.sol` now supports either explicit `SUB_TOKEN` or prediction from `FACTORY` nonce.
+  - `MineHookSalt.s.sol` now defaults deployer to `FACTORY`, supports default fee/tick spacing, and configurable `SALT_SEARCH_MAX`.
+  - Added `CreateSubscriptionToken.s.sol` for explicit token creation step.
+  - `CreateSubscriptionProduct.s.sol` now supports both modes: create new token or use provided `SUB_TOKEN`.
+  - Added package scripts: `deploy:subs:create-token` and `deploy:subs:create-token:local`.
 - Verified contracts stack after updates:
   - `pnpm --filter @gater/contracts build` passes.
   - `pnpm --filter @gater/contracts test` passes (12/12).

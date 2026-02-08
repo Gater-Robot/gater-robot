@@ -8,6 +8,8 @@ import {SubPricing} from "../contracts/subscriptions/SubPricing.sol";
 import {SubscriptionDaysToken} from "../contracts/SubscriptionDaysToken.sol";
 
 contract CreateSubscriptionProduct is Script {
+    error MissingTokenAddress();
+
     function run() external {
         uint256 pk = vm.envUint("PRIVATE_KEY");
         address factoryAddr = vm.envAddress("FACTORY");
@@ -18,11 +20,17 @@ contract CreateSubscriptionProduct is Script {
 
         SubscriptionFactory factory = SubscriptionFactory(factoryAddr);
 
-        string memory name = vm.envString("SUB_NAME");
-        string memory symbol = vm.envString("SUB_SYMBOL");
+        address token = vm.envOr("SUB_TOKEN", address(0));
+        if (token == address(0)) {
+            string memory name = vm.envString("SUB_NAME");
+            string memory symbol = vm.envString("SUB_SYMBOL");
+            token = factory.createToken(name, symbol);
+            console2.log("Created SUB token:", token);
+        } else {
+            console2.log("Using existing SUB token:", token);
+        }
 
-        address token = factory.createToken(name, symbol);
-        console2.log("SUB token:", token);
+        if (token == address(0)) revert MissingTokenAddress();
 
         SubscriptionFactory.SetupParams memory p;
         p.token = token;

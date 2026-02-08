@@ -11,16 +11,34 @@ import {SubscriptionHook} from "../contracts/subscriptions/SubscriptionHook.sol"
 import {SubPricing} from "../contracts/subscriptions/SubPricing.sol";
 
 contract MineHookSalt is Script {
+    error MissingDeployerOrFactory();
+    error MissingSubTokenOrFactory();
+    error MissingOwner();
+
     function run() external {
-        address deployer = vm.envAddress("DEPLOYER");
+        address factory = vm.envOr("FACTORY", address(0));
+        address deployer = vm.envOr("DEPLOYER", address(0));
+        if (deployer == address(0)) deployer = factory;
+        if (deployer == address(0)) revert MissingDeployerOrFactory();
+
         address poolManager = vm.envAddress("POOL_MANAGER");
-        address subToken = vm.envAddress("SUB_TOKEN");
+        address subToken = vm.envOr("SUB_TOKEN", address(0));
+        if (subToken == address(0)) {
+            if (factory == address(0)) revert MissingSubTokenOrFactory();
+            uint64 nextNonce = vm.getNonce(factory);
+            subToken = vm.computeCreateAddress(factory, nextNonce);
+            console2.log("Predicted SUB token from factory nonce:", subToken);
+            console2.log("Factory nonce used:", uint256(nextNonce));
+        }
         address usdc = vm.envAddress("USDC");
-        address owner = vm.envAddress("OWNER");
+        uint256 pk = vm.envOr("PRIVATE_KEY", uint256(0));
+        address owner = vm.envOr("OWNER", pk == 0 ? address(0) : vm.addr(pk));
+        if (owner == address(0)) revert MissingOwner();
         address router = vm.envAddress("ROUTER");
 
-        uint24 fee = uint24(vm.envUint("FEE"));
-        int24 tickSpacing = int24(int256(vm.envInt("TICK_SPACING")));
+        uint24 fee = uint24(vm.envOr("FEE", uint256(0)));
+        int24 tickSpacing = int24(int256(vm.envOr("TICK_SPACING", int256(1))));
+        uint256 maxSearch = vm.envOr("SALT_SEARCH_MAX", uint256(8_000_000));
 
         Currency subCurrency = Currency.wrap(subToken);
         Currency usdcCurrency = Currency.wrap(usdc);
@@ -51,7 +69,7 @@ contract MineHookSalt is Script {
                 | Hooks.BEFORE_REMOVE_LIQUIDITY_FLAG
         );
 
-        for (uint256 i = 0; i < 8_000_000; i++) {
+        for (uint256 i = 0; i < maxSearch; i++) {
             bytes32 salt = bytes32(i);
             address predicted = computeCreate2(deployer, salt, initCodeHash);
             if ((uint160(predicted) & required) == required) {
@@ -61,7 +79,7 @@ contract MineHookSalt is Script {
             }
         }
 
-        revert("salt not found in range");
+        revert("salt not found in SALT_SEARCH_MAX range");
     }
 
     function computeCreate2(address deployer, bytes32 salt, bytes32 initCodeHash) internal pure returns (address) {
