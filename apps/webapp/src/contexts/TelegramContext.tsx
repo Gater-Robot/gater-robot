@@ -14,6 +14,7 @@ import {
 import {
   initTelegramSdk,
   getInitDataRaw,
+  getLastDiagnostics,
   configureMainButton,
   configureBackButton,
   closeMiniApp,
@@ -21,6 +22,7 @@ import {
   isInTelegramEnvironment,
   type TelegramUser,
   type TelegramInitResult,
+  type TelegramDiagnostics,
 } from "@/lib/telegram"
 
 function buildMockInitDataRaw(user: TelegramUser): string {
@@ -51,6 +53,7 @@ type TelegramContextValue = {
   platform: string | null
   version: string | null
   startParam?: string
+  diagnostics: TelegramDiagnostics | null
   setMainButton: typeof configureMainButton
   setBackButton: typeof configureBackButton
   close: typeof closeMiniApp
@@ -75,6 +78,7 @@ export function TelegramProvider({
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
   const [initResult, setInitResult] = useState<TelegramInitResult | null>(null)
+  const [diagnostics, setDiagnostics] = useState<TelegramDiagnostics | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -104,6 +108,16 @@ export function TelegramProvider({
           onInitialized?.(result)
         }
 
+        const diag = getLastDiagnostics()
+        setDiagnostics(diag)
+        if (diag?.reconstructed) {
+          console.warn(
+            "[gater] initDataRaw was reconstructed from initDataUnsafe — " +
+              "HMAC validation will fail for admin actions.",
+            diag,
+          )
+        }
+
         setIsInitialized(true)
       } catch (err) {
         if (!mounted) return
@@ -127,17 +141,20 @@ export function TelegramProvider({
     return getInitDataRaw()
   }, [initResult, mockUser])
 
+  const resolvedInitDataRaw = getInitData()
+
   const value: TelegramContextValue = {
     isInitialized,
     isInTelegram: initResult?.isInTelegram ?? false,
     isLoading,
     error,
     user: initResult?.user ?? mockUser ?? null,
-    initDataRaw: initResult?.initDataRaw ?? null,
+    initDataRaw: resolvedInitDataRaw,
     themeParams: initResult?.themeParams ?? null,
     platform: initResult?.platform ?? null,
     version: initResult?.version ?? null,
     startParam: initResult?.startParam,
+    diagnostics,
     setMainButton: configureMainButton,
     setBackButton: configureBackButton,
     close: closeMiniApp,
@@ -166,4 +183,3 @@ export function useTelegramInitData(): string {
   if (!initData) throw new Error("No init data available")
   return initData
 }
-

@@ -18,10 +18,11 @@ export type ChannelDoc = {
 export function useChannels(orgId: string | null) {
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
+  const canQuery = Boolean(initDataRaw && orgId)
 
   const channels = useQuery(
     api.channels.listChannelsForOrg,
-    initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
+    canQuery && initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
   ) as ChannelDoc[] | undefined
 
   const createChannelSecureAction = useAction(api.adminActions.createChannelSecure)
@@ -79,7 +80,7 @@ export function useChannels(orgId: string | null) {
 
   return {
     channels: channels ?? [],
-    isLoading: telegram.isLoading || (orgId != null && channels === undefined),
+    isLoading: telegram.isLoading || (canQuery && channels === undefined),
     createChannel,
     setChannelBotAdminStatus,
     verifyChannelBotAdmin,

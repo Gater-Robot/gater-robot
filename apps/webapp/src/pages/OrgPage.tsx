@@ -31,6 +31,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TelegramAuthDebugPanel } from "@/components/debug/TelegramAuthDebugPanel"
 
 type OrgDoc = {
   _id: string
@@ -65,10 +66,11 @@ export function OrgPage() {
 
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
+  const canLoadOrg = Boolean(initDataRaw && orgId)
 
   const org = useQuery(
     api.orgs.getOrgById,
-    initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
+    canLoadOrg && initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
   ) as OrgDoc | null | undefined
 
   const {
@@ -192,7 +194,7 @@ export function OrgPage() {
     }
   }
 
-  if (telegram.isLoading || org === undefined) {
+  if (telegram.isLoading || (canLoadOrg && org === undefined)) {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
@@ -202,7 +204,7 @@ export function OrgPage() {
     )
   }
 
-  if (!telegram.user) {
+  if (!telegram.user || !initDataRaw) {
     return (
       <Card className="py-0">
         <CardContent className="pt-6">
@@ -211,9 +213,10 @@ export function OrgPage() {
             <h2 className="mb-2 text-xl font-semibold">Authentication Required</h2>
             <p className="text-muted-foreground">
               {telegram.isInTelegram
-                ? "Unable to load user data from Telegram."
+                ? "Unable to validate your Telegram session. Please reopen the Mini App."
                 : "Please open this app in Telegram to manage organizations."}
             </p>
+            <TelegramAuthDebugPanel />
           </div>
         </CardContent>
       </Card>

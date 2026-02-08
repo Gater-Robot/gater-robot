@@ -42,6 +42,7 @@ export function useAddresses(): {
   deleteAddressError: Error | null
 } {
   const { initDataRaw, isLoading: telegramLoading } = useTelegram()
+  const canQuery = Boolean(initDataRaw)
   const [setDefaultError, setSetDefaultError] = useState<Error | null>(null)
   const [isSettingDefault, setIsSettingDefault] = useState(false)
   const [deleteAddressError, setDeleteAddressError] = useState<Error | null>(null)
@@ -49,7 +50,7 @@ export function useAddresses(): {
 
   const addresses = useQuery(
     api.ens.getUserAddresses,
-    initDataRaw ? { initDataRaw } : "skip",
+    canQuery && initDataRaw ? { initDataRaw } : "skip",
   ) as UserAddress[] | undefined
 
   const setDefaultMutation = useMutation(api.ens.setDefaultAddress)
@@ -103,7 +104,7 @@ export function useAddresses(): {
     [initDataRaw, deleteAddressMutation],
   )
 
-  const isLoading = telegramLoading || addresses === undefined
+  const isLoading = telegramLoading || (canQuery && addresses === undefined)
 
   return {
     addresses: addresses ?? [],

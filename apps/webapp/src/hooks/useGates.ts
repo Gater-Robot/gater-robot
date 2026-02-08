@@ -23,25 +23,27 @@ export type GateDoc = {
 export function useGatesForOrg(orgId: string | null) {
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
+  const canQuery = Boolean(initDataRaw && orgId)
 
   const gates = useQuery(
     api.gates.listGatesForOrg,
-    initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
+    canQuery && initDataRaw && orgId ? { initDataRaw, orgId: orgId as any } : "skip",
   ) as GateDoc[] | undefined
 
   return {
     gates: gates ?? [],
-    isLoading: telegram.isLoading || (orgId != null && gates === undefined),
+    isLoading: telegram.isLoading || (canQuery && gates === undefined),
   }
 }
 
 export function useGatesForChannel(channelId: string | null) {
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
+  const canQuery = Boolean(initDataRaw && channelId)
 
   const gates = useQuery(
     api.gates.listGatesForChannel,
-    initDataRaw && channelId ? { initDataRaw, channelId: channelId as any } : "skip",
+    canQuery && initDataRaw && channelId ? { initDataRaw, channelId: channelId as any } : "skip",
   ) as GateDoc[] | undefined
 
   const createGateSecureAction = useAction(api.adminActions.createGateSecure)
@@ -95,7 +97,7 @@ export function useGatesForChannel(channelId: string | null) {
 
   return {
     gates: gates ?? [],
-    isLoading: telegram.isLoading || (channelId != null && gates === undefined),
+    isLoading: telegram.isLoading || (canQuery && gates === undefined),
     createGate,
     setGateActive,
   }

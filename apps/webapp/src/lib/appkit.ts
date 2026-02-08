@@ -28,8 +28,7 @@ createAppKit({
     icons: [appIconUrl],
   },
   featuredWalletIds: [METAMASK_WALLET_ID],
-  includeWalletIds: [METAMASK_WALLET_ID],
-  allWallets: "HIDE",
+  allWallets: "SHOW",
   themeMode: document.documentElement.classList.contains("dark") ? "dark" : "light",
   themeVariables: {
     "--w3m-accent": "#2dd4bf",

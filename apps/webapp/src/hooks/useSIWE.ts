@@ -74,7 +74,11 @@ export function useSIWE(targetAddress?: string) {
 
     const initDataRaw = getInitData();
     if (!initDataRaw) {
-      setError("Not authenticated with Telegram");
+      setError(
+        telegramUser
+          ? "Telegram session data could not be loaded. Check the debug panel for details, or close and reopen the Mini App."
+          : "Not authenticated with Telegram. Please open this app inside Telegram."
+      );
       setStatus("error");
       return;
     }

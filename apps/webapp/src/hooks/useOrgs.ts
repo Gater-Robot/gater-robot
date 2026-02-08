@@ -14,10 +14,11 @@ export type OrgDoc = {
 export function useOrgs() {
   const telegram = useTelegram()
   const initDataRaw = telegram.getInitData()
+  const canQuery = Boolean(initDataRaw)
 
   const orgs = useQuery(
     api.orgs.listOrgsForOwner,
-    initDataRaw ? { initDataRaw } : "skip",
+    canQuery && initDataRaw ? { initDataRaw } : "skip",
   ) as OrgDoc[] | undefined
 
   const createOrgSecureAction = useAction(api.adminActions.createOrgSecure)
@@ -37,7 +38,7 @@ export function useOrgs() {
 
   return {
     orgs: orgs ?? [],
-    isLoading: telegram.isLoading || orgs === undefined,
+    isLoading: telegram.isLoading || (canQuery && orgs === undefined),
     createOrg,
   }
 }

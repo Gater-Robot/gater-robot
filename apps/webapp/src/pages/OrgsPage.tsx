@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { TelegramAuthDebugPanel } from "@/components/debug/TelegramAuthDebugPanel"
 import { cn } from "@/lib/utils"
 
 const createOrgSchema = z.object({
@@ -25,6 +26,7 @@ type CreateOrgValues = z.infer<typeof createOrgSchema>
 export function OrgsPage() {
   const navigate = useNavigate()
   const telegram = useTelegram()
+  const initDataRaw = telegram.getInitData()
   const { orgs, isLoading, createOrg } = useOrgs()
 
   const [searchQuery, setSearchQuery] = React.useState("")
@@ -67,7 +69,7 @@ export function OrgsPage() {
     )
   }
 
-  if (!telegram.user) {
+  if (!telegram.user || !initDataRaw) {
     return (
       <Card className="py-0">
         <CardContent className="pt-6">
@@ -76,9 +78,10 @@ export function OrgsPage() {
             <h2 className="mb-2 text-xl font-semibold">Authentication Required</h2>
             <p className="text-muted-foreground">
               {telegram.isInTelegram
-                ? "Unable to load user data from Telegram."
+                ? "Unable to validate your Telegram session. Please reopen the Mini App."
                 : "Please open this app in Telegram to view organizations."}
             </p>
+            <TelegramAuthDebugPanel />
           </div>
         </CardContent>
       </Card>
